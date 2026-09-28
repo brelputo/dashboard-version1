@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Financial Movement Executive Dashboard — 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #070a12;
+            --surface: #0f172a;
+            --surface-card: #1e293b;
+            --primary: #f8fafc;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-glow: rgba(37, 99, 235, 0.3);
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-focus: #60a5fa;
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding: 28px 16px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 1700px; }
+
+        /* LOGIN OVERLAY CARD */
+        #login-overlay {
+            max-width: 500px;
+            margin: 80px auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        #login-overlay h2 { font-size: 1.5rem; margin-bottom: 8px; color: #fff; }
+        #login-overlay p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1e3a8a 100%);
+            color: white;
+            padding: 28px 32px;
+            border-radius: var(--radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 20px 40px -15px rgba(30, 58, 138, 0.5);
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        header h1 { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header p { color: #cbd5e1; font-size: 0.9rem; margin-top: 4px; }
+
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+        .month-selector {
+            background: #090e18;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .month-selector:focus { outline: none; border-color: var(--border-focus); }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 410px; gap: 24px; }
+        @media (max-width: 1350px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 22px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); margin-bottom: 24px; transition: border-color 0.2s; }
+        .card:hover { border-color: #475569; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        .card-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+
+        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; justify-content: space-between; }
+        .search-box { flex: 1; min-width: 200px; position: relative; }
+        .search-box input { padding-left: 36px; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; }
+
+        .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pill { background: #1e293b; border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .pill:hover { background: #334155; color: white; }
+        .pill.active { background: var(--accent); border-color: var(--accent); color: white; box-shadow: 0 0 12px rgba(37, 99, 235, 0.4); }
+
+        .table-container { width: 100%; overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+        .table-container-clean { width: 100%; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+        .ledger-table { min-width: 1060px; }
+
+        th { background-color: #131d31; color: var(--text-muted); font-weight: 600; padding: 12px 10px; border-bottom: 2px solid var(--border); white-space: nowrap; letter-spacing: 0.02em; }
+        td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; background-color: var(--surface); }
+        tr:hover td { background-color: #162238; }
+        tfoot td { background-color: #111c30; font-weight: 700; border-top: 2px solid var(--border); border-bottom: none; }
+
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            background: #090e18;
+            color: var(--text-main);
+            height: 38px;
+            transition: all 0.2s ease;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+        input:hover, select:hover { border-color: #64748b; }
+        input:focus, select:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-glow); background: #0f172a; }
+
+        .col-paid { width: 95px; text-align: center; font-weight: 700; }
+        .col-paid.status-yes { background-color: rgba(16, 185, 129, 0.15) !important; color: #34d399 !important; border-color: rgba(16, 185, 129, 0.4) !important; }
+        .col-paid.status-no { background-color: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; border-color: rgba(239, 68, 68, 0.4) !important; }
+
+        .col-date { width: 130px; text-align: center; }
+        .col-desc { width: 170px; }
+        .col-cat { width: 150px; }
+        .col-type { width: 100px; }
+        .col-num { width: 120px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 12px !important; }
+        .col-method { width: 115px; }
+        .col-action { width: 105px; text-align: center; white-space: nowrap; }
+
+        .metric-group { display: flex; flex-direction: column; gap: 12px; }
+        .metric-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        .metric-row span:first-child { color: var(--text-muted); font-weight: 500; }
+        .metric-row span:last-child { font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .divider { height: 1px; background-color: var(--border); margin: 6px 0; }
+
+        .highlight-box { background: linear-gradient(135deg, #131d31 0%, #1e293b 100%); border-radius: 10px; padding: 16px; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+        .highlight-box .metric-row span:first-child { color: #93c5fd; font-weight: 600; }
+        .highlight-box .metric-row span:last-child { font-size: 1.3rem; color: #60a5fa; text-shadow: 0 0 12px rgba(96, 165, 250, 0.3); }
+
+        .btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4); }
+        .btn-secondary { background: #334155; box-shadow: none; font-size: 0.8rem; padding: 7px 12px; }
+        .btn-secondary:hover { background: #475569; }
+        
+        .btn-action-row { display: inline-flex; gap: 4px; align-items: center; }
+        .btn-transfer { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 6px 8px; font-size: 0.75rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.3); cursor: pointer; transition: all 0.2s; }
+        .btn-transfer:hover { background-color: rgba(59, 130, 246, 0.3); color: #ffffff; }
+
+        .btn-danger { background-color: rgba(239, 68, 68, 0.15); color: #f87171; padding: 6px 8px; font-size: 0.75rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3); cursor: pointer; transition: all 0.2s; }
+        .btn-danger:hover { background-color: rgba(239, 68, 68, 0.3); color: #ffffff; }
+
+        .progress-cell { display: flex; align-items: center; gap: 8px; }
+        .progress-bar-bg { flex: 1; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; min-width: 50px; }
+        .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+        .text-success { color: var(--success) !important; text-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
+        .text-danger { color: var(--danger) !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.2); }
+
+        #toast { position: fixed; bottom: 24px; right: 24px; background: #10b981; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; box-shadow: 0 10px 25px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 1000; }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<!-- SECURE LOGIN OVERLAY -->
+<div id="login-overlay">
+    <h2>Secure Vault Login</h2>
+    <p>Enter your Master Encryption Passphrase to decrypt your financial records from Supabase.</p>
+    <div style="margin-bottom: 15px;">
+        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Master Passphrase</label>
+        <input type="password" id="master-pwd" placeholder="Enter secret password..." onkeydown="if(event.key==='Enter') initSession()">
+    </div>
+    <button class="btn" style="width: 100%; justify-content: center;" onclick="initSession()">Unlock Dashboard</button>
+</div>
+
+<!-- MAIN DASHBOARD CONTAINER -->
+<div class="container" id="main-app" style="display: none;">
+    <header>
+        <div>
+            <h1>Financial Movement Dashboard</h1>
+            <p id="header-subtitle">Executive Intelligence & Ledger (Cloud Synchronized & Encrypted)</p>
+        </div>
+        <div class="header-actions">
+            <select id="month-dropdown" class="month-selector" onchange="switchMonth(this.value)">
+                <option value="january2026">📅 January 2026</option>
+                <option value="february2026">📅 February 2026</option>
+                <option value="march2026">📅 March 2026</option>
+                <option value="april2026">📅 April 2026</option>
+                <option value="may2026">📅 May 2026</option>
+                <option value="june2026">📅 June 2026</option>
+                <option value="july2026">📅 July 2026</option>
+                <option value="august2026">📅 August 2026</option>
+                <option value="september2026">📅 September 2026</option>
+                <option value="october2026">📅 October 2026</option>
+                <option value="november2026">📅 November 2026</option>
+                <option value="december2026">📅 December 2026</option>
+            </select>
+            <button class="btn btn-secondary" onclick="sortTransactionsByDateManual()">🔄 Sort by Date</button>
+            <button class="btn btn-secondary" onclick="exportJSON()">💾 Backup JSON</button>
+            <label class="btn btn-secondary" style="cursor: pointer; margin-bottom: 0;">
+                📂 Import JSON <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importJSON(event)">
+            </label>
+            <button class="btn btn-secondary" onclick="requestPasswordReset()" style="background: #b45309;">🔑 Reset Password</button>
+            <button class="btn btn-secondary" onclick="resetMonthData()">🔄 Reset Month</button>
+            <button class="btn btn-secondary" style="background: #475569;" onclick="lockVault()">🔒 Lock</button>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <!-- Main Ledger & Categories -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Transactions Ledger</h2>
+                    <button class="btn" onclick="addTransaction()">+ Add Transaction</button>
+                </div>
+                <div class="toolbar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-input" placeholder="Search description or category..." oninput="renderApp()">
+                    </div>
+                    <div class="filter-pills">
+                        <div class="pill active" onclick="setFilter('all', this)">All</div>
+                        <div class="pill" onclick="setFilter('cleared', this)">Cleared</div>
+                        <div class="pill" onclick="setFilter('pending', this)">Pending</div>
+                        <div class="pill" onclick="setFilter('credits', this)">Credits</div>
+                        <div class="pill" onclick="setFilter('debits', this)">Debits</div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="ledger-table">
+                        <thead>
+                            <tr>
+                                <th class="col-date">Date</th>
+                                <th class="col-desc">Description</th>
+                                <th class="col-cat">Category</th>
+                                <th class="col-type">Type</th>
+                                <th class="col-num">Credit ($)</th>
+                                <th class="col-num">Debit ($)</th>
+                                <th class="col-method">Method</th>
+                                <th class="col-paid">Paid</th>
+                                <th class="col-action">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txn-tbody"></tbody>
+                        <tfoot id="txn-tfoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Cost Breakdown by Category</h2>
+                </div>
+                <div class="table-container-clean">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Current Month ($)</th>
+                                <th>Share (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="category-tbody"></tbody>
+                        <tfoot id="category-tfoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Metrics -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Period Summary (Cleared)</h2>
+                </div>
+                <div class="metric-group">
+                    <div class="metric-row"><span>Credits Received:</span> <span id="lbl-credits-rcvd" class="text-success">$0.00</span></div>
+                    <div class="metric-row"><span>Debits Paid:</span> <span id="lbl-debits-paid" class="text-danger">$0.00</span></div>
+                    <div class="highlight-box">
+                        <div class="metric-row">
+                            <span>Current Balance:</span>
+                            <span id="lbl-curr-bal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Pending & Projected</h2>
+                </div>
+                <div class="metric-group">
+                    <div class="metric-row"><span>Credits to Receive:</span> <span id="lbl-credits-recv">$0.00</span></div>
+                    <div class="metric-row"><span>Debits to Pay:</span> <span id="lbl-debits-pay">$0.00</span></div>
+                    <div class="highlight-box">
+                        <div class="metric-row">
+                            <span>Projected Balance:</span>
+                            <span id="lbl-proj-bal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Fixed vs Variable Expenses</h2>
+                </div>
+                <div class="metric-group">
+                    <div class="metric-row"><span>Fixed Total:</span> <span id="lbl-fixed">$0.00</span> <span id="lbl-fixed-pct" style="color:var(--text-muted);">(0.0%)</span></div>
+                    <div class="metric-row"><span>Variable Total:</span> <span id="lbl-variable">$0.00</span> <span id="lbl-variable-pct" style="color:var(--text-muted);">(0.0%)</span></div>
+                    <div class="divider"></div>
+                    <div class="metric-row"><span>Total Debits:</span> <span id="lbl-total-debits">$0.00</span></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Payment Methods</h2>
+                </div>
+                <div class="table-container-clean">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Total ($)</th>
+                                <th>Share</th>
+                            </tr>
+                        </thead>
+                        <tbody id="methods-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast">Synced with Supabase securely</div>
+
+<script>
+    const SUPABASE_URL = "https://utozececqvxippnerfrl.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_fAgjUuJkZ4LPA7LLucfe3g_UAfpW88K";
+    let supabaseClient = null;
+    let masterKey = '';
+
+    const categories = [
+        "Lunch", "Subaru", "Toll", "Internet", "Coffee", "Butcher Shop", "Car", 
+        "Credit Card", "Barber Shop", "Investment", "Spotify", "Rent", 
+        "Fuel - Subaru", "Phone Plan", "Entertainment", "Miscellaneous", 
+        "Sweets", "Electronics", "Parking", "Fast Food", "Corolla", 
+        "Motorcycle", "Lottery Shop", "Electricity", "Gustavo", 
+        "Pizzeria", "Health", "Supermarket", "Bank Fee", "Clothing", 
+        "Gift", "Online Shop"
+    ];
+
+    const monthKeysOrder = [
+        "january2026", "february2026", "march2026", "april2026", 
+        "may2026", "june2026", "july2026", "august2026", 
+        "september2026", "october2026", "november2026", "december2026"
+    ];
+
+    const defaultDatasets = {
+        january2026: { title: "January 2026 Executive Intelligence & Ledger", data: [{ date: "01/01/2026", desc: "Starting Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        february2026: { title: "February 2026 Executive Intelligence & Ledger", data: [{ date: "01/02/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        march2026: { title: "March 2026 Executive Intelligence & Ledger", data: [{ date: "01/03/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        april2026: { title: "April 2026 Executive Intelligence & Ledger", data: [{ date: "01/04/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        may2026: { title: "May 2026 Executive Intelligence & Ledger", data: [{ date: "01/05/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        june2026: { title: "June 2026 Executive Intelligence & Ledger", data: [{ date: "01/06/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        july2026: { title: "July 2026 Executive Intelligence & Ledger", data: [{ date: "01/07/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        august2026: { title: "August 2026 Executive Intelligence & Ledger", data: [{ date: "01/08/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        september2026: {
+            title: "September 2026 Executive Intelligence & Ledger",
+            data: [
+                { date: "30/08/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 2113.98, debit: 0, method: "Previous Balance", paid: "YES" },
+                { date: "17/09/2026", desc: "Aldi", cost: "Supermarket", type: "Variable", credit: 0, debit: 39.58, method: "Debit", paid: "Yes" },
+                { date: "17/09/2026", desc: "Tasman", cost: "Butcher Shop", type: "Variable", credit: 0, debit: 5.62, method: "Debit", paid: "Yes" },
+                { date: "18/09/2026", desc: "Vodafone", cost: "Phone Plan", type: "Fixed", credit: 0, debit: 53.00, method: "Debit", paid: "NO" },
+                { date: "20/09/2026", desc: "Pay Will for RWC", cost: "Car", type: "Variable", credit: 0, debit: 450.00, method: "Transfer", paid: "NO" },
+                { date: "20/09/2026", desc: "Fuel - Corolla", cost: "Corolla", type: "Fixed", credit: 0, debit: 50.00, method: "Debit", paid: "Yes" },
+                { date: "20/09/2026", desc: "Oil for Corolla", cost: "Car", type: "Variable", credit: 0, debit: 49.99, method: "Debit", paid: "NO" },
+                { date: "23/09/2026", desc: "Wages", cost: "", type: "", credit: 2247.23, debit: 0, method: "ComBank", paid: "NO" }
+            ]
+        },
+        october2026: { title: "October 2026 Executive Intelligence & Ledger", data: [{ date: "01/10/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        november2026: { title: "November 2026 Executive Intelligence & Ledger", data: [{ date: "01/11/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        december2026: { title: "December 2026 Executive Intelligence & Ledger", data: [{ date: "01/12/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] }
+    };
+
+    let datasets = JSON.parse(JSON.stringify(defaultDatasets));
+    let activeMonthKey = "september2026";
+    let currentFilter = 'all';
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.className = 'show';
+        setTimeout(() => { toast.className = ''; }, 2000);
+    }
+
+    async function initSession() {
+        masterKey = document.getElementById('master-pwd').value.trim();
+        if (!masterKey) {
+            alert('Please enter your Master Encryption Passphrase.');
+            return;
+        }
+
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            const { data, error } = await supabaseClient
+                .from('user_finances')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (error) throw error;
+
+            if (data && data.length > 0 && data[0].encrypted_data) {
+                const bytes = CryptoJS.AES.decrypt(data[0].encrypted_data, masterKey);
+                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+                if (decryptedString) {
+                    datasets = JSON.parse(decryptedString);
+                } else {
+                    alert('Incorrect master passphrase or unreadable vault data. Default template loaded.');
+                }
+            }
+
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+
+            activeMonthKey = getCurrentMonthKey();
+            document.getElementById('month-dropdown').value = activeMonthKey;
+            document.getElementById('header-subtitle').innerText = datasets[activeMonthKey].title;
+            syncRolloverBalances();
+            sortTransactions();
+            renderApp();
+            showToast("Vault unlocked & synced");
+        } catch (e) {
+            alert('Connection or decryption error: ' + e.message);
+        }
+    }
+
+    function lockVault() {
+        supabaseClient = null;
+        masterKey = '';
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('login-overlay').style.display = 'block';
+        document.getElementById('master-pwd').value = '';
+    }
+
+    async function requestPasswordReset() {
+        const email = prompt("Enter your account email to receive a password reset link:");
+        if (!email) return;
+
+        if (!supabaseClient) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin,
+        });
+
+        if (error) {
+            alert("Error: " + error.message);
+        } else {
+            alert("Password reset link sent! Check your email inbox.");
+        }
+    }
+
+    async function saveToSupabase() {
+        if (!supabaseClient || !masterKey) return;
+
+        const encryptedString = CryptoJS.AES.encrypt(JSON.stringify(datasets), masterKey).toString();
+
+        const { data, error: fetchError } = await supabaseClient
+            .from('user_finances')
+            .select('id')
+            .limit(1);
+
+        if (fetchError) {
+            console.error('Fetch error:', fetchError.message);
+            return;
+        }
+
+        if (data && data.length > 0) {
+            await supabaseClient
+                .from('user_finances')
+                .update({ encrypted_data: encryptedString })
+                .eq('id', data[0].id);
+        } else {
+            await supabaseClient
+                .from('user_finances')
+                .insert([{ encrypted_data: encryptedString }]);
+        }
+        showToast("Encrypted & saved to cloud");
+    }
+
+    function getCurrentMonthKey() {
+        const now = new Date();
+        const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+        let currentMonthName = monthNames[now.getMonth()];
+        let key = currentMonthName + "2026";
+        return monthKeysOrder.includes(key) ? key : "september2026";
+    }
+
+    function toISOFormat(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateStr;
+    }
+
+    function toAUFormat(isoDateStr) {
+        if (!isoDateStr) return '';
+        const parts = isoDateStr.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return isoDateStr;
+    }
+
+    function getDefaultDateString(monthKey) {
+        const now = new Date();
+        const todayDay = String(now.getDate()).padStart(2, '0');
+        const todayMonth = String(now.getMonth() + 1).padStart(2, '0');
+        const todayYear = now.getFullYear();
+        
+        const currentActiveMonthNum = String(monthKeysOrder.indexOf(monthKey) + 1).padStart(2, '0');
+        if (todayMonth === currentActiveMonthNum) {
+            return `${todayDay}/${todayMonth}/${todayYear}`;
+        }
+        return `01/${currentActiveMonthNum}/${todayYear}`;
+    }
+
+    function syncRolloverBalances() {
+        let changed = false;
+        for (let i = 1; i < monthKeysOrder.length; i++) {
+            let prevKey = monthKeysOrder[i - 1];
+            let currKey = monthKeysOrder[i];
+            
+            let prevProj = parseFloat(calculateProjectedBalanceForMonth(prevKey).toFixed(2));
+            let currData = datasets[currKey].data;
+            let rolloverItem = currData.find(t => t.desc.toLowerCase().includes('previous period') || t.desc.toLowerCase().includes('starting balance') || t.method === 'Previous Balance');
+            
+            if (rolloverItem) {
+                if (rolloverItem.credit !== prevProj) {
+                    rolloverItem.credit = prevProj;
+                    changed = true;
+                }
+            } else {
+                currData.unshift({
+                    date: `01/${String(i + 1).padStart(2, '0')}/2026`,
+                    desc: "Previous Period Balance",
+                    cost: "",
+                    type: "",
+                    credit: prevProj,
+                    debit: 0,
+                    method: "Previous Balance",
+                    paid: "YES"
+                });
+                changed = true;
+            }
+        }
+        if (changed) {
+            saveToSupabase();
+        }
+    }
+
+    function calculateProjectedBalanceForMonth(monthKey) {
+        let transactions = datasets[monthKey].data;
+        let prevBal = transactions
+            .filter(t => t.desc.toLowerCase().includes('previous period') || t.desc.toLowerCase().includes('starting balance') || t.method === 'Previous Balance')
+            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
+        let paidCredits = transactions
+            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
+        let creditsRcvdTotal = prevBal + paidCredits;
+
+        let debitsPaid = transactions
+            .filter(t => t.paid.toLowerCase() === 'yes' && (parseFloat(t.debit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+
+        let currBal = creditsRcvdTotal - debitsPaid;
+
+        let creditsRecv = transactions
+            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
+        let debitsPay = transactions
+            .filter(t => t.paid.toUpperCase() === 'NO' && (parseFloat(t.debit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+
+        return currBal + creditsRecv - debitsPay;
+    }
+
+    function parseDateString(dateStr) {
+        if (!dateStr) return new Date(0);
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+        }
+        const parsed = Date.parse(dateStr);
+        return isNaN(parsed) ? new Date(0) : new Date(parsed);
+    }
+
+    function sortTransactions() {
+        if (datasets[activeMonthKey] && datasets[activeMonthKey].data) {
+            datasets[activeMonthKey].data.sort((a, b) => {
+                const dateA = parseDateString(a.date);
+                const dateB = parseDateString(b.date);
+                return dateA - dateB;
+            });
+        }
+    }
+
+    function sortTransactionsByDateManual() {
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+        showToast("Transactions sorted by date!");
+    }
+
+    function switchMonth(monthKey) {
+        syncRolloverBalances();
+        activeMonthKey = monthKey;
+        document.getElementById('header-subtitle').innerText = datasets[activeMonthKey].title;
+        sortTransactions();
+        renderApp();
+    }
+
+    function setFilter(filterType, element) {
+        currentFilter = filterType;
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        element.classList.add('active');
+        renderApp();
+    }
+
+    function renderApp() {
+        syncRolloverBalances();
+        renderTransactions();
+        calculateMetrics();
+    }
+
+    function renderTransactions() {
+        const tbody = document.getElementById('txn-tbody');
+        tbody.innerHTML = '';
+
+        let transactions = datasets[activeMonthKey].data;
+        const searchInput = document.getElementById('search-input');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+        let totalCreditSum = 0;
+        let totalDebitSum = 0;
+
+        transactions.forEach((tx, index) => {
+            let cVal = parseFloat(tx.credit) || 0;
+            let dVal = parseFloat(tx.debit) || 0;
+            totalCreditSum += cVal;
+            totalDebitSum += dVal;
+
+            if (searchTerm && !tx.desc.toLowerCase().includes(searchTerm) && !tx.cost.toLowerCase().includes(searchTerm) && !tx.date.includes(searchTerm)) {
+                return;
+            }
+            if (currentFilter === 'cleared' && tx.paid.toLowerCase() !== 'yes') return;
+            if (currentFilter === 'pending' && tx.paid.toUpperCase() !== 'NO') return;
+            if (currentFilter === 'credits' && cVal <= 0) return;
+            if (currentFilter === 'debits' && dVal <= 0) return;
+
+            let isYes = tx.paid.toLowerCase() === 'yes';
+            let paidClass = isYes ? 'status-yes' : 'status-no';
+            let isoDate = toISOFormat(tx.date);
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="date" class="col-date" value="${isoDate}" onchange="updateTxDate(${index}, this.value)"></td>
+                <td><input type="text" class="col-desc" value="${tx.desc}" onchange="updateTx(${index}, 'desc', this.value)"></td>
+                <td>
+                    <select class="col-cat" onchange="updateTx(${index}, 'cost', this.value)">
+                        <option value="">-- None --</option>
+                        ${categories.map(c => `<option value="${c}" ${tx.cost === c ? 'selected' : ''}>${c}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <select class="col-type" onchange="updateTx(${index}, 'type', this.value)">
+                        <option value="">--</option>
+                        <option value="Fixed" ${tx.type === 'Fixed' ? 'selected' : ''}>Fixed</option>
+                        <option value="Variable" ${tx.type === 'Variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                </td>
+                <td><input type="number" step="0.01" class="col-num" value="${tx.credit !== '' && tx.credit !== undefined ? Number(tx.credit).toFixed(2) : ''}" onchange="updateTx(${index}, 'credit', parseFloat(this.value)||0)"></td>
+                <td><input type="number" step="0.01" class="col-num" value="${tx.debit !== '' && tx.debit !== undefined && tx.debit > 0 ? Number(tx.debit).toFixed(2) : ''}" onchange="updateTx(${index}, 'debit', parseFloat(this.value)||0)"></td>
+                <td><input type="text" class="col-method" value="${tx.method}" onchange="updateTx(${index}, 'method', this.value)"></td>
+                <td>
+                    <select class="col-paid ${paidClass}" id="paid-select-${index}" onchange="handlePaidChange(${index}, this.value)">
+                        <option value="Yes" ${isYes ? 'selected' : ''}>Yes</option>
+                        <option value="NO" ${!isYes ? 'selected' : ''}>NO</option>
+                    </select>
+                </td>
+                <td class="col-action">
+                    <div class="btn-action-row">
+                        <button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Transfer transaction to next month">➡️ Next</button>
+                        <button class="btn-danger" onclick="deleteTx(${index})" title="Delete transaction">✕</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const tfoot = document.getElementById('txn-tfoot');
+        tfoot.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
+                <td class="col-num text-success">$${totalCreditSum.toFixed(2)}</td>
+                <td class="col-num text-danger">$${totalDebitSum.toFixed(2)}</td>
+                <td colspan="3"></td>
+            </tr>
+        `;
+    }
+
+    function transferToNextMonth(index) {
+        let currentMonthIndex = monthKeysOrder.indexOf(activeMonthKey);
+        if (currentMonthIndex === -1 || currentMonthIndex >= monthKeysOrder.length - 1) {
+            alert("This is the last month of the year; cannot transfer further.");
+            return;
+        }
+
+        let nextMonthKey = monthKeysOrder[currentMonthIndex + 1];
+        let txToTransfer = datasets[activeMonthKey].data[index];
+
+        if (txToTransfer.desc.toLowerCase().includes('previous period') || txToTransfer.desc.toLowerCase().includes('starting balance') || txToTransfer.method === 'Previous Balance') {
+            alert("System rollover balance lines cannot be transferred directly.");
+            return;
+        }
+
+        let copiedTx = JSON.parse(JSON.stringify(txToTransfer));
+        copiedTx.paid = "NO";
+
+        let parts = copiedTx.date.split('/');
+        if (parts.length === 3) {
+            let day = parts[0];
+            let nextMonthNum = currentMonthIndex + 2;
+            let year = parts[2];
+            copiedTx.date = `${day}/${String(nextMonthNum).padStart(2, '0')}/${year}`;
+        }
+
+        datasets[nextMonthKey].data.push(copiedTx);
+        datasets[nextMonthKey].data.sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+
+        saveToSupabase();
+        showToast(`Transferred to ${nextMonthKey.replace('2026', ' 2026')} as Pending!`);
+    }
+
+    function handlePaidChange(index, value) {
+        datasets[activeMonthKey].data[index]['paid'] = value;
+        const selectEl = document.getElementById(`paid-select-${index}`);
+        selectEl.className = value.toLowerCase() === 'yes' ? 'col-paid status-yes' : 'col-paid status-no';
+        calculateMetrics();
+        saveToSupabase();
+    }
+
+    function updateTxDate(index, isoDateVal) {
+        const auDate = toAUFormat(isoDateVal);
+        datasets[activeMonthKey].data[index]['date'] = auDate;
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+    }
+
+    function updateTx(index, field, value) {
+        datasets[activeMonthKey].data[index][field] = value;
+        calculateMetrics();
+        saveToSupabase();
+        let transactions = datasets[activeMonthKey].data;
+        let totalCreditSum = transactions.reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+        let totalDebitSum = transactions.reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+        document.getElementById('txn-tfoot').innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
+                <td class="col-num text-success">$${totalCreditSum.toFixed(2)}</td>
+                <td class="col-num text-danger">$${totalDebitSum.toFixed(2)}</td>
+                <td colspan="3"></td>
+            </tr>
+        `;
+    }
+
+    function addTransaction() {
+        const defaultDate = getDefaultDateString(activeMonthKey);
+        datasets[activeMonthKey].data.push({ date: defaultDate, desc: "", cost: "", type: "Variable", credit: 0, debit: 0, method: "Debit", paid: "NO" });
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+    }
+
+    function deleteTx(index) {
+        datasets[activeMonthKey].data.splice(index, 1);
+        renderApp();
+        saveToSupabase();
+    }
+
+    function resetMonthData() {
+        if (confirm(`Reset all changes for ${document.getElementById('month-dropdown').selectedOptions[0].text}?`)) {
+            datasets[activeMonthKey] = JSON.parse(JSON.stringify(defaultDatasets[activeMonthKey]));
+            sortTransactions();
+            renderApp();
+            saveToSupabase();
+            showToast("Month reset to default");
+        }
+    }
+
+    function exportJSON() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datasets, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `finance_backup_2026.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        showToast("Backup downloaded successfully");
+    }
+
+    function importJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (imported && typeof imported === 'object') {
+                    datasets = imported;
+                    sortTransactions();
+                    saveToSupabase();
+                    renderApp();
+                    showToast("Successfully restored from backup & synced!");
+                }
+            } catch (err) {
+                alert("Invalid backup file format.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function calculateMetrics() {
+        let transactions = datasets[activeMonthKey].data;
+
+        let prevBal = transactions
+            .filter(t => t.desc.toLowerCase().includes('previous period') || t.desc.toLowerCase().includes('starting balance') || t.method === 'Previous Balance')
+            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
+        let paidCredits = transactions
+            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
+        let creditsRcvdTotal = prevBal + paidCredits;
+
+        let debitsPaid = transactions
+            .filter(t => t.paid.toLowerCase() === 'yes' && (parseFloat(t.debit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+
+        let currBal = creditsRcvdTotal - debitsPaid;
+
+        let creditsRecv = transactions
+            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
+        let debitsPay = transactions
+            .filter(t => t.paid.toUpperCase() === 'NO' && (parseFloat(t.debit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+
+        let projBal = currBal + creditsRecv - debitsPay;
+
+        document.getElementById('lbl-credits-rcvd').innerText = `$${creditsRcvdTotal.toFixed(2)}`;
+        document.getElementById('lbl-debits-paid').innerText = `$${debitsPaid.toFixed(2)}`;
+        document.getElementById('lbl-curr-bal').innerText = `$${currBal.toFixed(2)}`;
+        
+        const creditsRecvEl = document.getElementById('lbl-credits-recv');
+        creditsRecvEl.innerText = `$${creditsRecv.toFixed(2)}`;
+        creditsRecvEl.className = creditsRecv > 0 ? 'text-success' : '';
+
+        const debitsPayEl = document.getElementById('lbl-debits-pay');
+        debitsPayEl.innerText = `$${debitsPay.toFixed(2)}`;
+        debitsPayEl.className = debitsPay > 0 ? 'text-danger' : '';
+
+        document.getElementById('lbl-proj-bal').innerText = `$${projBal.toFixed(2)}`;
+
+        let fixedTotal = transactions.filter(t => t.type === 'Fixed').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+        let varTotal = transactions.filter(t => t.type === 'Variable').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+        let totalDebits = fixedTotal + varTotal;
+
+        document.getElementById('lbl-fixed').innerText = `$${fixedTotal.toFixed(2)}`;
+        document.getElementById('lbl-fixed-pct').innerText = `(${totalDebits > 0 ? ((fixedTotal/totalDebits)*100).toFixed(1) : 0}%)`;
+        document.getElementById('lbl-variable').innerText = `$${varTotal.toFixed(2)}`;
+        document.getElementById('lbl-variable-pct').innerText = `(${totalDebits > 0 ? ((varTotal/totalDebits)*100).toFixed(1) : 0}%)`;
+        document.getElementById('lbl-total-debits').innerText = `$${totalDebits.toFixed(2)}`;
+
+        let catMap = {};
+        transactions.forEach(t => {
+            if (t.cost && (parseFloat(t.debit) || 0) > 0) {
+                catMap[t.cost] = (catMap[t.cost] || 0) + parseFloat(t.debit);
+            }
+        });
+
+        let catTbody = document.getElementById('category-tbody');
+        catTbody.innerHTML = '';
+        let sortedCats = Object.keys(catMap).sort((a,b) => catMap[b] - catMap[a]);
+        sortedCats.forEach(cat => {
+            let amt = catMap[cat];
+            let share = totalDebits > 0 ? (amt / totalDebits) * 100 : 0;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${cat}</td>
+                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td>
+                    <div class="progress-cell">
+                        <span>${share.toFixed(1)}%</span>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${share}%"></div></div>
+                    </div>
+                </td>
+            `;
+            catTbody.appendChild(tr);
+        });
+
+        let catTfoot = document.getElementById('category-tfoot');
+        catTfoot.innerHTML = `
+            <tr>
+                <td style="font-weight: 700; color: var(--text-muted);">Total</td>
+                <td class="col-num text-danger" style="font-weight: 700;">$${totalDebits.toFixed(2)}</td>
+                <td>100.0%</td>
+            </tr>
+        `;
+
+        let methodMap = {};
+        transactions.forEach(t => {
+            if (t.method && t.method !== 'Previous Balance' && (parseFloat(t.debit) || 0) > 0) {
+                methodMap[t.method] = (methodMap[t.method] || 0) + parseFloat(t.debit);
+            }
+        });
+
+        let methodsTbody = document.getElementById('methods-tbody');
+        methodsTbody.innerHTML = '';
+        let totalMethodDebits = Object.values(methodMap).reduce((a,b) => a + b, 0);
+        Object.keys(methodMap).sort((a,b) => methodMap[b] - methodMap[a]).forEach(m => {
+            let amt = methodMap[m];
+            let share = totalMethodDebits > 0 ? (amt / totalMethodDebits) * 100 : 0;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${m}</td>
+                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td>${share.toFixed(1)}%</td>
+            `;
+            methodsTbody.appendChild(tr);
+        });
+    }
+</script>
+</body>
+</html>
