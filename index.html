@@ -47,8 +47,7 @@
             padding: 32px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
-        #login-overlay h2 { font-size: 1.5rem; margin-bottom: 8px; color: #fff; }
-        #login-overlay p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+        #login-overlay h2 { font-size: 1.5rem; margin-bottom: 20px; color: #fff; }
 
         .password-wrapper {
             position: relative;
@@ -204,16 +203,12 @@
 <!-- SECURE LOGIN OVERLAY -->
 <div id="login-overlay">
     <h2>Secure Vault Login</h2>
-    <p>Enter your Master Encryption Passphrase to decrypt your financial records from Supabase.</p>
     
-    <div style="margin-bottom: 15px;">
-        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Master Passphrase</label>
-        <div class="password-wrapper">
-            <input type="password" id="master-pwd" placeholder="Enter secret password..." onkeydown="if(event.key==='Enter') initSession()">
-            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
-                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
-        </div>
+    <div class="password-wrapper">
+        <input type="password" id="master-pwd" placeholder="Enter secret password..." onkeydown="if(event.key==='Enter') initSession()">
+        <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
+            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
     </div>
 
     <button class="btn" style="width: 100%; justify-content: center;" onclick="initSession()">Unlock Dashboard</button>
