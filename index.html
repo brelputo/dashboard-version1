@@ -233,7 +233,8 @@
                 <option value="november2026">📅 November 2026</option>
                 <option value="december2026">📅 December 2026</option>
             </select>
-            <button class="btn btn-secondary" onclick="sortTransactionsByDateManual()">🔄 Sort by Date</button>
+            <button class="btn btn-secondary" onclick="refreshFromCloud()" title="Reload and sync latest records from Supabase without re-entering password">🔄 Sync / Refresh</button>
+            <button class="btn btn-secondary" onclick="sortTransactionsByDateManual()">📅 Sort by Date</button>
             <button class="btn btn-secondary" onclick="exportJSON()">💾 Backup JSON</button>
             <label class="btn btn-secondary" style="cursor: pointer; margin-bottom: 0;">
                 📂 Import JSON <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importJSON(event)">
@@ -457,24 +458,7 @@
 
         try {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            
-            const { data, error } = await supabaseClient
-                .from('user_finances')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(1);
-
-            if (error) throw error;
-
-            if (data && data.length > 0 && data[0].encrypted_data) {
-                const bytes = CryptoJS.AES.decrypt(data[0].encrypted_data, masterKey);
-                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-                if (decryptedString) {
-                    datasets = JSON.parse(decryptedString);
-                } else {
-                    alert('Incorrect master passphrase or unreadable vault data. Default template loaded.');
-                }
-            }
+            await fetchAndDecryptCloudData();
 
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
@@ -488,6 +472,42 @@
             showToast("Vault unlocked & synced");
         } catch (e) {
             alert('Connection or decryption error: ' + e.message);
+        }
+    }
+
+    async function refreshFromCloud() {
+        if (!supabaseClient || !masterKey) {
+            alert('Session expired. Please log in again.');
+            return;
+        }
+        try {
+            await fetchAndDecryptCloudData();
+            syncRolloverBalances();
+            sortTransactions();
+            renderApp();
+            showToast("Refreshed & synced from cloud!");
+        } catch (e) {
+            alert('Refresh failed: ' + e.message);
+        }
+    }
+
+    async function fetchAndDecryptCloudData() {
+        const { data, error } = await supabaseClient
+            .from('user_finances')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0 && data[0].encrypted_data) {
+            const bytes = CryptoJS.AES.decrypt(data[0].encrypted_data, masterKey);
+            const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+            if (decryptedString) {
+                datasets = JSON.parse(decryptedString);
+            } else {
+                throw new Error('Incorrect master passphrase or unreadable vault data.');
+            }
         }
     }
 
