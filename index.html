@@ -64,11 +64,12 @@
         body { 
             background-color: var(--bg-main); 
             color: var(--text-main); 
-            padding: 28px 16px; 
+            padding: 20px 12px; 
             display: flex; 
             justify-content: center; 
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh; 
+            overflow-x: hidden;
             transition: background-color 0.2s, color 0.2s;
         }
         .container { width: 100%; max-width: 1700px; }
@@ -82,6 +83,7 @@
             border-radius: var(--radius);
             padding: 32px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            margin: auto;
         }
         #login-overlay h2 { font-size: 1.5rem; margin-bottom: 20px; color: var(--text-main); }
 
@@ -114,16 +116,16 @@
         header {
             background: var(--header-gradient);
             color: white;
-            padding: 28px 32px;
+            padding: 24px 28px;
             border-radius: var(--radius);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
             box-shadow: 0 20px 40px -15px rgba(30, 58, 138, 0.3);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            gap: 16px;
+            gap: 14px;
             position: relative;
         }
         .header-top-row {
@@ -132,7 +134,7 @@
             align-items: center;
             width: 100%;
         }
-        header h1 { font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .header-actions { 
             display: flex; 
@@ -142,7 +144,7 @@
         }
         .header-controls-row { display: flex; gap: 8px; align-items: center; }
 
-        /* ICON BUTTONS WITH TOOLTIPS (BALLOON) */
+        /* ICON BUTTONS WITH TOOLTIPS */
         .icon-btn-tooltip {
             position: relative;
             background: var(--surface-card);
@@ -162,7 +164,6 @@
             background: var(--border);
             border-color: var(--text-muted);
         }
-        /* Tooltip balloon style */
         .icon-btn-tooltip::after {
             content: attr(aria-label);
             position: absolute;
@@ -188,7 +189,7 @@
             transform: translateX(-50%) translateY(2px);
         }
 
-        /* CLICK-TO-OPEN DROPDOWN MENU FOR UTILITIES */
+        /* DROPDOWN MENU FOR UTILITIES */
         .dropdown {
             position: relative;
             display: inline-block;
@@ -245,26 +246,26 @@
         }
         .month-selector:focus { outline: none; border-color: var(--border-focus); }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 410px; gap: 24px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 410px; gap: 20px; }
         @media (max-width: 1450px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
-        /* SUB-GRID FOR BOTTOM LEFT SECTION */
-        .bottom-left-grid {
+        /* BREAKDOWNS SIDE-BY-SIDE GRID */
+        .breakdowns-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            align-items: start;
+            gap: 20px;
+            margin-bottom: 20px;
         }
-        @media (max-width: 950px) {
-            .bottom-left-grid { grid-template-columns: 1fr; }
+        @media (max-width: 1200px) {
+            .breakdowns-grid { grid-template-columns: 1fr; }
         }
 
-        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 22px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); margin-bottom: 24px; transition: border-color 0.2s, background-color 0.2s; }
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 18px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); margin-bottom: 20px; transition: border-color 0.2s, background-color 0.2s; }
         .card:hover { border-color: var(--text-muted); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-        .card-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .card-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
 
-        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; justify-content: space-between; }
+        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; justify-content: space-between; }
         .search-box { flex: 1; min-width: 200px; position: relative; }
         .search-box input { padding-left: 36px; }
         .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; }
@@ -274,10 +275,10 @@
         .pill:hover { background: var(--pill-hover); color: var(--text-main); }
         .pill.active { background: var(--accent); border-color: var(--accent); color: white; box-shadow: 0 0 12px var(--accent-glow); }
 
-        .table-container { width: 100%; overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+        .table-container { width: 100%; overflow: hidden; border-radius: 10px; border: 1px solid var(--border); }
         .table-container-clean { width: 100%; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
         
-        /* SCROLLABLE CONTAINER FOR MANAGE CATEGORIES */
+        /* SCROLLABLE CONTAINER FOR MANGE CATEGORIES */
         .table-container-scrollable { 
             width: 100%; 
             max-height: 280px; 
@@ -286,23 +287,23 @@
             border: 1px solid var(--border); 
         }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
-        .ledger-table { min-width: 1060px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left; table-layout: fixed; }
+        .ledger-table { width: 100%; min-width: auto; }
 
-        th { background-color: var(--table-th-bg); color: var(--text-muted); font-weight: 600; padding: 12px 10px; border-bottom: 2px solid var(--border); white-space: nowrap; letter-spacing: 0.02em; position: sticky; top: 0; z-index: 5; }
-        td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; background-color: var(--surface); }
+        th { background-color: var(--table-th-bg); color: var(--text-muted); font-weight: 600; padding: 10px 6px; border-bottom: 2px solid var(--border); white-space: nowrap; letter-spacing: 0.02em; overflow: hidden; text-overflow: ellipsis; }
+        td { padding: 7px 6px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; background-color: var(--surface); overflow: hidden; text-overflow: ellipsis; }
         tr:hover td { background-color: var(--table-tr-hover); }
-        tfoot td { background-color: var(--table-tfoot-bg); font-weight: 700; border-top: 2px solid var(--border); border-bottom: none; position: sticky; bottom: 0; }
+        tfoot td { background-color: var(--table-tfoot-bg); font-weight: 700; border-top: 2px solid var(--border); border-bottom: none; }
 
         input[type="text"], input[type="number"], input[type="password"], input[type="date"], select {
             width: 100%;
-            padding: 8px 10px;
+            padding: 6px 8px;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.85rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
             background: var(--input-bg);
             color: var(--text-main);
-            height: 38px;
+            height: 34px;
             transition: all 0.2s ease;
         }
         input[type="number"]::-webkit-inner-spin-button,
@@ -313,43 +314,49 @@
         input:hover, select:hover { border-color: var(--text-muted); }
         input:focus, select:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-glow); background: var(--surface); }
 
-        .col-paid { width: 95px; text-align: center; font-weight: 700; }
+        /* COMPACT PAID BUTTONS */
+        .col-paid { width: 68px; text-align: center; font-weight: 700; height: 30px !important; padding: 2px 4px !important; font-size: 0.75rem !important; }
         .col-paid.status-yes { background-color: rgba(16, 185, 129, 0.15) !important; color: var(--success) !important; border-color: rgba(16, 185, 129, 0.4) !important; }
         .col-paid.status-no { background-color: rgba(239, 68, 68, 0.15) !important; color: var(--danger) !important; border-color: rgba(239, 68, 68, 0.4) !important; }
 
-        .col-date { width: 130px; text-align: center; }
-        .col-desc { width: 170px; }
-        .col-cat { width: 150px; }
-        .col-type { width: 100px; }
-        .col-num { width: 120px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 12px !important; }
-        .col-method { width: 115px; }
-        .col-action { width: 105px; text-align: center; white-space: nowrap; }
+        .col-date { width: 110px; text-align: center; }
+        .col-desc { width: 140px; }
+        .col-cat { width: 120px; }
+        .col-type { width: 85px; }
+        .col-num { width: 95px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 8px !important; }
+        .col-method { width: 95px; }
+        .col-action { width: 100px; text-align: center; white-space: nowrap; }
 
-        .metric-group { display: flex; flex-direction: column; gap: 12px; }
-        .metric-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        .metric-group { display: flex; flex-direction: column; gap: 10px; }
+        .metric-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; }
         .metric-row span:first-child { color: var(--text-muted); font-weight: 500; }
         .metric-row span:last-child { font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums; }
-        .divider { height: 1px; background-color: var(--border); margin: 6px 0; }
+        .divider { height: 1px; background-color: var(--border); margin: 4px 0; }
 
-        .highlight-box { background: var(--highlight-bg); border-radius: 10px; padding: 16px; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+        .highlight-box { background: var(--highlight-bg); border-radius: 10px; padding: 14px; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
         .highlight-box .metric-row span:first-child { color: var(--accent); font-weight: 600; }
-        .highlight-box .metric-row span:last-child { font-size: 1.3rem; color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
+        .highlight-box .metric-row span:last-child { font-size: 1.2rem; color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
 
-        .btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px var(--accent-glow); }
+        .btn { background: var(--accent); color: white; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px var(--accent-glow); }
         .btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px var(--accent-glow); }
-        .btn-secondary { background: var(--surface-card); color: var(--text-main); border: 1px solid var(--border); box-shadow: none; font-size: 0.8rem; padding: 7px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-secondary { background: var(--surface-card); color: var(--text-main); border: 1px solid var(--border); box-shadow: none; font-size: 0.8rem; padding: 6px 10px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
         .btn-secondary:hover { background: var(--border); }
         
-        .btn-action-row { display: inline-flex; gap: 4px; align-items: center; }
-        .btn-transfer { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 6px 8px; font-size: 0.75rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.3); cursor: pointer; transition: all 0.2s; }
+        .btn-action-row { display: inline-flex; gap: 4px; align-items: center; justify-content: center; }
+        .btn-transfer { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 5px 8px; font-size: 0.8rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.3); cursor: pointer; transition: all 0.2s; }
         .btn-transfer:hover { background-color: rgba(59, 130, 246, 0.3); color: #ffffff; }
 
-        .btn-danger { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); padding: 6px 8px; font-size: 0.75rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3); cursor: pointer; transition: all 0.2s; }
+        .btn-copy { background-color: rgba(16, 185, 129, 0.15); color: #34d399; padding: 5px 8px; font-size: 0.8rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3); cursor: pointer; transition: all 0.2s; }
+        .btn-copy:hover { background-color: rgba(16, 185, 129, 0.3); color: #ffffff; }
+
+        .btn-danger { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); padding: 5px 8px; font-size: 0.8rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3); cursor: pointer; transition: all 0.2s; }
         .btn-danger:hover { background-color: rgba(239, 68, 68, 0.3); color: #ffffff; }
 
-        .progress-cell { display: flex; align-items: center; gap: 8px; }
-        .progress-bar-bg { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 50px; }
+        .progress-cell { display: flex; align-items: center; gap: 6px; }
+        .progress-bar-bg { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 40px; }
         .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+        .progress-bar-fill.over-budget { background: var(--danger); }
+        .progress-bar-fill.success-fill { background: var(--success); }
 
         .text-success { color: var(--success) !important; text-shadow: 0 0 8px rgba(16, 185, 129, 0.15); }
         .text-danger { color: var(--danger) !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.15); }
@@ -378,9 +385,9 @@
 <div class="container" id="main-app" style="display: none;">
     <header>
         <div class="header-top-row">
-            <!-- CLICK-TO-OPEN UTILITIES DROPDOWN MENU ON THE LEFT -->
+            <!-- UTILITIES DROPDOWN MENU -->
             <div class="dropdown">
-                <button class="btn btn-secondary" style="padding: 9px 14px;" onclick="toggleDropdown(event)">⚙️ Options ▾</button>
+                <button class="btn btn-secondary" style="padding: 8px 12px;" onclick="toggleDropdown(event)">⚙️ Options ▾</button>
                 <div id="options-dropdown" class="dropdown-content">
                     <button onclick="sortTransactionsByDateManual()">📅 Sort by Date</button>
                     <button onclick="exportJSON()">💾 Backup JSON</button>
@@ -397,13 +404,13 @@
                 <h1>Financial Movement Dashboard</h1>
             </div>
 
-            <!-- SYNC, TEST DB CONNECTION, THEME TOGGLE & LOCK BUTTONS WITH TOOLTIPS -->
+            <!-- CONTROLS ROW -->
             <div class="header-controls-row">
                 <button class="icon-btn-tooltip" onclick="refreshFromCloud()" aria-label="Sync">🔄</button>
                 <button class="icon-btn-tooltip" onclick="testDatabaseConnection()" aria-label="Test DB">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
                 </button>
-                <button class="icon-btn-tooltip" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">☀️</button>
+                <button class="icon-btn-tooltip" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">☀</button>
                 <button class="icon-btn-tooltip" onclick="lockVault()" aria-label="Lock">🔒</button>
             </div>
         </div>
@@ -428,7 +435,7 @@
     </header>
 
     <div class="dashboard-grid">
-        <!-- Main Ledger & Bottom Sub-Grid -->
+        <!-- Main Ledger & Bottom Sections -->
         <div>
             <div class="card">
                 <div class="card-header">
@@ -454,7 +461,8 @@
                             <tr>
                                 <th class="col-date">Date</th>
                                 <th class="col-desc">Description</th>
-                                <th class="col-cat">Category</th>
+                                <th class="col-cat">Expense Cat</th>
+                                <th class="col-cat">Credit Cat</th>
                                 <th class="col-type">Type</th>
                                 <th class="col-num">Credit ($)</th>
                                 <th class="col-num">Debit ($)</th>
@@ -469,8 +477,8 @@
                 </div>
             </div>
 
-            <!-- SIDE-BY-SIDE SUB-GRID CONTAINER -->
-            <div class="bottom-left-grid">
+            <!-- BREAKDOWNS SIDE-BY-SIDE GRID -->
+            <div class="breakdowns-grid">
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
                         <h2>Cost Breakdown</h2>
@@ -480,8 +488,8 @@
                             <thead>
                                 <tr>
                                     <th>Category</th>
-                                    <th>Month ($)</th>
-                                    <th>Share</th>
+                                    <th>Spent ($)</th>
+                                    <th>Budget / Share</th>
                                 </tr>
                             </thead>
                             <tbody id="category-tbody"></tbody>
@@ -492,24 +500,50 @@
 
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
-                        <h2>Manage Categories</h2>
+                        <h2>Credits Breakdown</h2>
                     </div>
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                        <input type="text" id="new-category-input" placeholder="New category name..." onkeydown="if(event.key==='Enter') addNewCategory()">
-                        <button class="btn" style="padding: 8px 12px;" onclick="addNewCategory()">+ Add</button>
-                    </div>
-                    <!-- SCROLLABLE CONTAINER FOR MANAGE CATEGORIES -->
-                    <div class="table-container-scrollable">
+                    <div class="table-container-clean">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Category Name</th>
-                                    <th style="width: 100px; text-align: right; padding-right: 12px;">Actions</th>
+                                    <th>Category</th>
+                                    <th>Received ($)</th>
+                                    <th>Share</th>
                                 </tr>
                             </thead>
-                            <tbody id="manage-categories-tbody"></tbody>
+                            <tbody id="credits-breakdown-tbody"></tbody>
+                            <tfoot id="credits-breakdown-tfoot"></tfoot>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- MANAGE CATEGORIES PLACED UNDER CREDITS BREAKDOWN & MATCHING LEDGER WIDTH -->
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <h2>Manage Categories</h2>
+                </div>
+                <!-- TYPE TOGGLE FOR CREATION -->
+                <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                    <button type="button" class="pill active" id="type-pill-expense" onclick="setCategoryCreationType('expense')" style="flex:1; text-align:center;">Expense</button>
+                    <button type="button" class="pill" id="type-pill-credit" onclick="setCategoryCreationType('credit')" style="flex:1; text-align:center;">Credit</button>
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <input type="text" id="new-category-input" placeholder="New category name..." onkeydown="if(event.key==='Enter') addNewCategory()">
+                    <button class="btn" style="padding: 6px 10px;" onclick="addNewCategory()">+ Add</button>
+                </div>
+                <div class="table-container-scrollable">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th style="width: 70px; text-align: center;">Type</th>
+                                <th style="width: 90px; text-align: right;">Limit ($)</th>
+                                <th style="width: 75px; text-align: right; padding-right: 8px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-categories-tbody"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -589,7 +623,6 @@
     let supabaseClient = null;
     let masterKey = '';
 
-    // Initialize Theme Preference
     const savedTheme = localStorage.getItem('dashboard_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeToggleButton(savedTheme);
@@ -618,8 +651,21 @@
         "Sweets", "Electronics", "Parking", "Fast Food", "Corolla", 
         "Motorcycle", "Lottery Shop", "Electricity", "Gustavo", 
         "Pizzeria", "Health", "Supermarket", "Bank Fee", "Clothing", 
-        "Gift", "Online Shop"
+        "Gift", "Online Shop", "Wages"
     ];
+
+    let creditCategories = [
+        "Wages", "Starting Balance", "Other Credits", "Refund", "Transfer", "Investment Return"
+    ];
+
+    let categoryBudgets = {};
+    let activeCreationType = 'expense';
+
+    function setCategoryCreationType(type) {
+        activeCreationType = type;
+        document.getElementById('type-pill-expense').classList.toggle('active', type === 'expense');
+        document.getElementById('type-pill-credit').className = type === 'credit' ? 'pill active' : 'pill';
+    }
 
     const monthKeysOrder = [
         "january2026", "february2026", "march2026", "april2026", 
@@ -628,30 +674,30 @@
     ];
 
     const defaultDatasets = {
-        january2026: { title: "January 2026 Executive Intelligence & Ledger", data: [{ date: "01/01/2026", desc: "Starting Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        february2026: { title: "February 2026 Executive Intelligence & Ledger", data: [{ date: "01/02/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        march2026: { title: "March 2026 Executive Intelligence & Ledger", data: [{ date: "01/03/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        april2026: { title: "April 2026 Executive Intelligence & Ledger", data: [{ date: "01/04/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        may2026: { title: "May 2026 Executive Intelligence & Ledger", data: [{ date: "01/05/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        june2026: { title: "June 2026 Executive Intelligence & Ledger", data: [{ date: "01/06/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        july2026: { title: "July 2026 Executive Intelligence & Ledger", data: [{ date: "01/07/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        august2026: { title: "August 2026 Executive Intelligence & Ledger", data: [{ date: "01/08/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        january2026: { title: "January 2026", data: [{ date: "01/01/2026", desc: "Starting Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        february2026: { title: "February 2026", data: [{ date: "01/02/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        march2026: { title: "March 2026", data: [{ date: "01/03/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        april2026: { title: "April 2026", data: [{ date: "01/04/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        may2026: { title: "May 2026", data: [{ date: "01/05/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        june2026: { title: "June 2026", data: [{ date: "01/06/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        july2026: { title: "July 2026", data: [{ date: "01/07/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        august2026: { title: "August 2026", data: [{ date: "01/08/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
         september2026: {
-            title: "September 2026 Executive Intelligence & Ledger",
+            title: "September 2026",
             data: [
-                { date: "30/08/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 2113.98, debit: 0, method: "Previous Balance", paid: "YES" },
-                { date: "17/09/2026", desc: "Aldi", cost: "Supermarket", type: "Variable", credit: 0, debit: 39.58, method: "Debit", paid: "Yes" },
-                { date: "17/09/2026", desc: "Tasman", cost: "Butcher Shop", type: "Variable", credit: 0, debit: 5.62, method: "Debit", paid: "Yes" },
-                { date: "18/09/2026", desc: "Vodafone", cost: "Phone Plan", type: "Fixed", credit: 0, debit: 53.00, method: "Debit", paid: "NO" },
-                { date: "20/09/2026", desc: "Pay Will for RWC", cost: "Car", type: "Variable", credit: 0, debit: 450.00, method: "Transfer", paid: "NO" },
-                { date: "20/09/2026", desc: "Fuel - Corolla", cost: "Corolla", type: "Fixed", credit: 0, debit: 50.00, method: "Debit", paid: "Yes" },
-                { date: "20/09/2026", desc: "Oil for Corolla", cost: "Car", type: "Variable", credit: 0, debit: 49.99, method: "Debit", paid: "NO" },
-                { date: "23/09/2026", desc: "Wages", cost: "", type: "", credit: 2247.23, debit: 0, method: "ComBank", paid: "NO" }
+                { date: "30/08/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 2113.98, debit: 0, method: "Previous Balance", paid: "YES" },
+                { date: "17/09/2026", desc: "Aldi", cost: "Supermarket", creditCat: "", type: "Variable", credit: 0, debit: 39.58, method: "Debit", paid: "Yes" },
+                { date: "17/09/2026", desc: "Tasman", cost: "Butcher Shop", creditCat: "", type: "Variable", credit: 0, debit: 5.62, method: "Debit", paid: "Yes" },
+                { date: "18/09/2026", desc: "Vodafone", cost: "Phone Plan", creditCat: "", type: "Fixed", credit: 0, debit: 53.00, method: "Debit", paid: "NO" },
+                { date: "20/09/2026", desc: "Pay Will for RWC", cost: "Car", creditCat: "", type: "Variable", credit: 0, debit: 450.00, method: "Transfer", paid: "NO" },
+                { date: "20/09/2026", desc: "Fuel - Corolla", cost: "Corolla", creditCat: "", type: "Fixed", credit: 0, debit: 50.00, method: "Debit", paid: "Yes" },
+                { date: "20/09/2026", desc: "Oil for Corolla", cost: "Car", creditCat: "", type: "Variable", credit: 0, debit: 49.99, method: "Debit", paid: "NO" },
+                { date: "23/09/2026", desc: "Wages", cost: "", creditCat: "Wages", type: "Fixed", credit: 2247.23, debit: 0, method: "ComBank", paid: "NO" }
             ]
         },
-        october2026: { title: "October 2026 Executive Intelligence & Ledger", data: [{ date: "01/10/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        november2026: { title: "November 2026 Executive Intelligence & Ledger", data: [{ date: "01/11/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        december2026: { title: "December 2026 Executive Intelligence & Ledger", data: [{ date: "01/12/2026", desc: "Previous Period Balance", cost: "", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] }
+        october2026: { title: "October 2026", data: [{ date: "01/10/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        november2026: { title: "November 2026", data: [{ date: "01/11/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
+        december2026: { title: "December 2026", data: [{ date: "01/12/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] }
     };
 
     let datasets = JSON.parse(JSON.stringify(defaultDatasets));
@@ -774,7 +820,9 @@
                 const parsedVault = JSON.parse(decryptedString);
                 if (parsedVault.categories && Array.isArray(parsedVault.categories)) {
                     categories = parsedVault.categories;
+                    creditCategories = parsedVault.creditCategories || ["Wages", "Starting Balance", "Other Credits", "Refund", "Transfer", "Investment Return"];
                     datasets = parsedVault.datasets;
+                    categoryBudgets = parsedVault.categoryBudgets || {};
                 } else {
                     datasets = parsedVault;
                 }
@@ -820,7 +868,9 @@
 
         const vaultPayload = {
             categories: categories,
-            datasets: datasets
+            creditCategories: creditCategories,
+            datasets: datasets,
+            categoryBudgets: categoryBudgets
         };
 
         const encryptedString = CryptoJS.AES.encrypt(JSON.stringify(vaultPayload), masterKey).toString();
@@ -907,6 +957,7 @@
                     date: `01/${String(i + 1).padStart(2, '0')}/2026`,
                     desc: "Previous Period Balance",
                     cost: "",
+                    creditCat: "Starting Balance",
                     type: "",
                     credit: prevProj,
                     debit: 0,
@@ -1004,14 +1055,23 @@
     function renderCategoryManagement() {
         const tbody = document.getElementById('manage-categories-tbody');
         tbody.innerHTML = '';
-        categories.sort().forEach((cat, index) => {
+        
+        let combinedList = [];
+        categories.sort().forEach(c => combinedList.push({ name: c, type: 'Expense' }));
+        creditCategories.sort().forEach(c => combinedList.push({ name: c, type: 'Credit' }));
+
+        combinedList.forEach((item) => {
+            let isExpense = item.type === 'Expense';
+            let limitVal = isExpense && categoryBudgets[item.name] !== undefined ? categoryBudgets[item.name] : '';
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="font-weight: 500;">${cat}</td>
-                <td style="text-align: right; padding-right: 12px;">
+                <td style="font-weight: 500;">${item.name}</td>
+                <td style="text-align: center;"><span class="pill" style="padding: 2px 4px; font-size: 0.6rem; background: ${isExpense ? 'rgba(37,99,235,0.15)' : 'rgba(16,185,129,0.15)'}; color: ${isExpense ? '#60a5fa' : '#34d399'}; border-color: ${isExpense ? 'rgba(37,99,235,0.3)' : 'rgba(16,185,129,0.3)'};">${item.type}</span></td>
+                <td>${isExpense ? `<input type="number" step="10" placeholder="No limit" value="${limitVal !== '' ? Number(limitVal).toFixed(2) : ''}" onchange="updateCategoryBudget('${item.name.replace(/'/g, "\\'")}', parseFloat(this.value)||0)" style="height: 28px; padding: 2px 4px; font-size: 0.75rem;">` : '<span style="color:var(--text-muted); font-size:0.7rem; text-align:right; display:block;">N/A</span>'}</td>
+                <td style="text-align: right; padding-right: 8px;">
                     <div class="btn-action-row" style="justify-content: flex-end;">
-                        <button class="btn-transfer" onclick="renameCategory('${cat.replace(/'/g, "\\'")}')" title="Rename Category">✏️ Edit</button>
-                        <button class="btn-danger" onclick="deleteCategory('${cat.replace(/'/g, "\\'")}')" title="Delete Category">✕</button>
+                        <button class="btn-transfer" onclick="renameCategory('${item.name.replace(/'/g, "\\'")}', '${item.type}')" title="Rename Category">✏️</button>
+                        <button class="btn-danger" onclick="deleteCategory('${item.name.replace(/'/g, "\\'")}', '${item.type}')" title="Delete Category">✕</button>
                     </div>
                 </td>
             `;
@@ -1019,65 +1079,113 @@
         });
     }
 
+    function updateCategoryBudget(catName, limitValue) {
+        if (limitValue <= 0) {
+            delete categoryBudgets[catName];
+        } else {
+            categoryBudgets[catName] = limitValue;
+        }
+        calculateMetrics();
+        saveToSupabase();
+        showToast(`Budget limit updated for ${catName}`);
+    }
+
     function addNewCategory() {
         const inputEl = document.getElementById('new-category-input');
         const val = inputEl.value.trim();
         if (!val) return;
-        if (categories.map(c => c.toLowerCase()).includes(val.toLowerCase())) {
-            alert('This category already exists.');
-            return;
+
+        if (activeCreationType === 'expense') {
+            if (categories.map(c => c.toLowerCase()).includes(val.toLowerCase())) {
+                alert('This expense category already exists.');
+                return;
+            }
+            categories.push(val);
+            showToast(`Expense category "${val}" added!`);
+        } else {
+            if (creditCategories.map(c => c.toLowerCase()).includes(val.toLowerCase())) {
+                alert('This credit category already exists.');
+                return;
+            }
+            creditCategories.push(val);
+            showToast(`Credit category "${val}" added!`);
         }
-        categories.push(val);
+
         inputEl.value = '';
         renderApp();
         saveToSupabase();
-        showToast(`Category "${val}" added!`);
     }
 
-    function renameCategory(oldName) {
-        const newName = prompt(`Enter new name for category "${oldName}":`, oldName);
+    function renameCategory(oldName, type) {
+        const newName = prompt(`Enter new name for ${type.toLowerCase()} category "${oldName}":`, oldName);
         if (!newName || newName.trim() === '' || newName === oldName) return;
         const trimmed = newName.trim();
         
-        if (categories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
-            alert('A category with this name already exists.');
-            return;
-        }
+        if (type === 'Expense') {
+            if (categories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+                alert('An expense category with this name already exists.');
+                return;
+            }
+            const idx = categories.indexOf(oldName);
+            if (idx !== -1) categories[idx] = trimmed;
 
-        const idx = categories.indexOf(oldName);
-        if (idx !== -1) {
-            categories[idx] = trimmed;
-        }
+            if (categoryBudgets[oldName] !== undefined) {
+                categoryBudgets[trimmed] = categoryBudgets[oldName];
+                delete categoryBudgets[oldName];
+            }
 
-        for (let mKey of monthKeysOrder) {
-            if (datasets[mKey] && datasets[mKey].data) {
-                datasets[mKey].data.forEach(tx => {
-                    if (tx.cost === oldName) {
-                        tx.cost = trimmed;
-                    }
-                });
+            for (let mKey of monthKeysOrder) {
+                if (datasets[mKey] && datasets[mKey].data) {
+                    datasets[mKey].data.forEach(tx => {
+                        if (tx.cost === oldName) tx.cost = trimmed;
+                    });
+                }
+            }
+        } else {
+            if (creditCategories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+                alert('A credit category with this name already exists.');
+                return;
+            }
+            const idx = creditCategories.indexOf(oldName);
+            if (idx !== -1) creditCategories[idx] = trimmed;
+
+            for (let mKey of monthKeysOrder) {
+                if (datasets[mKey] && datasets[mKey].data) {
+                    datasets[mKey].data.forEach(tx => {
+                        if (tx.creditCat === oldName) tx.creditCat = trimmed;
+                    });
+                }
             }
         }
 
         renderApp();
         saveToSupabase();
-        showToast(`Renamed to "${trimmed}" across all records!`);
+        showToast(`Renamed to "${trimmed}" successfully!`);
     }
 
-    function deleteCategory(catName) {
-        if (!confirm(`Are you sure you want to delete category "${catName}"? Transactions assigned to this category will have their category cleared.`)) {
+    function deleteCategory(catName, type) {
+        if (!confirm(`Are you sure you want to delete ${type.toLowerCase()} category "${catName}"? Transactions assigned to it will have their category cleared.`)) {
             return;
         }
 
-        categories = categories.filter(c => c !== catName);
-
-        for (let mKey of monthKeysOrder) {
-            if (datasets[mKey] && datasets[mKey].data) {
-                datasets[mKey].data.forEach(tx => {
-                    if (tx.cost === catName) {
-                        tx.cost = "";
-                    }
-                });
+        if (type === 'Expense') {
+            categories = categories.filter(c => c !== catName);
+            delete categoryBudgets[catName];
+            for (let mKey of monthKeysOrder) {
+                if (datasets[mKey] && datasets[mKey].data) {
+                    datasets[mKey].data.forEach(tx => {
+                        if (tx.cost === catName) tx.cost = "";
+                    });
+                }
+            }
+        } else {
+            creditCategories = creditCategories.filter(c => c !== catName);
+            for (let mKey of monthKeysOrder) {
+                if (datasets[mKey] && datasets[mKey].data) {
+                    datasets[mKey].data.forEach(tx => {
+                        if (tx.creditCat === catName) tx.creditCat = "";
+                    });
+                }
             }
         }
 
@@ -1126,6 +1234,12 @@
                     </select>
                 </td>
                 <td>
+                    <select class="col-cat" onchange="updateTx(${index}, 'creditCat', this.value)">
+                        <option value="">-- None --</option>
+                        ${creditCategories.sort().map(c => `<option value="${c}" ${tx.creditCat === c ? 'selected' : ''}>${c}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
                     <select class="col-type" onchange="updateTx(${index}, 'type', this.value)">
                         <option value="">--</option>
                         <option value="Fixed" ${tx.type === 'Fixed' ? 'selected' : ''}>Fixed</option>
@@ -1143,7 +1257,8 @@
                 </td>
                 <td class="col-action">
                     <div class="btn-action-row">
-                        <button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Transfer transaction to next month">➡️ Next</button>
+                        <button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Transfer transaction to next month">➡️</button>
+                        <button class="btn-copy" onclick="duplicateTransaction(${index})" title="Copy line as new entry below">📋</button>
                         <button class="btn-danger" onclick="deleteTx(${index})" title="Delete transaction">✕</button>
                     </div>
                 </td>
@@ -1154,11 +1269,11 @@
         const tfoot = document.getElementById('txn-tfoot');
         tfoot.innerHTML = `
             <tr>
-                <td colspan="4" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
+                <td colspan="5" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
                 <td class="col-num text-success">$${totalCreditSum.toFixed(2)}</td>
                 <td class="col-num text-danger">$${totalDebitSum.toFixed(2)}</td>
-                <td colspan="3" style="text-align: right; padding-right: 12px;">
-                    <button class="btn" style="padding: 5px 12px; font-size: 0.78rem;" onclick="addTransaction()">+ Add Transaction</button>
+                <td colspan="3" style="text-align: right; padding-right: 8px;">
+                    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addTransaction()">+ Add Transaction</button>
                 </td>
             </tr>
         `;
@@ -1197,6 +1312,18 @@
         showToast(`Transferred to ${nextMonthKey.replace('2026', ' 2026')} as Pending!`);
     }
 
+    function duplicateTransaction(index) {
+        let txToCopy = datasets[activeMonthKey].data[index];
+        let newTx = JSON.parse(JSON.stringify(txToCopy));
+        newTx.paid = "NO";
+        
+        datasets[activeMonthKey].data.splice(index + 1, 0, newTx);
+        
+        renderApp();
+        saveToSupabase();
+        showToast("Transaction duplicated!");
+    }
+
     function handlePaidChange(index, value) {
         datasets[activeMonthKey].data[index]['paid'] = value;
         const selectEl = document.getElementById(`paid-select-${index}`);
@@ -1222,11 +1349,11 @@
         let totalDebitSum = transactions.reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
         document.getElementById('txn-tfoot').innerHTML = `
             <tr>
-                <td colspan="4" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
+                <td colspan="5" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
                 <td class="col-num text-success">$${totalCreditSum.toFixed(2)}</td>
                 <td class="col-num text-danger">$${totalDebitSum.toFixed(2)}</td>
-                <td colspan="3" style="text-align: right; padding-right: 12px;">
-                    <button class="btn" style="padding: 5px 12px; font-size: 0.78rem;" onclick="addTransaction()">+ Add Transaction</button>
+                <td colspan="3" style="text-align: right; padding-right: 8px;">
+                    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addTransaction()">+ Add Transaction</button>
                 </td>
             </tr>
         `;
@@ -1234,7 +1361,7 @@
 
     function addTransaction() {
         const defaultDate = getDefaultDateString(activeMonthKey);
-        datasets[activeMonthKey].data.push({ date: defaultDate, desc: "", cost: "", type: "Variable", credit: 0, debit: 0, method: "Debit", paid: "NO" });
+        datasets[activeMonthKey].data.push({ date: defaultDate, desc: "", cost: "", creditCat: "", type: "Variable", credit: 0, debit: 0, method: "Debit", paid: "NO" });
         sortTransactions();
         renderApp();
         saveToSupabase();
@@ -1257,7 +1384,7 @@
     }
 
     function exportJSON() {
-        const vaultPayload = { categories, datasets };
+        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vaultPayload, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
@@ -1278,7 +1405,9 @@
                 if (imported && typeof imported === 'object') {
                     if (imported.categories && imported.datasets) {
                         categories = imported.categories;
+                        creditCategories = imported.creditCategories || creditCategories;
                         datasets = imported.datasets;
+                        categoryBudgets = imported.categoryBudgets || {};
                     } else {
                         datasets = imported;
                     }
@@ -1323,6 +1452,10 @@
 
         let projBal = currBal + creditsRecv - debitsPay;
 
+        let totalCreditsAll = transactions
+            .filter(t => (parseFloat(t.credit) || 0) > 0)
+            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
         document.getElementById('lbl-credits-rcvd').innerText = `$${creditsRcvdTotal.toFixed(2)}`;
         document.getElementById('lbl-debits-paid').innerText = `$${debitsPaid.toFixed(2)}`;
         document.getElementById('lbl-curr-bal').innerText = `$${currBal.toFixed(2)}`;
@@ -1347,6 +1480,7 @@
         document.getElementById('lbl-variable-pct').innerText = `(${totalDebits > 0 ? ((varTotal/totalDebits)*100).toFixed(1) : 0}%)`;
         document.getElementById('lbl-total-debits').innerText = `$${totalDebits.toFixed(2)}`;
 
+        // EXPENSE CATEGORIES BREAKDOWN
         let catMap = {};
         transactions.forEach(t => {
             if (t.cost && (parseFloat(t.debit) || 0) > 0) {
@@ -1359,17 +1493,34 @@
         let sortedCats = Object.keys(catMap).sort((a,b) => catMap[b] - catMap[a]);
         sortedCats.forEach(cat => {
             let amt = catMap[cat];
-            let share = totalDebits > 0 ? (amt / totalDebits) * 100 : 0;
+            let limit = categoryBudgets[cat] || 0;
+            let displayInfo = '';
+            
+            if (limit > 0) {
+                let pctUsed = Math.min((amt / limit) * 100, 100);
+                let isOver = amt > limit;
+                let barClass = isOver ? 'progress-bar-fill over-budget' : 'progress-bar-fill';
+                displayInfo = `
+                    <div class="progress-cell" title="Budget: $${limit.toFixed(2)} (${pctUsed.toFixed(1)}%)">
+                        <span style="font-size:0.7rem; color:${isOver ? 'var(--danger)' : 'var(--text-muted)'}">$${limit.toFixed(0)} (${pctUsed.toFixed(0)}%)</span>
+                        <div class="progress-bar-bg"><div class="${barClass}" style="width: ${pctUsed}%"></div></div>
+                    </div>
+                `;
+            } else {
+                let share = totalDebits > 0 ? (amt / totalDebits) * 100 : 0;
+                displayInfo = `
+                    <div class="progress-cell">
+                        <span style="font-size:0.7rem;">${share.toFixed(1)}%</span>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${share}%"></div></div>
+                    </div>
+                `;
+            }
+
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${cat}</td>
                 <td class="col-num">$${amt.toFixed(2)}</td>
-                <td>
-                    <div class="progress-cell">
-                        <span>${share.toFixed(1)}%</span>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${share}%"></div></div>
-                    </div>
-                </td>
+                <td>${displayInfo}</td>
             `;
             catTbody.appendChild(tr);
         });
@@ -1383,6 +1534,46 @@
             </tr>
         `;
 
+        // CREDITS BREAKDOWN TABLE
+        let creditMap = {};
+        transactions.forEach(t => {
+            let cVal = parseFloat(t.credit) || 0;
+            if (cVal > 0) {
+                let cKey = t.creditCat ? t.creditCat : (t.method === 'Previous Balance' ? 'Starting Balance' : 'Other Credits');
+                creditMap[cKey] = (creditMap[cKey] || 0) + cVal;
+            }
+        });
+
+        let creditsTbody = document.getElementById('credits-breakdown-tbody');
+        creditsTbody.innerHTML = '';
+        let sortedCredits = Object.keys(creditMap).sort((a,b) => creditMap[b] - creditMap[a]);
+        sortedCredits.forEach(cCat => {
+            let amt = creditMap[cCat];
+            let share = totalCreditsAll > 0 ? (amt / totalCreditsAll) * 100 : 0;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${cCat}</td>
+                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td>
+                    <div class="progress-cell">
+                        <span style="font-size:0.7rem;">${share.toFixed(1)}%</span>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill success-fill" style="width: ${share}%"></div></div>
+                    </div>
+                </td>
+            `;
+            creditsTbody.appendChild(tr);
+        });
+
+        let creditsTfoot = document.getElementById('credits-breakdown-tfoot');
+        creditsTfoot.innerHTML = `
+            <tr>
+                <td style="font-weight: 700; color: var(--text-muted);">Total</td>
+                <td class="col-num text-success" style="font-weight: 700;">$${totalCreditsAll.toFixed(2)}</td>
+                <td>100.0%</td>
+            </tr>
+        `;
+
+        // PAYMENT METHODS
         let methodMap = {};
         transactions.forEach(t => {
             if (t.method && t.method !== 'Previous Balance' && (parseFloat(t.debit) || 0) > 0) {
