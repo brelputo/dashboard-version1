@@ -278,7 +278,7 @@
         .table-container { width: 100%; overflow: hidden; border-radius: 10px; border: 1px solid var(--border); }
         .table-container-clean { width: 100%; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
         
-        /* SCROLLABLE CONTAINER FOR MANGE CATEGORIES */
+        /* SCROLLABLE CONTAINER FOR MANAGE CATEGORIES */
         .table-container-scrollable { 
             width: 100%; 
             max-height: 280px; 
@@ -323,7 +323,7 @@
         .col-desc { width: 140px; }
         .col-cat { width: 120px; }
         .col-type { width: 85px; }
-        .col-num { width: 95px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 8px !important; }
+        .col-num { width: 115px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 12px !important; }
         .col-method { width: 95px; }
         .col-action { width: 100px; text-align: center; white-space: nowrap; }
 
@@ -488,8 +488,8 @@
                             <thead>
                                 <tr>
                                     <th>Category</th>
-                                    <th>Spent ($)</th>
-                                    <th>Budget / Share</th>
+                                    <th class="col-num">Spent ($)</th>
+                                    <th style="padding-left: 12px;">Budget / Share</th>
                                 </tr>
                             </thead>
                             <tbody id="category-tbody"></tbody>
@@ -507,8 +507,8 @@
                             <thead>
                                 <tr>
                                     <th>Category</th>
-                                    <th>Received ($)</th>
-                                    <th>Share</th>
+                                    <th class="col-num">Received ($)</th>
+                                    <th style="padding-left: 12px;">Share</th>
                                 </tr>
                             </thead>
                             <tbody id="credits-breakdown-tbody"></tbody>
@@ -538,7 +538,7 @@
                             <tr>
                                 <th>Category Name</th>
                                 <th style="width: 70px; text-align: center;">Type</th>
-                                <th style="width: 90px; text-align: right;">Limit ($)</th>
+                                <th class="col-num">Limit ($)</th>
                                 <th style="width: 75px; text-align: right; padding-right: 8px;">Actions</th>
                             </tr>
                         </thead>
@@ -603,8 +603,8 @@
                         <thead>
                             <tr>
                                 <th>Method</th>
-                                <th>Total ($)</th>
-                                <th>Share</th>
+                                <th class="col-num">Total ($)</th>
+                                <th style="padding-left: 12px;">Share</th>
                             </tr>
                         </thead>
                         <tbody id="methods-tbody"></tbody>
@@ -1520,7 +1520,7 @@
             tr.innerHTML = `
                 <td>${cat}</td>
                 <td class="col-num">$${amt.toFixed(2)}</td>
-                <td>${displayInfo}</td>
+                <td style="padding-left: 12px;">${displayInfo}</td>
             `;
             catTbody.appendChild(tr);
         });
@@ -1530,7 +1530,7 @@
             <tr>
                 <td style="font-weight: 700; color: var(--text-muted);">Total</td>
                 <td class="col-num text-danger" style="font-weight: 700;">$${totalDebits.toFixed(2)}</td>
-                <td>100.0%</td>
+                <td style="padding-left: 12px; font-weight: 700;">100.0%</td>
             </tr>
         `;
 
@@ -1554,7 +1554,7 @@
             tr.innerHTML = `
                 <td>${cCat}</td>
                 <td class="col-num">$${amt.toFixed(2)}</td>
-                <td>
+                <td style="padding-left: 12px;">
                     <div class="progress-cell">
                         <span style="font-size:0.7rem;">${share.toFixed(1)}%</span>
                         <div class="progress-bar-bg"><div class="progress-bar-fill success-fill" style="width: ${share}%"></div></div>
@@ -1569,7 +1569,7 @@
             <tr>
                 <td style="font-weight: 700; color: var(--text-muted);">Total</td>
                 <td class="col-num text-success" style="font-weight: 700;">$${totalCreditsAll.toFixed(2)}</td>
-                <td>100.0%</td>
+                <td style="padding-left: 12px; font-weight: 700;">100.0%</td>
             </tr>
         `;
 
@@ -1591,7 +1591,7 @@
             tr.innerHTML = `
                 <td>${m}</td>
                 <td class="col-num">$${amt.toFixed(2)}</td>
-                <td>${share.toFixed(1)}%</td>
+                <td style="padding-left: 12px;">${share.toFixed(1)}%</td>
             `;
             methodsTbody.appendChild(tr);
         });
