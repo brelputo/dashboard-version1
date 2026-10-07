@@ -6,10 +6,15 @@
     <title>Financial Movement Dashboard — 2026</title>
     <!-- FAVICON WITH $ SIGN -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💲</text></svg>">
+    <!-- EXTERNAL DEPENDENCIES: Supabase client & Crypto-JS for secure client-side encryption -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* ==========================================
+           1. CSS THEME VARIABLES (Dark & Light Modes)
+           ========================================== */
         :root {
             --bg-main: #070a12;
             --surface: #0f172a;
@@ -60,6 +65,9 @@
             --pill-hover: #cbd5e1;
         }
 
+        /* ==========================================
+           2. GLOBAL STYLES & LAYOUT COMPONENTS
+           ========================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { 
             background-color: var(--bg-main); 
@@ -74,7 +82,9 @@
         }
         .container { width: 100%; max-width: 1700px; }
 
-        /* LOGIN OVERLAY CARD */
+        /* ==========================================
+           3. AUTHENTICATION & LOGIN OVERLAY STYLES
+           ========================================== */
         #login-overlay {
             width: 100%;
             max-width: 440px;
@@ -113,6 +123,9 @@
         }
         .toggle-password-btn:hover { color: var(--text-main); }
 
+        /* ==========================================
+           4. HEADER & NAVIGATION CONTROLS STYLES
+           ========================================== */
         header {
             background: var(--header-gradient);
             color: white;
@@ -144,7 +157,7 @@
         }
         .header-controls-row { display: flex; gap: 8px; align-items: center; }
 
-        /* ICON BUTTONS WITH TOOLTIPS */
+        /* ICON BUTTONS WITH CUSTOM TOOLTIPS */
         .icon-btn-tooltip {
             position: relative;
             background: var(--surface-card);
@@ -189,7 +202,7 @@
             transform: translateX(-50%) translateY(2px);
         }
 
-        /* DROPDOWN MENU FOR UTILITIES */
+        /* DROPDOWN MENU FOR APP UTILITIES */
         .dropdown {
             position: relative;
             display: inline-block;
@@ -246,10 +259,13 @@
         }
         .month-selector:focus { outline: none; border-color: var(--border-focus); }
 
+        /* ==========================================
+           5. DASHBOARD GRID & CARDS LAYOUT
+           ========================================== */
         .dashboard-grid { display: grid; grid-template-columns: 1fr 410px; gap: 20px; }
         @media (max-width: 1450px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
-        /* BREAKDOWNS SIDE-BY-SIDE GRID */
+        /* SIDE-BY-SIDE BREAKDOWNS GRID */
         .breakdowns-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -265,6 +281,9 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .card-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
 
+        /* ==========================================
+           6. SEARCH, FILTERS & TABLE STYLES
+           ========================================== */
         .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; justify-content: space-between; }
         .search-box { flex: 1; min-width: 200px; position: relative; }
         .search-box input { padding-left: 36px; }
@@ -278,7 +297,7 @@
         .table-container { width: 100%; overflow: hidden; border-radius: 10px; border: 1px solid var(--border); }
         .table-container-clean { width: 100%; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
         
-        /* SCROLLABLE CONTAINER FOR MANAGE CATEGORIES */
+        /* SCROLLABLE CONTAINER FOR CATEGORY MANAGEMENT */
         .table-container-scrollable { 
             width: 100%; 
             max-height: 280px; 
@@ -295,6 +314,7 @@
         tr:hover td { background-color: var(--table-tr-hover); }
         tfoot td { background-color: var(--table-tfoot-bg); font-weight: 700; border-top: 2px solid var(--border); border-bottom: none; }
 
+        /* FORM INPUT FIELDS STYLING */
         input[type="text"], input[type="number"], input[type="password"], input[type="date"], select {
             width: 100%;
             padding: 6px 8px;
@@ -314,7 +334,9 @@
         input:hover, select:hover { border-color: var(--text-muted); }
         input:focus, select:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-glow); background: var(--surface); }
 
-        /* COMPACT PAID BUTTONS */
+        /* ==========================================
+           7. TRANSACTION ROW & STATUS COLUMN STYLES
+           ========================================== */
         .col-paid { width: 68px; text-align: center; font-weight: 700; height: 30px !important; padding: 2px 4px !important; font-size: 0.75rem !important; }
         .col-paid.status-yes { background-color: rgba(16, 185, 129, 0.15) !important; color: var(--success) !important; border-color: rgba(16, 185, 129, 0.4) !important; }
         .col-paid.status-no { background-color: rgba(239, 68, 68, 0.15) !important; color: var(--danger) !important; border-color: rgba(239, 68, 68, 0.4) !important; }
@@ -327,6 +349,9 @@
         .col-method { width: 95px; }
         .col-action { width: 100px; text-align: center; white-space: nowrap; }
 
+        /* ==========================================
+           8. METRICS, SUMMARY & BUTTON STYLES
+           ========================================== */
         .metric-group { display: flex; flex-direction: column; gap: 10px; }
         .metric-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; }
         .metric-row span:first-child { color: var(--text-muted); font-weight: 500; }
@@ -367,11 +392,14 @@
 </head>
 <body>
 
-<!-- SECURE LOGIN OVERLAY -->
+<!-- ==========================================
+   9. SECURE LOGIN SCREEN OVERLAY
+   ========================================== -->
 <div id="login-overlay">
     <h2>Secure Vault Login</h2>
     
     <div class="password-wrapper">
+        <!-- Master password input with visibility toggle -->
         <input type="password" id="master-pwd" placeholder="Enter secret password..." onkeydown="if(event.key==='Enter') initSession()">
         <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
             <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -381,11 +409,15 @@
     <button class="btn" style="width: 100%; justify-content: center;" onclick="initSession()">Unlock Dashboard</button>
 </div>
 
-<!-- MAIN DASHBOARD CONTAINER -->
+<!-- ==========================================
+   10. MAIN DASHBOARD CONTENT (Hidden until login)
+   ========================================== -->
 <div class="container" id="main-app" style="display: none;">
+    
+    <!-- DASHBOARD HEADER & CONTROLS -->
     <header>
         <div class="header-top-row">
-            <!-- UTILITIES DROPDOWN MENU -->
+            <!-- UTILITIES DROPDOWN MENU (Backup, Import, Reset, Sort) -->
             <div class="dropdown">
                 <button class="btn btn-secondary" style="padding: 8px 12px;" onclick="toggleDropdown(event)">⚙️ Options ▾</button>
                 <div id="options-dropdown" class="dropdown-content">
@@ -399,12 +431,12 @@
                 </div>
             </div>
             
-            <!-- CENTERED TITLE -->
+            <!-- DASHBOARD TITLE -->
             <div style="flex: 1; text-align: center;">
                 <h1>Financial Movement Dashboard</h1>
             </div>
 
-            <!-- CONTROLS ROW -->
+            <!-- QUICK UTILITY BUTTONS (Sync, DB Test, Theme Toggle, Lock Vault) -->
             <div class="header-controls-row">
                 <button class="icon-btn-tooltip" onclick="refreshFromCloud()" aria-label="Sync">🔄</button>
                 <button class="icon-btn-tooltip" onclick="testDatabaseConnection()" aria-label="Test DB">
@@ -415,6 +447,7 @@
             </div>
         </div>
 
+        <!-- MONTH SELECTOR DROPDOWN -->
         <div class="header-actions">
             <div></div>
             <select id="month-dropdown" class="month-selector" onchange="switchMonth(this.value)">
@@ -435,13 +468,16 @@
     </header>
 
     <div class="dashboard-grid">
-        <!-- Main Ledger & Bottom Sections -->
+        
+        <!-- LEFT COLUMN: Transactions Ledger, Breakdowns, and Category Management -->
         <div>
+            <!-- TRANSACTIONS LEDGER CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Transactions Ledger</h2>
                     <button class="btn" onclick="addTransaction()">+ Add Transaction</button>
                 </div>
+                <!-- SEARCH BAR AND FILTER PILLS -->
                 <div class="toolbar">
                     <div class="search-box">
                         <span class="search-icon">🔍</span>
@@ -455,6 +491,7 @@
                         <div class="pill" onclick="setFilter('debits', this)">Debits</div>
                     </div>
                 </div>
+                <!-- LEDGER TABLE -->
                 <div class="table-container">
                     <table class="ledger-table">
                         <thead>
@@ -477,8 +514,9 @@
                 </div>
             </div>
 
-            <!-- BREAKDOWNS SIDE-BY-SIDE GRID -->
+            <!-- BREAKDOWNS SIDE-BY-SIDE GRID (Cost Breakdown & Credits Breakdown) -->
             <div class="breakdowns-grid">
+                <!-- COST BREAKDOWN CARD -->
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
                         <h2>Cost Breakdown</h2>
@@ -498,6 +536,7 @@
                     </div>
                 </div>
 
+                <!-- CREDITS BREAKDOWN CARD -->
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
                         <h2>Credits Breakdown</h2>
@@ -518,12 +557,12 @@
                 </div>
             </div>
 
-            <!-- MANAGE CATEGORIES PLACED UNDER CREDITS BREAKDOWN & MATCHING LEDGER WIDTH -->
+            <!-- MANAGE CATEGORIES CARD -->
             <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
                     <h2>Manage Categories</h2>
                 </div>
-                <!-- TYPE TOGGLE FOR CREATION -->
+                <!-- TYPE TOGGLE FOR NEW CATEGORY CREATION -->
                 <div style="display: flex; gap: 6px; margin-bottom: 8px;">
                     <button type="button" class="pill active" id="type-pill-expense" onclick="setCategoryCreationType('expense')" style="flex:1; text-align:center;">Expense</button>
                     <button type="button" class="pill" id="type-pill-credit" onclick="setCategoryCreationType('credit')" style="flex:1; text-align:center;">Credit</button>
@@ -532,6 +571,7 @@
                     <input type="text" id="new-category-input" placeholder="New category name..." onkeydown="if(event.key==='Enter') addNewCategory()">
                     <button class="btn" style="padding: 6px 10px;" onclick="addNewCategory()">+ Add</button>
                 </div>
+                <!-- SCROLLABLE CATEGORY LIST TABLE -->
                 <div class="table-container-scrollable">
                     <table>
                         <thead>
@@ -548,8 +588,9 @@
             </div>
         </div>
 
-        <!-- Sidebar Metrics -->
+        <!-- RIGHT COLUMN: Sidebar Metrics & Summaries -->
         <div>
+            <!-- PERIOD SUMMARY (CLEARED) CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Period Summary (Cleared)</h2>
@@ -566,6 +607,7 @@
                 </div>
             </div>
 
+            <!-- PENDING & PROJECTED CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Pending & Projected</h2>
@@ -582,6 +624,7 @@
                 </div>
             </div>
 
+            <!-- FIXED VS VARIABLE EXPENSES CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Fixed vs Variable Expenses</h2>
@@ -594,6 +637,7 @@
                 </div>
             </div>
 
+            <!-- PAYMENT METHODS CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Payment Methods</h2>
@@ -615,18 +659,25 @@
     </div>
 </div>
 
+<!-- NOTIFICATION TOAST POPUP -->
 <div id="toast">Synced with Supabase securely</div>
 
+<!-- ==========================================
+   11. JAVASCRIPT APP LOGIC & SUPABASE SYNC
+   ========================================== -->
 <script>
+    // Database credentials configuration
     const SUPABASE_URL = "https://utozececqvxippnerfrl.supabase.co";
     const SUPABASE_KEY = "sb_publishable_fAgjUuJkZ4LPA7LLucfe3g_UAfpW88K";
     let supabaseClient = null;
     let masterKey = '';
 
+    // Initialize UI theme based on user preference or default to dark
     const savedTheme = localStorage.getItem('dashboard_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeToggleButton(savedTheme);
 
+    // Toggle between light and dark themes
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -636,6 +687,7 @@
         showToast(`Switched to ${newTheme} mode`);
     }
 
+    // Update theme toggle icon appearance
     function updateThemeToggleButton(theme) {
         const btn = document.getElementById('theme-toggle-btn');
         if (btn) {
@@ -644,6 +696,7 @@
         }
     }
 
+    // Predefined default categories and credit groups
     let categories = [
         "Lunch", "Subaru", "Toll", "Internet", "Coffee", "Butcher Shop", "Car", 
         "Credit Card", "Barber Shop", "Investment", "Spotify", "Rent", 
@@ -661,18 +714,21 @@
     let categoryBudgets = {};
     let activeCreationType = 'expense';
 
+    // Set category creation type (Expense vs Credit)
     function setCategoryCreationType(type) {
         activeCreationType = type;
         document.getElementById('type-pill-expense').classList.toggle('active', type === 'expense');
         document.getElementById('type-pill-credit').className = type === 'credit' ? 'pill active' : 'pill';
     }
 
+    // Month sequence configuration
     const monthKeysOrder = [
         "january2026", "february2026", "march2026", "april2026", 
         "may2026", "june2026", "july2026", "august2026", 
         "september2026", "october2026", "november2026", "december2026"
     ];
 
+    // Default placeholder data set for all months
     const defaultDatasets = {
         january2026: { title: "January 2026", data: [{ date: "01/01/2026", desc: "Starting Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
         february2026: { title: "February 2026", data: [{ date: "01/02/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
@@ -704,6 +760,7 @@
     let activeMonthKey = "september2026";
     let currentFilter = 'all';
 
+    // Toggle options dropdown menu
     function toggleDropdown(event) {
         event.stopPropagation();
         document.getElementById('options-dropdown').classList.toggle('show');
@@ -720,6 +777,7 @@
         }
     }
 
+    // Display temporary notification toast
     function showToast(message) {
         const toast = document.getElementById('toast');
         toast.innerText = message;
@@ -727,6 +785,7 @@
         setTimeout(() => { toast.className = ''; }, 2000);
     }
 
+    // Toggle password mask on login screen
     function togglePasswordVisibility() {
         const pwdInput = document.getElementById('master-pwd');
         const eyeIcon = document.getElementById('eye-icon');
@@ -740,6 +799,7 @@
         }
     }
 
+    // Authenticate and initialize vault session from Supabase
     async function initSession() {
         masterKey = document.getElementById('master-pwd').value.trim();
         if (!masterKey) {
@@ -765,6 +825,7 @@
         }
     }
 
+    // Refresh and fetch data from cloud storage
     async function refreshFromCloud() {
         if (!supabaseClient || !masterKey) {
             alert('Session expired. Please log in again.');
@@ -781,6 +842,7 @@
         }
     }
 
+    // Test connection latency to Supabase
     async function testDatabaseConnection() {
         if (!supabaseClient) {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -804,6 +866,7 @@
         }
     }
 
+    // Fetch encrypted payload from Supabase and decrypt with AES master key
     async function fetchAndDecryptCloudData() {
         const { data, error } = await supabaseClient
             .from('user_finances')
@@ -834,6 +897,7 @@
         }
     }
 
+    // Lock vault and return to login screen
     function lockVault() {
         supabaseClient = null;
         masterKey = '';
@@ -844,6 +908,7 @@
         document.getElementById('eye-icon').innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
     }
 
+    // Request Supabase password reset email
     async function requestPasswordReset() {
         const email = prompt("Enter your account email to receive a password reset link:");
         if (!email) return;
@@ -863,6 +928,7 @@
         }
     }
 
+    // Encrypt vault data and save to Supabase
     async function saveToSupabase() {
         if (!supabaseClient || !masterKey) return;
 
@@ -898,6 +964,7 @@
         showToast("Encrypted & saved to cloud");
     }
 
+    // Determine current month key based on live date
     function getCurrentMonthKey() {
         const now = new Date();
         const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
@@ -906,6 +973,7 @@
         return monthKeysOrder.includes(key) ? key : "september2026";
     }
 
+    // Format date string from AU (DD/MM/YYYY) to ISO (YYYY-MM-DD)
     function toISOFormat(dateStr) {
         if (!dateStr) return '';
         const parts = dateStr.split('/');
@@ -915,6 +983,7 @@
         return dateStr;
     }
 
+    // Format date string from ISO (YYYY-MM-DD) to AU (DD/MM/YYYY)
     function toAUFormat(isoDateStr) {
         if (!isoDateStr) return '';
         const parts = isoDateStr.split('-');
@@ -924,6 +993,7 @@
         return isoDateStr;
     }
 
+    // Get default date string for new transactions
     function getDefaultDateString(monthKey) {
         const now = new Date();
         const todayDay = String(now.getDate()).padStart(2, '0');
@@ -937,6 +1007,7 @@
         return `01/${currentActiveMonthNum}/${todayYear}`;
     }
 
+    // Automatically roll over projected balances into the next month's starting balance
     function syncRolloverBalances() {
         let changed = false;
         for (let i = 1; i < monthKeysOrder.length; i++) {
@@ -972,6 +1043,7 @@
         }
     }
 
+    // Calculate projected account balance for a specific month
     function calculateProjectedBalanceForMonth(monthKey) {
         let transactions = datasets[monthKey].data;
         let prevBal = transactions
@@ -1001,6 +1073,7 @@
         return currBal + creditsRecv - debitsPay;
     }
 
+    // Parse date strings for sorting
     function parseDateString(dateStr) {
         if (!dateStr) return new Date(0);
         const parts = dateStr.split('/');
@@ -1014,6 +1087,7 @@
         return isNaN(parsed) ? new Date(0) : new Date(parsed);
     }
 
+    // Sort transactions chronologically by date
     function sortTransactions() {
         if (datasets[activeMonthKey] && datasets[activeMonthKey].data) {
             datasets[activeMonthKey].data.sort((a, b) => {
@@ -1024,6 +1098,7 @@
         }
     }
 
+    // Manual sort trigger from options menu
     function sortTransactionsByDateManual() {
         sortTransactions();
         renderApp();
@@ -1031,6 +1106,7 @@
         showToast("Transactions sorted by date!");
     }
 
+    // Switch active month dataset
     function switchMonth(monthKey) {
         syncRolloverBalances();
         activeMonthKey = monthKey;
@@ -1038,6 +1114,7 @@
         renderApp();
     }
 
+    // Set filter pill state
     function setFilter(filterType, element) {
         currentFilter = filterType;
         document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
@@ -1045,6 +1122,7 @@
         renderApp();
     }
 
+    // Main render controller
     function renderApp() {
         syncRolloverBalances();
         renderTransactions();
@@ -1052,6 +1130,7 @@
         calculateMetrics();
     }
 
+    // Render category management table list
     function renderCategoryManagement() {
         const tbody = document.getElementById('manage-categories-tbody');
         tbody.innerHTML = '';
@@ -1079,6 +1158,7 @@
         });
     }
 
+    // Update expense category spending limit budget
     function updateCategoryBudget(catName, limitValue) {
         if (limitValue <= 0) {
             delete categoryBudgets[catName];
@@ -1090,6 +1170,7 @@
         showToast(`Budget limit updated for ${catName}`);
     }
 
+    // Add a new category (Expense or Credit)
     function addNewCategory() {
         const inputEl = document.getElementById('new-category-input');
         const val = inputEl.value.trim();
@@ -1116,6 +1197,7 @@
         saveToSupabase();
     }
 
+    // Rename an existing category across all datasets
     function renameCategory(oldName, type) {
         const newName = prompt(`Enter new name for ${type.toLowerCase()} category "${oldName}":`, oldName);
         if (!newName || newName.trim() === '' || newName === oldName) return;
@@ -1163,6 +1245,7 @@
         showToast(`Renamed to "${trimmed}" successfully!`);
     }
 
+    // Delete a category from records
     function deleteCategory(catName, type) {
         if (!confirm(`Are you sure you want to delete ${type.toLowerCase()} category "${catName}"? Transactions assigned to it will have their category cleared.`)) {
             return;
@@ -1194,6 +1277,7 @@
         showToast(`Category "${catName}" deleted`);
     }
 
+    // Render transaction table rows
     function renderTransactions() {
         const tbody = document.getElementById('txn-tbody');
         tbody.innerHTML = '';
@@ -1279,6 +1363,7 @@
         `;
     }
 
+    // Transfer transaction entry to the following month
     function transferToNextMonth(index) {
         let currentMonthIndex = monthKeysOrder.indexOf(activeMonthKey);
         if (currentMonthIndex === -1 || currentMonthIndex >= monthKeysOrder.length - 1) {
@@ -1312,6 +1397,7 @@
         showToast(`Transferred to ${nextMonthKey.replace('2026', ' 2026')} as Pending!`);
     }
 
+    // Duplicate transaction row
     function duplicateTransaction(index) {
         let txToCopy = datasets[activeMonthKey].data[index];
         let newTx = JSON.parse(JSON.stringify(txToCopy));
@@ -1324,6 +1410,7 @@
         showToast("Transaction duplicated!");
     }
 
+    // Handle change of paid status dropdown
     function handlePaidChange(index, value) {
         datasets[activeMonthKey].data[index]['paid'] = value;
         const selectEl = document.getElementById(`paid-select-${index}`);
@@ -1332,6 +1419,7 @@
         saveToSupabase();
     }
 
+    // Update transaction date value
     function updateTxDate(index, isoDateVal) {
         const auDate = toAUFormat(isoDateVal);
         datasets[activeMonthKey].data[index]['date'] = auDate;
@@ -1340,6 +1428,7 @@
         saveToSupabase();
     }
 
+    // Update individual transaction property fields
     function updateTx(index, field, value) {
         datasets[activeMonthKey].data[index][field] = value;
         calculateMetrics();
@@ -1359,6 +1448,7 @@
         `;
     }
 
+    // Add a new empty transaction row
     function addTransaction() {
         const defaultDate = getDefaultDateString(activeMonthKey);
         datasets[activeMonthKey].data.push({ date: defaultDate, desc: "", cost: "", creditCat: "", type: "Variable", credit: 0, debit: 0, method: "Debit", paid: "NO" });
@@ -1367,12 +1457,14 @@
         saveToSupabase();
     }
 
+    // Delete transaction entry
     function deleteTx(index) {
         datasets[activeMonthKey].data.splice(index, 1);
         renderApp();
         saveToSupabase();
     }
 
+    // Reset current month data back to defaults
     function resetMonthData() {
         if (confirm(`Reset all changes for ${document.getElementById('month-dropdown').selectedOptions[0].text}?`)) {
             datasets[activeMonthKey] = JSON.parse(JSON.stringify(defaultDatasets[activeMonthKey]));
@@ -1383,6 +1475,7 @@
         }
     }
 
+    // Export entire encrypted vault database as JSON file backup
     function exportJSON() {
         const vaultPayload = { categories, creditCategories, datasets, categoryBudgets };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vaultPayload, null, 2));
@@ -1395,6 +1488,7 @@
         showToast("Backup downloaded successfully");
     }
 
+    // Import vault database from JSON backup file
     function importJSON(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -1423,6 +1517,7 @@
         reader.readAsText(file);
     }
 
+    // Calculate all financial metrics, category breakdowns, and summaries
     function calculateMetrics() {
         let transactions = datasets[activeMonthKey].data;
 
@@ -1480,7 +1575,7 @@
         document.getElementById('lbl-variable-pct').innerText = `(${totalDebits > 0 ? ((varTotal/totalDebits)*100).toFixed(1) : 0}%)`;
         document.getElementById('lbl-total-debits').innerText = `$${totalDebits.toFixed(2)}`;
 
-        // EXPENSE CATEGORIES BREAKDOWN
+        // RENDER EXPENSE CATEGORIES BREAKDOWN TABLE
         let catMap = {};
         transactions.forEach(t => {
             if (t.cost && (parseFloat(t.debit) || 0) > 0) {
@@ -1534,7 +1629,7 @@
             </tr>
         `;
 
-        // CREDITS BREAKDOWN TABLE
+        // RENDER CREDITS BREAKDOWN TABLE
         let creditMap = {};
         transactions.forEach(t => {
             let cVal = parseFloat(t.credit) || 0;
@@ -1573,7 +1668,7 @@
             </tr>
         `;
 
-        // PAYMENT METHODS
+        // RENDER PAYMENT METHODS SUMMARY TABLE
         let methodMap = {};
         transactions.forEach(t => {
             if (t.method && t.method !== 'Previous Balance' && (parseFloat(t.debit) || 0) > 0) {
