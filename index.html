@@ -214,7 +214,7 @@
             left: 0;
             top: calc(100% + 6px);
             background-color: var(--surface);
-            min-width: 180px;
+            min-width: 190px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -393,7 +393,7 @@
         .text-danger { color: var(--danger) !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.15); }
 
         /* ==========================================
-           9. ANNUAL SUMMARY & GRAPHICS STYLES
+           9. GRAPHICS & MODAL STYLES
            ========================================== */
         .annual-grid {
             display: grid;
@@ -445,8 +445,28 @@
             padding-bottom: 10px;
             border-bottom: 2px solid var(--border);
         }
+        .multi-year-bar-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            height: 240px;
+            align-items: flex-end;
+            padding-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+        .trend-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(31, 1fr);
+            gap: 4px;
+            height: 220px;
+            align-items: flex-end;
+            padding-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
         @media (max-width: 900px) {
-            .bar-chart-grid { overflow-x: auto; min-width: 700px; padding-bottom: 20px; }
+            .bar-chart-grid, .multi-year-bar-grid, .trend-chart-grid { overflow-x: auto; min-width: 700px; padding-bottom: 20px; }
         }
 
         .bar-column {
@@ -466,7 +486,7 @@
             justify-content: center;
         }
         .bar-bar {
-            width: 42%;
+            width: 30%;
             border-radius: 4px 4px 0 0;
             transition: height 0.4s ease;
             position: relative;
@@ -474,10 +494,12 @@
         }
         .bar-income { background: var(--success); box-shadow: 0 0 12px rgba(16, 185, 129, 0.25); }
         .bar-spend { background: var(--danger); box-shadow: 0 0 12px rgba(239, 68, 68, 0.25); }
+        .bar-savings { background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        .bar-trend { background: var(--accent); width: 60%; border-radius: 3px 3px 0 0; }
         
         .bar-label {
             margin-top: 10px;
-            font-size: 0.72rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: var(--text-muted);
             text-align: center;
@@ -512,6 +534,29 @@
         .legend-item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
+        /* MODAL DIALOG STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 650px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
         #toast { position: fixed; bottom: 24px; right: 24px; background: #10b981; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 1000; }
         #toast.show { opacity: 1; }
     </style>
@@ -525,7 +570,6 @@
     <h2>Secure Vault Login</h2>
     
     <div class="password-wrapper">
-        <!-- Master password input with visibility toggle -->
         <input type="password" id="master-pwd" placeholder="Enter secret password..." onkeydown="if(event.key==='Enter') initSession()">
         <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
             <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -536,17 +580,58 @@
 </div>
 
 <!-- ==========================================
+   RECURRING TEMPLATES MODAL DIALOG
+   ========================================== -->
+<div id="recurring-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="card-header" style="margin-bottom: 16px;">
+            <h2>Manage Recurring Templates</h2>
+            <button class="btn-secondary" onclick="closeRecurringModal()">✕ Close</button>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
+            Configure monthly fixed bills or salary entries here. Click <strong>"⚡ Apply to Current Month"</strong> to instantly inject them into your active month's ledger.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 16px;">
+            <input type="text" id="rec-desc" placeholder="Description (e.g. Rent)">
+            <select id="rec-cat">
+                <option value="">-- Expense Cat --</option>
+            </select>
+            <input type="number" step="0.01" id="rec-amount" placeholder="Amount ($)">
+            <button class="btn" onclick="addRecurringTemplate()">+ Add</button>
+        </div>
+
+        <div class="table-container-clean" style="margin-bottom: 16px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th class="col-num">Amount ($)</th>
+                        <th style="width: 70px; text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recurring-tbody"></tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn" onclick="applyRecurringToActiveMonth()">⚡ Apply Templates to Active Month</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
    10. MAIN DASHBOARD CONTENT (Hidden until login)
    ========================================== -->
 <div class="container" id="main-app" style="display: none;">
     
-    <!-- DASHBOARD HEADER & CONTROLS -->
     <header>
         <div class="header-top-row">
-            <!-- UTILITIES DROPDOWN MENU (Backup, Import, Reset, Sort) -->
             <div class="dropdown">
                 <button class="btn btn-secondary" style="padding: 8px 12px;" onclick="toggleDropdown(event)">⚙️ Options ▾</button>
                 <div id="options-dropdown" class="dropdown-content">
+                    <button onclick="openRecurringModal()">🔄 Recurring Templates</button>
                     <button onclick="sortTransactionsByDateManual()">📅 Sort by Date</button>
                     <button onclick="exportJSON()">💾 Backup JSON</button>
                     <label style="cursor: pointer;">
@@ -557,12 +642,10 @@
                 </div>
             </div>
             
-            <!-- DASHBOARD TITLE -->
             <div style="flex: 1; text-align: center;">
                 <h1 id="app-title-header">Financial Movement Dashboard</h1>
             </div>
 
-            <!-- QUICK UTILITY BUTTONS (Sync, DB Test, Theme Toggle, Lock Vault) -->
             <div class="header-controls-row">
                 <button class="icon-btn-tooltip" onclick="refreshFromCloud()" aria-label="Sync">🔄</button>
                 <button class="icon-btn-tooltip" onclick="testDatabaseConnection()" aria-label="Test DB">
@@ -573,9 +656,7 @@
             </div>
         </div>
 
-        <!-- DUAL SELECTORS: YEAR FIRST, THEN MONTH / ANNUAL SUMMARY -->
         <div class="header-actions">
-            <!-- YEAR SELECTOR DROPDOWN -->
             <select id="year-dropdown" class="select-picker" style="width: 140px;" onchange="switchYear(this.value)">
                 <option value="2025">🗓️ 2025</option>
                 <option value="2026" selected>🗓️ 2026</option>
@@ -585,8 +666,7 @@
                 <option value="2030">🗓️ 2030</option>
             </select>
 
-            <!-- MONTH / ANNUAL SUMMARY SELECTOR DROPDOWN -->
-            <select id="month-dropdown" class="select-picker" style="width: 210px;" onchange="switchMonth(this.value)">
+            <select id="month-dropdown" class="select-picker" style="width: 250px;" onchange="switchMonth(this.value)">
                 <option value="january">📅 January</option>
                 <option value="february">📅 February</option>
                 <option value="march">📅 March</option>
@@ -595,20 +675,69 @@
                 <option value="june">📅 June</option>
                 <option value="july">📅 July</option>
                 <option value="august">📅 August</option>
-                <option value="september">📅 September</option>
+                <option value="september" selected>📅 September</option>
                 <option value="october">📅 October</option>
                 <option value="november">📅 November</option>
                 <option value="december">📅 December</option>
                 <option value="annual-summary">📊 Annual Summary</option>
+                <option value="multi-year-summary">📈 Multi-Year Comparison</option>
+                <option value="monthly-trend-view">📉 Monthly Spending Trend</option>
             </select>
         </div>
     </header>
 
-    <!-- ==========================================
-       ANNUAL SUMMARY VIEW CONTAINER
-       ========================================== -->
+    <!-- MONTHLY TREND VIEW CONTAINER -->
+    <div id="monthly-trend-view" style="display: none;">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 id="trend-chart-title">Cumulative Spending Trend</h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Day-by-day accumulated spend vs monthly budget limit</span>
+            </div>
+            <div id="trend-bar-chart" class="trend-chart-grid"></div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div> Cumulative Spend ($)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MULTI-YEAR COMPARISON VIEW CONTAINER -->
+    <div id="multi-year-view" style="display: none;">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Multi-Year Financial Trend (2025 - 2030)</h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Comparing Annual Income vs Spends vs Net Savings</span>
+            </div>
+            <div id="multi-year-bar-chart" class="multi-year-bar-grid"></div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background: var(--success);"></div> Annual Income</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--danger);"></div> Annual Spends</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div> Net Savings</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Multi-Year Summary Table</h2>
+            </div>
+            <div class="table-container-clean">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th class="col-num">Total Income ($)</th>
+                            <th class="col-num">Total Spends ($)</th>
+                            <th class="col-num">Net Savings ($)</th>
+                            <th class="col-num">Avg Monthly Spend ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="multi-year-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANNUAL SUMMARY VIEW CONTAINER -->
     <div id="annual-view" style="display: none;">
-        <!-- Top Summary Cards Grid -->
         <div class="annual-grid">
             <div class="stat-card">
                 <span class="stat-card-title">Total Annual Income</span>
@@ -628,22 +757,18 @@
             </div>
         </div>
 
-        <!-- Interactive Monthly Comparison Bar Chart -->
         <div class="chart-container">
             <div class="chart-header">
                 <h3 id="annual-chart-title">Monthly Income vs Spends Performance</h3>
                 <span style="font-size: 0.8rem; color: var(--text-muted);">Hover bars for exact figures</span>
             </div>
-            <div id="annual-bar-chart" class="bar-chart-grid">
-                <!-- Injected dynamically by JS -->
-            </div>
+            <div id="annual-bar-chart" class="bar-chart-grid"></div>
             <div class="chart-legend">
                 <div class="legend-item"><div class="legend-dot" style="background: var(--success);"></div> Income / Credits</div>
                 <div class="legend-item"><div class="legend-dot" style="background: var(--danger);"></div> Expenses / Spends</div>
             </div>
         </div>
 
-        <!-- Annual Category Breakdown & Payment Methods Grid -->
         <div class="breakdowns-grid">
             <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
@@ -684,20 +809,14 @@
         </div>
     </div>
 
-    <!-- ==========================================
-       MONTHLY VIEW CONTAINER
-       ========================================== -->
+    <!-- MONTHLY VIEW CONTAINER -->
     <div class="dashboard-grid" id="monthly-view">
-        
-        <!-- LEFT COLUMN: Transactions Ledger, Breakdowns, and Category Management -->
         <div>
-            <!-- TRANSACTIONS LEDGER CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Transactions Ledger</h2>
                     <button class="btn" onclick="addTransaction()">+ Add Transaction</button>
                 </div>
-                <!-- SEARCH BAR AND FILTER PILLS -->
                 <div class="toolbar">
                     <div class="search-box">
                         <span class="search-icon">🔍</span>
@@ -711,7 +830,6 @@
                         <div class="pill" onclick="setFilter('debits', this)">Debits</div>
                     </div>
                 </div>
-                <!-- LEDGER TABLE -->
                 <div class="table-container">
                     <table class="ledger-table">
                         <thead>
@@ -734,9 +852,7 @@
                 </div>
             </div>
 
-            <!-- BREAKDOWNS SIDE-BY-SIDE GRID (Cost Breakdown & Credits Breakdown) -->
             <div class="breakdowns-grid">
-                <!-- COST BREAKDOWN CARD -->
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
                         <h2>Cost Breakdown</h2>
@@ -756,7 +872,6 @@
                     </div>
                 </div>
 
-                <!-- CREDITS BREAKDOWN CARD -->
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
                         <h2>Credits Breakdown</h2>
@@ -777,12 +892,14 @@
                 </div>
             </div>
 
-            <!-- MANAGE CATEGORIES CARD -->
             <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
                     <h2>Manage Categories</h2>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <input type="checkbox" id="budget-rollover-toggle" onchange="toggleBudgetRollover(this.checked)">
+                        🔄 Auto-Rollover Unused Budget
+                    </label>
                 </div>
-                <!-- TYPE TOGGLE FOR NEW CATEGORY CREATION -->
                 <div style="display: flex; gap: 6px; margin-bottom: 8px;">
                     <button type="button" class="pill active" id="type-pill-expense" onclick="setCategoryCreationType('expense')" style="flex:1; text-align:center;">Expense</button>
                     <button type="button" class="pill" id="type-pill-credit" onclick="setCategoryCreationType('credit')" style="flex:1; text-align:center;">Credit</button>
@@ -791,14 +908,13 @@
                     <input type="text" id="new-category-input" placeholder="New category name..." onkeydown="if(event.key==='Enter') addNewCategory()">
                     <button class="btn" style="padding: 6px 10px;" onclick="addNewCategory()">+ Add</button>
                 </div>
-                <!-- SCROLLABLE CATEGORY LIST TABLE -->
                 <div class="table-container-scrollable">
                     <table>
                         <thead>
                             <tr>
                                 <th>Category Name</th>
                                 <th style="width: 70px; text-align: center;">Type</th>
-                                <th class="col-num">Limit ($)</th>
+                                <th class="col-num">Limit for Month ($)</th>
                                 <th style="width: 75px; text-align: right; padding-right: 8px;">Actions</th>
                             </tr>
                         </thead>
@@ -808,9 +924,7 @@
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: Sidebar Metrics & Summaries -->
         <div>
-            <!-- PERIOD SUMMARY (CLEARED) CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Period Summary (Cleared)</h2>
@@ -827,7 +941,6 @@
                 </div>
             </div>
 
-            <!-- PENDING & PROJECTED CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Pending & Projected</h2>
@@ -844,7 +957,6 @@
                 </div>
             </div>
 
-            <!-- FIXED VS VARIABLE EXPENSES CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Fixed vs Variable Expenses</h2>
@@ -857,7 +969,6 @@
                 </div>
             </div>
 
-            <!-- PAYMENT METHODS CARD -->
             <div class="card">
                 <div class="card-header">
                     <h2>Payment Methods</h2>
@@ -879,25 +990,18 @@
     </div>
 </div>
 
-<!-- NOTIFICATION TOAST POPUP -->
 <div id="toast">Synced with Supabase securely</div>
 
-<!-- ==========================================
-   11. JAVASCRIPT APP LOGIC & SUPABASE SYNC
-   ========================================== -->
 <script>
-    // Database credentials configuration
     const SUPABASE_URL = "https://utozececqvxippnerfrl.supabase.co";
     const SUPABASE_KEY = "sb_publishable_fAgjUuJkZ4LPA7LLucfe3g_UAfpW88K";
     let supabaseClient = null;
     let masterKey = '';
 
-    // Initialize UI theme based on user preference or default to dark
     const savedTheme = localStorage.getItem('dashboard_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeToggleButton(savedTheme);
 
-    // Toggle between light and dark themes
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -907,7 +1011,6 @@
         showToast(`Switched to ${newTheme} mode`);
     }
 
-    // Update theme toggle icon appearance
     function updateThemeToggleButton(theme) {
         const btn = document.getElementById('theme-toggle-btn');
         if (btn) {
@@ -916,7 +1019,6 @@
         }
     }
 
-    // Predefined default categories and credit groups
     let categories = [
         "Lunch", "Subaru", "Toll", "Internet", "Coffee", "Butcher Shop", "Car", 
         "Credit Card", "Barber Shop", "Investment", "Spotify", "Rent", 
@@ -931,29 +1033,42 @@
         "Wages", "Starting Balance", "Other Credits", "Refund", "Transfer", "Investment Return"
     ];
 
-    let categoryBudgets = {};
+    let categoryBudgets = {}; 
+    let enableBudgetRollover = false;
+    let recurringTemplates = [
+        { desc: "Rent", category: "Rent", amount: 1200 },
+        { desc: "Vodafone", category: "Phone Plan", amount: 53 },
+        { desc: "Internet", category: "Internet", amount: 79 }
+    ];
+    let autoCategorizationMap = {
+        "aldi": "Supermarket",
+        "coles": "Supermarket",
+        "woolworths": "Supermarket",
+        "tasman": "Butcher Shop",
+        "vodafone": "Phone Plan",
+        "spotify": "Spotify",
+        "netflix": "Entertainment"
+    };
+
     let activeCreationType = 'expense';
 
-    // Set category creation type (Expense vs Credit)
     function setCategoryCreationType(type) {
         activeCreationType = type;
         document.getElementById('type-pill-expense').classList.toggle('active', type === 'expense');
         document.getElementById('type-pill-credit').className = type === 'credit' ? 'pill active' : 'pill';
     }
 
-    // Dynamic month names and year handling
     const rawMonthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+    const allYears = ["2025", "2026", "2027", "2028", "2029", "2030"];
     let selectedYear = "2026";
-    let selectedMonthName = "september"; // default initial month name
+    let selectedMonthName = "september"; 
     let activeMonthKey = "september2026";
     let currentFilter = 'all';
 
-    // Generate month keys for a specific year
     function getMonthKeysOrderForYear(yr) {
         return rawMonthNames.map(m => m + yr);
     }
 
-    // Default placeholder dataset template generator
     function createDefaultDatasetForYear(yr) {
         let res = {};
         rawMonthNames.forEach((m, idx) => {
@@ -988,7 +1103,6 @@
 
     let datasets = createDefaultDatasetForYear("2026");
 
-    // Ensure datasets exist for chosen year
     function ensureYearDatasetsExist(yr) {
         rawMonthNames.forEach((m, idx) => {
             let mKey = m + yr;
@@ -1003,7 +1117,6 @@
         });
     }
 
-    // Toggle options dropdown menu
     function toggleDropdown(event) {
         event.stopPropagation();
         document.getElementById('options-dropdown').classList.toggle('show');
@@ -1020,7 +1133,6 @@
         }
     }
 
-    // Display temporary notification toast
     function showToast(message) {
         const toast = document.getElementById('toast');
         toast.innerText = message;
@@ -1028,7 +1140,6 @@
         setTimeout(() => { toast.className = ''; }, 2000);
     }
 
-    // Toggle password mask on login screen
     function togglePasswordVisibility() {
         const pwdInput = document.getElementById('master-pwd');
         const eyeIcon = document.getElementById('eye-icon');
@@ -1042,7 +1153,6 @@
         }
     }
 
-    // Authenticate and initialize vault session from Supabase
     async function initSession() {
         masterKey = document.getElementById('master-pwd').value.trim();
         if (!masterKey) {
@@ -1061,9 +1171,12 @@
             document.getElementById('year-dropdown').value = selectedYear;
             ensureYearDatasetsExist(selectedYear);
 
-            selectedMonthName = getCurrentMonthNameString();
+            selectedMonthName = "september";
             document.getElementById('month-dropdown').value = selectedMonthName;
             activeMonthKey = selectedMonthName + selectedYear;
+
+            document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
+            populateRecurringCategoryDropdown();
 
             syncRolloverBalances();
             sortTransactions();
@@ -1074,7 +1187,6 @@
         }
     }
 
-    // Refresh and fetch data from cloud storage
     async function refreshFromCloud() {
         if (!supabaseClient || !masterKey) {
             alert('Session expired. Please log in again.');
@@ -1083,6 +1195,7 @@
         try {
             await fetchAndDecryptCloudData();
             ensureYearDatasetsExist(selectedYear);
+            document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
             syncRolloverBalances();
             sortTransactions();
             renderApp();
@@ -1092,7 +1205,6 @@
         }
     }
 
-    // Test connection latency to Supabase
     async function testDatabaseConnection() {
         if (!supabaseClient) {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1116,7 +1228,6 @@
         }
     }
 
-    // Fetch encrypted payload from Supabase and decrypt with AES master key
     async function fetchAndDecryptCloudData() {
         const { data, error } = await supabaseClient
             .from('user_finances')
@@ -1133,9 +1244,12 @@
                 const parsedVault = JSON.parse(decryptedString);
                 if (parsedVault.categories && Array.isArray(parsedVault.categories)) {
                     categories = parsedVault.categories;
-                    creditCategories = parsedVault.creditCategories || ["Wages", "Starting Balance", "Other Credits", "Refund", "Transfer", "Investment Return"];
+                    creditCategories = parsedVault.creditCategories || creditCategories;
                     datasets = parsedVault.datasets;
                     categoryBudgets = parsedVault.categoryBudgets || {};
+                    enableBudgetRollover = parsedVault.enableBudgetRollover || false;
+                    recurringTemplates = parsedVault.recurringTemplates || recurringTemplates;
+                    autoCategorizationMap = parsedVault.autoCategorizationMap || autoCategorizationMap;
                 } else {
                     datasets = parsedVault;
                 }
@@ -1147,7 +1261,6 @@
         }
     }
 
-    // Lock vault and return to login screen
     function lockVault() {
         supabaseClient = null;
         masterKey = '';
@@ -1158,7 +1271,6 @@
         document.getElementById('eye-icon').innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
     }
 
-    // Request Supabase password reset email
     async function requestPasswordReset() {
         const email = prompt("Enter your account email to receive a password reset link:");
         if (!email) return;
@@ -1178,15 +1290,17 @@
         }
     }
 
-    // Encrypt vault data and save to Supabase
     async function saveToSupabase() {
         if (!supabaseClient || !masterKey) return;
 
         const vaultPayload = {
-            categories: categories,
-            creditCategories: creditCategories,
-            datasets: datasets,
-            categoryBudgets: categoryBudgets
+            categories,
+            creditCategories,
+            datasets,
+            categoryBudgets,
+            enableBudgetRollover,
+            recurringTemplates,
+            autoCategorizationMap
         };
 
         const encryptedString = CryptoJS.AES.encrypt(JSON.stringify(vaultPayload), masterKey).toString();
@@ -1214,19 +1328,11 @@
         showToast("Encrypted & saved to cloud");
     }
 
-    // Get current year string
     function getCurrentYearString() {
         const y = new Date().getFullYear().toString();
-        return ["2025","2026","2027","2028","2029","2030"].includes(y) ? y : "2026";
+        return allYears.includes(y) ? y : "2026";
     }
 
-    // Get current month name string
-    function getCurrentMonthNameString() {
-        const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-        return monthNames[new Date().getMonth()];
-    }
-
-    // Format date string from AU (DD/MM/YYYY) to ISO (YYYY-MM-DD)
     function toISOFormat(dateStr) {
         if (!dateStr) return '';
         const parts = dateStr.split('/');
@@ -1236,7 +1342,6 @@
         return dateStr;
     }
 
-    // Format date string from ISO (YYYY-MM-DD) to AU (DD/MM/YYYY)
     function toAUFormat(isoDateStr) {
         if (!isoDateStr) return '';
         const parts = isoDateStr.split('-');
@@ -1246,7 +1351,6 @@
         return isoDateStr;
     }
 
-    // Get default date string for new transactions
     function getDefaultDateString(monthKey) {
         const now = new Date();
         const todayDay = String(now.getDate()).padStart(2, '0');
@@ -1262,7 +1366,6 @@
         return `01/${currentActiveMonthNum}/${selectedYear}`;
     }
 
-    // Automatically roll over projected balances into the next month's starting balance
     function syncRolloverBalances() {
         ensureYearDatasetsExist(selectedYear);
         let monthKeys = getMonthKeysOrderForYear(selectedYear);
@@ -1301,7 +1404,6 @@
         }
     }
 
-    // Calculate projected account balance for a specific month
     function calculateProjectedBalanceForMonth(monthKey) {
         if (!datasets[monthKey] || !datasets[monthKey].data) return 0;
         let transactions = datasets[monthKey].data;
@@ -1314,13 +1416,11 @@
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let creditsRcvdTotal = prevBal + paidCredits;
-
         let debitsPaid = transactions
             .filter(t => t.paid.toLowerCase() === 'yes' && (parseFloat(t.debit) || 0) > 0)
             .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
 
         let currBal = creditsRcvdTotal - debitsPaid;
-
         let creditsRecv = transactions
             .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
@@ -1332,7 +1432,6 @@
         return currBal + creditsRecv - debitsPay;
     }
 
-    // Parse date strings for sorting
     function parseDateString(dateStr) {
         if (!dateStr) return new Date(0);
         const parts = dateStr.split('/');
@@ -1346,18 +1445,12 @@
         return isNaN(parsed) ? new Date(0) : new Date(parsed);
     }
 
-    // Sort transactions chronologically by date
     function sortTransactions() {
         if (datasets[activeMonthKey] && datasets[activeMonthKey].data) {
-            datasets[activeMonthKey].data.sort((a, b) => {
-                const dateA = parseDateString(a.date);
-                const dateB = parseDateString(b.date);
-                return dateA - dateB;
-            });
+            datasets[activeMonthKey].data.sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
         }
     }
 
-    // Manual sort trigger from options menu
     function sortTransactionsByDateManual() {
         sortTransactions();
         renderApp();
@@ -1365,7 +1458,6 @@
         showToast("Transactions sorted by date!");
     }
 
-    // Switch selected year
     function switchYear(yr) {
         selectedYear = yr;
         ensureYearDatasetsExist(selectedYear);
@@ -1374,6 +1466,12 @@
         if (selectedMonthName === 'annual-summary') {
             renderAnnualSummary();
             showToast(`Switched to ${selectedYear} Annual Summary`);
+        } else if (selectedMonthName === 'multi-year-summary') {
+            renderMultiYearSummary();
+            showToast("Switched to Multi-Year Trend View");
+        } else if (selectedMonthName === 'monthly-trend-view') {
+            renderMonthlyTrendView();
+            showToast("Switched to Monthly Spending Trend View");
         } else {
             activeMonthKey = selectedMonthName + selectedYear;
             sortTransactions();
@@ -1382,21 +1480,35 @@
         }
     }
 
-    // Switch selected month or Annual Summary view
     function switchMonth(val) {
-        selectedMonthName = val;
+        if (val !== 'monthly-trend-view') {
+            selectedMonthName = val;
+        }
         
         const monthlyView = document.getElementById('monthly-view');
         const annualView = document.getElementById('annual-view');
+        const multiYearView = document.getElementById('multi-year-view');
+        const monthlyTrendView = document.getElementById('monthly-trend-view');
+
+        monthlyView.style.display = 'none';
+        annualView.style.display = 'none';
+        multiYearView.style.display = 'none';
+        monthlyTrendView.style.display = 'none';
 
         if (val === 'annual-summary') {
-            monthlyView.style.display = 'none';
             annualView.style.display = 'block';
             renderAnnualSummary();
             showToast(`Switched to ${selectedYear} Annual Summary`);
+        } else if (val === 'multi-year-summary') {
+            multiYearView.style.display = 'block';
+            renderMultiYearSummary();
+            showToast("Switched to Multi-Year Comparison");
+        } else if (val === 'monthly-trend-view') {
+            monthlyTrendView.style.display = 'block';
+            renderMonthlyTrendView();
+            showToast(`Switched to Monthly Trend View (${selectedMonthName.toUpperCase()})`);
         } else {
             activeMonthKey = selectedMonthName + selectedYear;
-            annualView.style.display = 'none';
             monthlyView.style.display = 'grid';
             syncRolloverBalances();
             sortTransactions();
@@ -1404,7 +1516,6 @@
         }
     }
 
-    // Set filter pill state
     function setFilter(filterType, element) {
         currentFilter = filterType;
         document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
@@ -1412,23 +1523,229 @@
         renderApp();
     }
 
-    // Main render controller
     function renderApp() {
         document.getElementById('app-title-header').innerText = `Financial Movement Dashboard — ${selectedYear}`;
         
-        if (selectedMonthName === 'annual-summary') {
-            renderAnnualSummary();
-            return;
-        }
+        if (selectedMonthName === 'annual-summary') { renderAnnualSummary(); return; }
+        if (selectedMonthName === 'multi-year-summary') { renderMultiYearSummary(); return; }
+        if (selectedMonthName === 'monthly-trend-view') { renderMonthlyTrendView(); return; }
+        
         syncRolloverBalances();
         renderTransactions();
         renderCategoryManagement();
         calculateMetrics();
     }
 
-    // ==========================================
-    // RENDER ANNUAL SUMMARY & GRAPHICS
-    // ==========================================
+    function openRecurringModal() {
+        document.getElementById('recurring-modal').style.display = 'flex';
+        populateRecurringCategoryDropdown();
+        renderRecurringTable();
+    }
+
+    function closeRecurringModal() {
+        document.getElementById('recurring-modal').style.display = 'none';
+    }
+
+    function populateRecurringCategoryDropdown() {
+        const select = document.getElementById('rec-cat');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Expense Cat --</option>' + categories.sort().map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function addRecurringTemplate() {
+        const desc = document.getElementById('rec-desc').value.trim();
+        const cat = document.getElementById('rec-cat').value;
+        const amount = parseFloat(document.getElementById('rec-amount').value) || 0;
+
+        if (!desc || amount <= 0) {
+            alert('Please enter a description and valid amount.');
+            return;
+        }
+
+        recurringTemplates.push({ desc, category: cat, amount });
+        document.getElementById('rec-desc').value = '';
+        document.getElementById('rec-amount').value = '';
+        renderRecurringTable();
+        saveToSupabase();
+        showToast("Recurring template added!");
+    }
+
+    function deleteRecurringTemplate(index) {
+        recurringTemplates.splice(index, 1);
+        renderRecurringTable();
+        saveToSupabase();
+    }
+
+    function renderRecurringTable() {
+        const tbody = document.getElementById('recurring-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        recurringTemplates.forEach((t, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${t.desc}</td>
+                <td>${t.category || '--'}</td>
+                <td class="col-num">$${t.amount.toFixed(2)}</td>
+                <td style="text-align: center;"><button class="btn-danger" onclick="deleteRecurringTemplate(${index})">✕</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function applyRecurringToActiveMonth() {
+        if (!datasets[activeMonthKey]) ensureYearDatasetsExist(selectedYear);
+        let txs = datasets[activeMonthKey].data;
+        let monthNum = rawMonthNames.indexOf(selectedMonthName) + 1;
+        let monthNumStr = String(monthNum).padStart(2, '0');
+
+        recurringTemplates.forEach(t => {
+            txs.push({
+                date: `01/${monthNumStr}/${selectedYear}`,
+                desc: t.desc,
+                cost: t.category,
+                creditCat: "",
+                type: "Fixed",
+                credit: 0,
+                debit: t.amount,
+                method: "Debit",
+                paid: "NO"
+            });
+        });
+
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+        closeRecurringModal();
+        showToast("Recurring templates applied to active month!");
+    }
+
+    function renderMonthlyTrendView() {
+        activeMonthKey = selectedMonthName + selectedYear;
+        if (!datasets[activeMonthKey]) ensureYearDatasetsExist(selectedYear);
+        let txs = datasets[activeMonthKey].data || [];
+        document.getElementById('trend-chart-title').innerText = `Cumulative Spending Trend (${selectedMonthName.toUpperCase()} ${selectedYear})`;
+
+        let monthNum = rawMonthNames.indexOf(selectedMonthName) + 1;
+        let daysInMonth = new Date(parseInt(selectedYear), monthNum, 0).getDate();
+        
+        let dailySpends = new Array(daysInMonth + 1).fill(0);
+        txs.forEach(t => {
+            let dVal = parseFloat(t.debit) || 0;
+            let dateStr = t.date || '';
+            let parts = dateStr.split('/');
+            
+            if (dVal > 0 && parts.length === 3) {
+                let txDay = parseInt(parts[0], 10);
+                let txMonth = parseInt(parts[1], 10);
+                let txYear = parts[2];
+                
+                if (txMonth === monthNum && txYear === selectedYear && txDay >= 1 && txDay <= daysInMonth) {
+                    dailySpends[txDay] += dVal;
+                }
+            }
+        });
+
+        let cumulative = 0;
+        let cumulativeSpends = [];
+        let maxSpend = 100;
+        for (let d = 1; d <= daysInMonth; d++) {
+            cumulative += dailySpends[d];
+            cumulativeSpends.push(cumulative);
+            maxSpend = Math.max(maxSpend, cumulative);
+        }
+
+        const chartEl = document.getElementById('trend-bar-chart');
+        chartEl.style.gridTemplateColumns = `repeat(${daysInMonth}, 1fr)`;
+        chartEl.innerHTML = '';
+
+        cumulativeSpends.forEach((amt, idx) => {
+            let heightPct = Math.round((amt / maxSpend) * 100);
+            let col = document.createElement('div');
+            col.className = 'bar-column';
+            col.innerHTML = `
+                <div class="bar-tooltip">
+                    <strong>Day ${idx + 1} ${selectedMonthName}</strong><br>
+                    Cumulative Spend: $${amt.toFixed(2)}
+                </div>
+                <div class="bar-bar bar-trend" style="height: ${heightPct}%;"></div>
+                <div class="bar-label">${idx + 1}</div>
+            `;
+            chartEl.appendChild(col);
+        });
+    }
+
+    function renderMultiYearSummary() {
+        let multiYearData = [];
+        let maxVal = 1000;
+
+        allYears.forEach(yr => {
+            let monthKeys = getMonthKeysOrderForYear(yr);
+            let yIncome = 0;
+            let ySpend = 0;
+
+            monthKeys.forEach(mKey => {
+                if (datasets[mKey] && datasets[mKey].data) {
+                    let txs = datasets[mKey].data;
+                    let mInc = txs
+                        .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && (parseFloat(t.credit) || 0) > 0)
+                        .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+                    let mSpd = txs
+                        .filter(t => (parseFloat(t.debit) || 0) > 0)
+                        .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+
+                    yIncome += mInc;
+                    ySpend += mSpd;
+                }
+            });
+
+            let ySavings = yIncome - ySpend;
+            multiYearData.push({ year: yr, income: yIncome, spend: ySpend, savings: ySavings, avgSpend: ySpend / 12 });
+            maxVal = Math.max(maxVal, yIncome, ySpend, Math.abs(ySavings));
+        });
+
+        const chartEl = document.getElementById('multi-year-bar-chart');
+        chartEl.innerHTML = '';
+
+        multiYearData.forEach(d => {
+            let incHeight = Math.round((d.income / maxVal) * 100);
+            let spdHeight = Math.round((d.spend / maxVal) * 100);
+            let savHeight = Math.round((Math.max(0, d.savings) / maxVal) * 100);
+
+            let col = document.createElement('div');
+            col.className = 'bar-column';
+            col.innerHTML = `
+                <div class="bar-tooltip">
+                    <strong>Year ${d.year}</strong><br>
+                    Income: $${d.income.toFixed(2)}<br>
+                    Spend: $${d.spend.toFixed(2)}<br>
+                    Net Savings: $${d.savings.toFixed(2)}
+                </div>
+                <div class="bar-group-flex">
+                    <div class="bar-bar bar-income" style="height: ${incHeight}%;"></div>
+                    <div class="bar-bar bar-spend" style="height: ${spdHeight}%;"></div>
+                    <div class="bar-bar bar-savings" style="height: ${savHeight}%;"></div>
+                </div>
+                <div class="bar-label">${d.year}</div>
+            `;
+            chartEl.appendChild(col);
+        });
+
+        const tbody = document.getElementById('multi-year-tbody');
+        tbody.innerHTML = '';
+        multiYearData.forEach(d => {
+            let tr = document.createElement('tr');
+            let savClass = d.savings >= 0 ? 'text-success' : 'text-danger';
+            tr.innerHTML = `
+                <td style="font-weight: 700;">${d.year}</td>
+                <td class="col-num text-success">$${d.income.toFixed(2)}</td>
+                <td class="col-num text-danger">$${d.spend.toFixed(2)}</td>
+                <td class="col-num ${savClass}" style="font-weight: 700;">$${d.savings.toFixed(2)}</td>
+                <td class="col-num" style="color: var(--accent);">$${d.avgSpend.toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
     function renderAnnualSummary() {
         ensureYearDatasetsExist(selectedYear);
         let monthKeys = getMonthKeysOrderForYear(selectedYear);
@@ -1440,13 +1757,10 @@
 
         monthKeys.forEach((mKey, idx) => {
             let txs = datasets[mKey] ? datasets[mKey].data || [] : [];
-            
-            // Income calculation (exclude starting balance rollover)
             let mIncome = txs
                 .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && (parseFloat(t.credit) || 0) > 0)
                 .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
-            // Spends calculation
             let mSpend = txs
                 .filter(t => (parseFloat(t.debit) || 0) > 0)
                 .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
@@ -1454,7 +1768,6 @@
             totalIncomeAll += mIncome;
             totalSpendAll += mSpend;
 
-            // Category aggregation
             txs.forEach(t => {
                 let dVal = parseFloat(t.debit) || 0;
                 if (t.cost && dVal > 0) {
@@ -1463,12 +1776,7 @@
             });
 
             const shortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            monthlyDataList.push({
-                name: shortNames[idx],
-                income: mIncome,
-                spend: mSpend,
-                diff: mIncome - mSpend
-            });
+            monthlyDataList.push({ name: shortNames[idx], income: mIncome, spend: mSpend, diff: mIncome - mSpend });
         });
 
         let netSavings = totalIncomeAll - totalSpendAll;
@@ -1484,10 +1792,8 @@
 
         document.getElementById('ann-avg-spend').innerText = `$${avgSpend.toFixed(2)}`;
 
-        // Render Bar Chart
         const chartEl = document.getElementById('annual-bar-chart');
         chartEl.innerHTML = '';
-        
         let maxVal = Math.max(...monthlyDataList.map(m => Math.max(m.income, m.spend)), 1000);
 
         monthlyDataList.forEach(m => {
@@ -1512,7 +1818,6 @@
             chartEl.appendChild(col);
         });
 
-        // Render Top 20 Annual Categories
         let catTbody = document.getElementById('annual-categories-tbody');
         catTbody.innerHTML = '';
         let sortedCats = Object.keys(annualCatMap).sort((a,b) => annualCatMap[b] - annualCatMap[a]);
@@ -1534,7 +1839,6 @@
             catTbody.appendChild(tr);
         });
 
-        // Render Monthly Table with Difference Column
         let monthsTbody = document.getElementById('annual-months-tbody');
         monthsTbody.innerHTML = '';
         const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -1553,7 +1857,39 @@
         });
     }
 
-    // Render category management table list
+    function toggleBudgetRollover(checked) {
+        enableBudgetRollover = checked;
+        calculateMetrics();
+        saveToSupabase();
+        showToast(checked ? "Budget rollover enabled!" : "Budget rollover disabled.");
+    }
+
+    function getCategoryBudgetForMonth(catName, monthKey) {
+        let monthlyKey = `${catName}_${monthKey}`;
+        if (categoryBudgets[monthlyKey] !== undefined) return categoryBudgets[monthlyKey];
+        return categoryBudgets[catName] || 0;
+    }
+
+    function getCategoryRolloverCarryover(catName, monthKey) {
+        if (!enableBudgetRollover) return 0;
+        let monthKeys = getMonthKeysOrderForYear(selectedYear);
+        let idx = monthKeys.indexOf(monthKey);
+        if (idx <= 0) return 0;
+
+        let accumulatedExtra = 0;
+        for (let i = 0; i < idx; i++) {
+            let mKey = monthKeys[i];
+            let baseLimit = getCategoryBudgetForMonth(catName, mKey);
+            if (baseLimit > 0) {
+                let mtxs = datasets[mKey] ? datasets[mKey].data || [] : [];
+                let spent = mtxs.filter(t => t.cost === catName).reduce((a, t) => a + (parseFloat(t.debit) || 0), 0);
+                let leftover = (baseLimit + accumulatedExtra) - spent;
+                accumulatedExtra = Math.max(0, leftover);
+            }
+        }
+        return accumulatedExtra;
+    }
+
     function renderCategoryManagement() {
         const tbody = document.getElementById('manage-categories-tbody');
         tbody.innerHTML = '';
@@ -1564,12 +1900,12 @@
 
         combinedList.forEach((item) => {
             let isExpense = item.type === 'Expense';
-            let limitVal = isExpense && categoryBudgets[item.name] !== undefined ? categoryBudgets[item.name] : '';
+            let limitVal = isExpense ? getCategoryBudgetForMonth(item.name, activeMonthKey) : '';
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-weight: 500;">${item.name}</td>
                 <td style="text-align: center;"><span class="pill" style="padding: 2px 4px; font-size: 0.6rem; background: ${isExpense ? 'rgba(37,99,235,0.15)' : 'rgba(16,185,129,0.15)'}; color: ${isExpense ? '#60a5fa' : '#34d399'}; border-color: ${isExpense ? 'rgba(37,99,235,0.3)' : 'rgba(16,185,129,0.3)'};">${item.type}</span></td>
-                <td>${isExpense ? `<input type="number" step="10" placeholder="No limit" value="${limitVal !== '' ? Number(limitVal).toFixed(2) : ''}" onchange="updateCategoryBudget('${item.name.replace(/'/g, "\\'")}', parseFloat(this.value)||0)" style="height: 28px; padding: 2px 4px; font-size: 0.75rem;">` : '<span style="color:var(--text-muted); font-size:0.7rem; text-align:right; display:block;">N/A</span>'}</td>
+                <td>${isExpense ? `<input type="number" step="10" placeholder="No limit" value="${limitVal > 0 ? Number(limitVal).toFixed(2) : ''}" onchange="updateCategoryBudget('${item.name.replace(/'/g, "\\'")}', parseFloat(this.value)||0)" style="height: 28px; padding: 2px 4px; font-size: 0.75rem;">` : '<span style="color:var(--text-muted); font-size:0.7rem; text-align:right; display:block;">N/A</span>'}</td>
                 <td style="text-align: right; padding-right: 8px;">
                     <div class="btn-action-row" style="justify-content: flex-end;">
                         <button class="btn-transfer" onclick="renameCategory('${item.name.replace(/'/g, "\\'")}', '${item.type}')" title="Rename Category">✏️</button>
@@ -1581,11 +1917,13 @@
         });
     }
 
-    // Update expense category spending limit budget
     function updateCategoryBudget(catName, limitValue) {
+        let monthlyKey = `${catName}_${activeMonthKey}`;
         if (limitValue <= 0) {
+            delete categoryBudgets[monthlyKey];
             delete categoryBudgets[catName];
         } else {
+            categoryBudgets[monthlyKey] = limitValue;
             categoryBudgets[catName] = limitValue;
         }
         calculateMetrics();
@@ -1593,7 +1931,6 @@
         showToast(`Budget limit updated for ${catName}`);
     }
 
-    // Add a new category (Expense or Credit)
     function addNewCategory() {
         const inputEl = document.getElementById('new-category-input');
         const val = inputEl.value.trim();
@@ -1620,7 +1957,6 @@
         saveToSupabase();
     }
 
-    // Rename an existing category across all datasets
     function renameCategory(oldName, type) {
         const newName = prompt(`Enter new name for ${type.toLowerCase()} category "${oldName}":`, oldName);
         if (!newName || newName.trim() === '' || newName === oldName) return;
@@ -1634,10 +1970,16 @@
             const idx = categories.indexOf(oldName);
             if (idx !== -1) categories[idx] = trimmed;
 
-            if (categoryBudgets[oldName] !== undefined) {
-                categoryBudgets[trimmed] = categoryBudgets[oldName];
-                delete categoryBudgets[oldName];
-            }
+            Object.keys(categoryBudgets).forEach(bKey => {
+                if (bKey === oldName) {
+                    categoryBudgets[trimmed] = categoryBudgets[oldName];
+                    delete categoryBudgets[oldName];
+                } else if (bKey.startsWith(oldName + "_")) {
+                    let newBKey = bKey.replace(oldName + "_", trimmed + "_");
+                    categoryBudgets[newBKey] = categoryBudgets[bKey];
+                    delete categoryBudgets[bKey];
+                }
+            });
 
             Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
@@ -1668,29 +2010,24 @@
         showToast(`Renamed to "${trimmed}" successfully!`);
     }
 
-    // Delete a category from records
     function deleteCategory(catName, type) {
-        if (!confirm(`Are you sure you want to delete ${type.toLowerCase()} category "${catName}"? Transactions assigned to it will have their category cleared.`)) {
-            return;
-        }
+        if (!confirm(`Are you sure you want to delete ${type.toLowerCase()} category "${catName}"?`)) return;
 
         if (type === 'Expense') {
             categories = categories.filter(c => c !== catName);
-            delete categoryBudgets[catName];
+            Object.keys(categoryBudgets).forEach(bKey => {
+                if (bKey === catName || bKey.startsWith(catName + "_")) delete categoryBudgets[bKey];
+            });
             Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
-                    datasets[mKey].data.forEach(tx => {
-                        if (tx.cost === catName) tx.cost = "";
-                    });
+                    datasets[mKey].data.forEach(tx => { if (tx.cost === catName) tx.cost = ""; });
                 }
             });
         } else {
             creditCategories = creditCategories.filter(c => c !== catName);
             Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
-                    datasets[mKey].data.forEach(tx => {
-                        if (tx.creditCat === catName) tx.creditCat = "";
-                    });
+                    datasets[mKey].data.forEach(tx => { if (tx.creditCat === catName) tx.creditCat = ""; });
                 }
             });
         }
@@ -1700,14 +2037,11 @@
         showToast(`Category "${catName}" deleted`);
     }
 
-    // Render transaction table rows
     function renderTransactions() {
         const tbody = document.getElementById('txn-tbody');
         tbody.innerHTML = '';
 
-        if (!datasets[activeMonthKey]) {
-            ensureYearDatasetsExist(selectedYear);
-        }
+        if (!datasets[activeMonthKey]) ensureYearDatasetsExist(selectedYear);
 
         let transactions = datasets[activeMonthKey].data;
         const searchInput = document.getElementById('search-input');
@@ -1737,9 +2071,9 @@
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><input type="date" class="col-date" value="${isoDate}" onchange="updateTxDate(${index}, this.value)"></td>
-                <td><input type="text" class="col-desc" value="${tx.desc}" onchange="updateTx(${index}, 'desc', this.value)"></td>
+                <td><input type="text" class="col-desc" value="${tx.desc}" onchange="updateTxDesc(${index}, this.value)"></td>
                 <td>
-                    <select class="col-cat" onchange="updateTx(${index}, 'cost', this.value)">
+                    <select class="col-cat" id="cost-select-${index}" onchange="updateTx(${index}, 'cost', this.value)">
                         <option value="">-- None --</option>
                         ${categories.sort().map(c => `<option value="${c}" ${tx.cost === c ? 'selected' : ''}>${c}</option>`).join('')}
                     </select>
@@ -1768,9 +2102,9 @@
                 </td>
                 <td class="col-action">
                     <div class="btn-action-row">
-                        <button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Transfer transaction to next month">➡️</button>
-                        <button class="btn-copy" onclick="duplicateTransaction(${index})" title="Copy line as new entry below">📋</button>
-                        <button class="btn-danger" onclick="deleteTx(${index})" title="Delete transaction">✕</button>
+                        <button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Transfer transaction">➡️</button>
+                        <button class="btn-copy" onclick="duplicateTransaction(${index})" title="Copy line">📋</button>
+                        <button class="btn-danger" onclick="deleteTx(${index})" title="Delete">✕</button>
                     </div>
                 </td>
             `;
@@ -1790,12 +2124,31 @@
         `;
     }
 
-    // Transfer transaction entry to the following month
+    function updateTxDesc(index, descVal) {
+        datasets[activeMonthKey].data[index]['desc'] = descVal;
+        
+        let lowerDesc = descVal.toLowerCase();
+        for (let keyword in autoCategorizationMap) {
+            if (lowerDesc.includes(keyword)) {
+                let suggestedCat = autoCategorizationMap[keyword];
+                if (categories.includes(suggestedCat)) {
+                    datasets[activeMonthKey].data[index]['cost'] = suggestedCat;
+                    showToast(`🧠 Auto-tagged as "${suggestedCat}"`);
+                    break;
+                }
+            }
+        }
+
+        renderTransactions();
+        calculateMetrics();
+        saveToSupabase();
+    }
+
     function transferToNextMonth(index) {
         let monthKeys = getMonthKeysOrderForYear(selectedYear);
         let currentMonthIndex = monthKeys.indexOf(activeMonthKey);
         if (currentMonthIndex === -1 || currentMonthIndex >= monthKeys.length - 1) {
-            alert("This is the last month of the year; cannot transfer further within this year.");
+            alert("This is the last month of the year; cannot transfer further.");
             return;
         }
 
@@ -1825,20 +2178,16 @@
         showToast(`Transferred to next month as Pending!`);
     }
 
-    // Duplicate transaction row
     function duplicateTransaction(index) {
         let txToCopy = datasets[activeMonthKey].data[index];
         let newTx = JSON.parse(JSON.stringify(txToCopy));
         newTx.paid = "NO";
-        
         datasets[activeMonthKey].data.splice(index + 1, 0, newTx);
-        
         renderApp();
         saveToSupabase();
         showToast("Transaction duplicated!");
     }
 
-    // Handle change of paid status dropdown
     function handlePaidChange(index, value) {
         datasets[activeMonthKey].data[index]['paid'] = value;
         const selectEl = document.getElementById(`paid-select-${index}`);
@@ -1847,7 +2196,6 @@
         saveToSupabase();
     }
 
-    // Update transaction date value
     function updateTxDate(index, isoDateVal) {
         const auDate = toAUFormat(isoDateVal);
         datasets[activeMonthKey].data[index]['date'] = auDate;
@@ -1856,27 +2204,18 @@
         saveToSupabase();
     }
 
-    // Update individual transaction property fields
     function updateTx(index, field, value) {
         datasets[activeMonthKey].data[index][field] = value;
+        if (field === 'cost' && value) {
+            let desc = datasets[activeMonthKey].data[index]['desc'].toLowerCase().trim();
+            if (desc && desc.length > 2 && !autoCategorizationMap[desc]) {
+                autoCategorizationMap[desc] = value;
+            }
+        }
         calculateMetrics();
         saveToSupabase();
-        let transactions = datasets[activeMonthKey].data;
-        let totalCreditSum = transactions.reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-        let totalDebitSum = transactions.reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        document.getElementById('txn-tfoot').innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
-                <td class="col-num text-success">$${totalCreditSum.toFixed(2)}</td>
-                <td class="col-num text-danger">$${totalDebitSum.toFixed(2)}</td>
-                <td colspan="3" style="text-align: right; padding-right: 8px;">
-                    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addTransaction()">+ Add Transaction</button>
-                </td>
-            </tr>
-        `;
     }
 
-    // Add a new empty transaction row
     function addTransaction() {
         const defaultDate = getDefaultDateString(activeMonthKey);
         datasets[activeMonthKey].data.push({ date: defaultDate, desc: "", cost: "", creditCat: "", type: "Variable", credit: 0, debit: 0, method: "Debit", paid: "NO" });
@@ -1885,14 +2224,12 @@
         saveToSupabase();
     }
 
-    // Delete transaction entry
     function deleteTx(index) {
         datasets[activeMonthKey].data.splice(index, 1);
         renderApp();
         saveToSupabase();
     }
 
-    // Reset current month data back to defaults
     function resetMonthData() {
         if (confirm(`Reset all changes for ${selectedMonthName.toUpperCase()} ${selectedYear}?`)) {
             let defaults = createDefaultDatasetForYear(selectedYear);
@@ -1904,9 +2241,8 @@
         }
     }
 
-    // Export entire encrypted vault database as JSON file backup
     function exportJSON() {
-        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets };
+        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vaultPayload, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
@@ -1917,7 +2253,6 @@
         showToast("Backup downloaded successfully");
     }
 
-    // Import vault database from JSON backup file
     function importJSON(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -1931,10 +2266,14 @@
                         creditCategories = imported.creditCategories || creditCategories;
                         datasets = imported.datasets;
                         categoryBudgets = imported.categoryBudgets || {};
+                        enableBudgetRollover = imported.enableBudgetRollover || false;
+                        recurringTemplates = imported.recurringTemplates || recurringTemplates;
+                        autoCategorizationMap = imported.autoCategorizationMap || autoCategorizationMap;
                     } else {
                         datasets = imported;
                     }
                     ensureYearDatasetsExist(selectedYear);
+                    document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
                     sortTransactions();
                     saveToSupabase();
                     renderApp();
@@ -1947,7 +2286,6 @@
         reader.readAsText(file);
     }
 
-    // Calculate all financial metrics, category breakdowns, and summaries
     function calculateMetrics() {
         let transactions = datasets[activeMonthKey].data;
 
@@ -1960,7 +2298,6 @@
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let creditsRcvdTotal = prevBal + paidCredits;
-
         let debitsPaid = transactions
             .filter(t => t.paid.toLowerCase() === 'yes' && (parseFloat(t.debit) || 0) > 0)
             .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
@@ -1976,10 +2313,7 @@
             .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
 
         let projBal = currBal + creditsRecv - debitsPay;
-
-        let totalCreditsAll = transactions
-            .filter(t => (parseFloat(t.credit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+        let totalCreditsAll = transactions.filter(t => (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         document.getElementById('lbl-credits-rcvd').innerText = `$${creditsRcvdTotal.toFixed(2)}`;
         document.getElementById('lbl-debits-paid').innerText = `$${debitsPaid.toFixed(2)}`;
@@ -2005,7 +2339,6 @@
         document.getElementById('lbl-variable-pct').innerText = `(${totalDebits > 0 ? ((varTotal/totalDebits)*100).toFixed(1) : 0}%)`;
         document.getElementById('lbl-total-debits').innerText = `$${totalDebits.toFixed(2)}`;
 
-        // RENDER EXPENSE CATEGORIES BREAKDOWN TABLE
         let catMap = {};
         transactions.forEach(t => {
             if (t.cost && (parseFloat(t.debit) || 0) > 0) {
@@ -2018,16 +2351,19 @@
         let sortedCats = Object.keys(catMap).sort((a,b) => catMap[b] - catMap[a]);
         sortedCats.forEach(cat => {
             let amt = catMap[cat];
-            let limit = categoryBudgets[cat] || 0;
-            let displayInfo = '';
+            let baseLimit = getCategoryBudgetForMonth(cat, activeMonthKey);
+            let rolloverCarryover = getCategoryRolloverCarryover(cat, activeMonthKey);
+            let effectiveLimit = baseLimit + rolloverCarryover;
             
-            if (limit > 0) {
-                let pctUsed = Math.min((amt / limit) * 100, 100);
-                let isOver = amt > limit;
+            let displayInfo = '';
+            if (effectiveLimit > 0) {
+                let pctUsed = Math.min((amt / effectiveLimit) * 100, 100);
+                let isOver = amt > effectiveLimit;
                 let barClass = isOver ? 'progress-bar-fill over-budget' : 'progress-bar-fill';
+                let rolloverLabel = rolloverCarryover > 0 ? ` (+$${rolloverCarryover.toFixed(0)} roll)` : '';
                 displayInfo = `
-                    <div class="progress-cell" title="Budget: $${limit.toFixed(2)} (${pctUsed.toFixed(1)}%)">
-                        <span style="font-size:0.7rem; color:${isOver ? 'var(--danger)' : 'var(--text-muted)'}">$${limit.toFixed(0)} (${pctUsed.toFixed(0)}%)</span>
+                    <div class="progress-cell" title="Budget: $${effectiveLimit.toFixed(2)}${rolloverLabel} (${pctUsed.toFixed(1)}%)">
+                        <span style="font-size:0.7rem; color:${isOver ? 'var(--danger)' : 'var(--text-muted)'}">$${effectiveLimit.toFixed(0)}${rolloverLabel} (${pctUsed.toFixed(0)}%)</span>
                         <div class="progress-bar-bg"><div class="${barClass}" style="width: ${pctUsed}%"></div></div>
                     </div>
                 `;
@@ -2059,7 +2395,6 @@
             </tr>
         `;
 
-        // RENDER CREDITS BREAKDOWN TABLE
         let creditMap = {};
         transactions.forEach(t => {
             let cVal = parseFloat(t.credit) || 0;
@@ -2098,7 +2433,6 @@
             </tr>
         `;
 
-        // RENDER PAYMENT METHODS SUMMARY TABLE
         let methodMap = {};
         transactions.forEach(t => {
             if (t.method && t.method !== 'Previous Balance' && (parseFloat(t.debit) || 0) > 0) {
