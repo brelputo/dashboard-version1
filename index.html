@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Movement Dashboard — 2026</title>
+    <title>Financial Movement Dashboard</title>
     <!-- FAVICON WITH $ SIGN -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💲</text></svg>">
     <!-- EXTERNAL DEPENDENCIES: Supabase client & Crypto-JS for secure client-side encryption -->
@@ -151,9 +151,10 @@
         
         .header-actions { 
             display: flex; 
-            justify-content: space-between; 
+            justify-content: center; 
             align-items: center; 
             width: 100%; 
+            gap: 12px;
         }
         .header-controls-row { display: flex; gap: 8px; align-items: center; }
 
@@ -246,7 +247,7 @@
             color: var(--accent);
         }
 
-        .month-selector {
+        .select-picker {
             background: var(--input-bg);
             border: 1px solid var(--border);
             color: var(--text-main);
@@ -255,9 +256,8 @@
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
-            width: 220px;
         }
-        .month-selector:focus { outline: none; border-color: var(--border-focus); }
+        .select-picker:focus { outline: none; border-color: var(--border-focus); }
 
         /* ==========================================
            5. DASHBOARD GRID & CARDS LAYOUT
@@ -297,13 +297,19 @@
         .table-container { width: 100%; overflow: hidden; border-radius: 10px; border: 1px solid var(--border); }
         .table-container-clean { width: 100%; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
         
-        /* SCROLLABLE CONTAINER FOR CATEGORY MANAGEMENT */
         .table-container-scrollable { 
             width: 100%; 
             max-height: 280px; 
             overflow-y: auto; 
             border-radius: 10px; 
             border: 1px solid var(--border); 
+        }
+        .table-container-annual-cats {
+            width: 100%;
+            max-height: 480px;
+            overflow-y: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
         }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left; table-layout: fixed; }
@@ -386,6 +392,126 @@
         .text-success { color: var(--success) !important; text-shadow: 0 0 8px rgba(16, 185, 129, 0.15); }
         .text-danger { color: var(--danger) !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.15); }
 
+        /* ==========================================
+           9. ANNUAL SUMMARY & GRAPHICS STYLES
+           ========================================== */
+        .annual-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 1400px) { .annual-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .annual-grid { grid-template-columns: 1fr; } }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+        .stat-card-title { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card-value { font-size: 1.6rem; font-weight: 800; color: var(--text-main); font-variant-numeric: tabular-nums; }
+
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .chart-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        
+        .bar-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 12px;
+            height: 240px;
+            align-items: flex-end;
+            padding-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+        @media (max-width: 900px) {
+            .bar-chart-grid { overflow-x: auto; min-width: 700px; padding-bottom: 20px; }
+        }
+
+        .bar-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+            position: relative;
+        }
+        .bar-group-flex {
+            display: flex;
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .bar-bar {
+            width: 42%;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.4s ease;
+            position: relative;
+            min-height: 4px;
+        }
+        .bar-income { background: var(--success); box-shadow: 0 0 12px rgba(16, 185, 129, 0.25); }
+        .bar-spend { background: var(--danger); box-shadow: 0 0 12px rgba(239, 68, 68, 0.25); }
+        
+        .bar-label {
+            margin-top: 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+            white-space: nowrap;
+        }
+        .bar-tooltip {
+            position: absolute;
+            bottom: 105%;
+            background: #020617;
+            color: #f1f5f9;
+            padding: 6px 10px;
+            font-size: 0.7rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .bar-column:hover .bar-tooltip { opacity: 1; }
+
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
         #toast { position: fixed; bottom: 24px; right: 24px; background: #10b981; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 1000; }
         #toast.show { opacity: 1; }
     </style>
@@ -433,7 +559,7 @@
             
             <!-- DASHBOARD TITLE -->
             <div style="flex: 1; text-align: center;">
-                <h1>Financial Movement Dashboard</h1>
+                <h1 id="app-title-header">Financial Movement Dashboard</h1>
             </div>
 
             <!-- QUICK UTILITY BUTTONS (Sync, DB Test, Theme Toggle, Lock Vault) -->
@@ -447,27 +573,121 @@
             </div>
         </div>
 
-        <!-- MONTH SELECTOR DROPDOWN -->
+        <!-- DUAL SELECTORS: YEAR FIRST, THEN MONTH / ANNUAL SUMMARY -->
         <div class="header-actions">
-            <div></div>
-            <select id="month-dropdown" class="month-selector" onchange="switchMonth(this.value)">
-                <option value="january2026">📅 January 2026</option>
-                <option value="february2026">📅 February 2026</option>
-                <option value="march2026">📅 March 2026</option>
-                <option value="april2026">📅 April 2026</option>
-                <option value="may2026">📅 May 2026</option>
-                <option value="june2026">📅 June 2026</option>
-                <option value="july2026">📅 July 2026</option>
-                <option value="august2026">📅 August 2026</option>
-                <option value="september2026">📅 September 2026</option>
-                <option value="october2026">📅 October 2026</option>
-                <option value="november2026">📅 November 2026</option>
-                <option value="december2026">📅 December 2026</option>
+            <!-- YEAR SELECTOR DROPDOWN -->
+            <select id="year-dropdown" class="select-picker" style="width: 140px;" onchange="switchYear(this.value)">
+                <option value="2025">🗓️ 2025</option>
+                <option value="2026" selected>🗓️ 2026</option>
+                <option value="2027">🗓️ 2027</option>
+                <option value="2028">🗓️ 2028</option>
+                <option value="2029">🗓️ 2029</option>
+                <option value="2030">🗓️ 2030</option>
+            </select>
+
+            <!-- MONTH / ANNUAL SUMMARY SELECTOR DROPDOWN -->
+            <select id="month-dropdown" class="select-picker" style="width: 210px;" onchange="switchMonth(this.value)">
+                <option value="january">📅 January</option>
+                <option value="february">📅 February</option>
+                <option value="march">📅 March</option>
+                <option value="april">📅 April</option>
+                <option value="may">📅 May</option>
+                <option value="june">📅 June</option>
+                <option value="july">📅 July</option>
+                <option value="august">📅 August</option>
+                <option value="september">📅 September</option>
+                <option value="october">📅 October</option>
+                <option value="november">📅 November</option>
+                <option value="december">📅 December</option>
+                <option value="annual-summary">📊 Annual Summary</option>
             </select>
         </div>
     </header>
 
-    <div class="dashboard-grid">
+    <!-- ==========================================
+       ANNUAL SUMMARY VIEW CONTAINER
+       ========================================== -->
+    <div id="annual-view" style="display: none;">
+        <!-- Top Summary Cards Grid -->
+        <div class="annual-grid">
+            <div class="stat-card">
+                <span class="stat-card-title">Total Annual Income</span>
+                <span id="ann-total-income" class="stat-card-value text-success">$0.00</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Total Annual Spends</span>
+                <span id="ann-total-spends" class="stat-card-value text-danger">$0.00</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Net Annual Savings</span>
+                <span id="ann-net-savings" class="stat-card-value">$0.00</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Monthly Average Spend</span>
+                <span id="ann-avg-spend" class="stat-card-value" style="color: var(--accent);">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Interactive Monthly Comparison Bar Chart -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 id="annual-chart-title">Monthly Income vs Spends Performance</h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Hover bars for exact figures</span>
+            </div>
+            <div id="annual-bar-chart" class="bar-chart-grid">
+                <!-- Injected dynamically by JS -->
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background: var(--success);"></div> Income / Credits</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--danger);"></div> Expenses / Spends</div>
+            </div>
+        </div>
+
+        <!-- Annual Category Breakdown & Payment Methods Grid -->
+        <div class="breakdowns-grid">
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <h2>Top 20 Expense Categories</h2>
+                </div>
+                <div class="table-container-annual-cats">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="col-num">Total Spent ($)</th>
+                                <th style="padding-left: 12px;">Share</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annual-categories-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <h2>Annual Breakdown by Month</h2>
+                </div>
+                <div class="table-container-clean">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th class="col-num">Income ($)</th>
+                                <th class="col-num">Spent ($)</th>
+                                <th class="col-num">Net Diff ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annual-months-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+       MONTHLY VIEW CONTAINER
+       ========================================== -->
+    <div class="dashboard-grid" id="monthly-view">
         
         <!-- LEFT COLUMN: Transactions Ledger, Breakdowns, and Category Management -->
         <div>
@@ -721,44 +941,67 @@
         document.getElementById('type-pill-credit').className = type === 'credit' ? 'pill active' : 'pill';
     }
 
-    // Month sequence configuration
-    const monthKeysOrder = [
-        "january2026", "february2026", "march2026", "april2026", 
-        "may2026", "june2026", "july2026", "august2026", 
-        "september2026", "october2026", "november2026", "december2026"
-    ];
-
-    // Default placeholder data set for all months
-    const defaultDatasets = {
-        january2026: { title: "January 2026", data: [{ date: "01/01/2026", desc: "Starting Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        february2026: { title: "February 2026", data: [{ date: "01/02/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        march2026: { title: "March 2026", data: [{ date: "01/03/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        april2026: { title: "April 2026", data: [{ date: "01/04/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        may2026: { title: "May 2026", data: [{ date: "01/05/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        june2026: { title: "June 2026", data: [{ date: "01/06/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        july2026: { title: "July 2026", data: [{ date: "01/07/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        august2026: { title: "August 2026", data: [{ date: "01/08/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        september2026: {
-            title: "September 2026",
-            data: [
-                { date: "30/08/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 2113.98, debit: 0, method: "Previous Balance", paid: "YES" },
-                { date: "17/09/2026", desc: "Aldi", cost: "Supermarket", creditCat: "", type: "Variable", credit: 0, debit: 39.58, method: "Debit", paid: "Yes" },
-                { date: "17/09/2026", desc: "Tasman", cost: "Butcher Shop", creditCat: "", type: "Variable", credit: 0, debit: 5.62, method: "Debit", paid: "Yes" },
-                { date: "18/09/2026", desc: "Vodafone", cost: "Phone Plan", creditCat: "", type: "Fixed", credit: 0, debit: 53.00, method: "Debit", paid: "NO" },
-                { date: "20/09/2026", desc: "Pay Will for RWC", cost: "Car", creditCat: "", type: "Variable", credit: 0, debit: 450.00, method: "Transfer", paid: "NO" },
-                { date: "20/09/2026", desc: "Fuel - Corolla", cost: "Corolla", creditCat: "", type: "Fixed", credit: 0, debit: 50.00, method: "Debit", paid: "Yes" },
-                { date: "20/09/2026", desc: "Oil for Corolla", cost: "Car", creditCat: "", type: "Variable", credit: 0, debit: 49.99, method: "Debit", paid: "NO" },
-                { date: "23/09/2026", desc: "Wages", cost: "", creditCat: "Wages", type: "Fixed", credit: 2247.23, debit: 0, method: "ComBank", paid: "NO" }
-            ]
-        },
-        october2026: { title: "October 2026", data: [{ date: "01/10/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        november2026: { title: "November 2026", data: [{ date: "01/11/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] },
-        december2026: { title: "December 2026", data: [{ date: "01/12/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }] }
-    };
-
-    let datasets = JSON.parse(JSON.stringify(defaultDatasets));
+    // Dynamic month names and year handling
+    const rawMonthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+    let selectedYear = "2026";
+    let selectedMonthName = "september"; // default initial month name
     let activeMonthKey = "september2026";
     let currentFilter = 'all';
+
+    // Generate month keys for a specific year
+    function getMonthKeysOrderForYear(yr) {
+        return rawMonthNames.map(m => m + yr);
+    }
+
+    // Default placeholder dataset template generator
+    function createDefaultDatasetForYear(yr) {
+        let res = {};
+        rawMonthNames.forEach((m, idx) => {
+            let fullMonthTitle = m.charAt(0).toUpperCase() + m.slice(1) + " " + yr;
+            let mKey = m + yr;
+            let dayStr = "01";
+            let monthNumStr = String(idx + 1).padStart(2, '0');
+            
+            if (mKey === "september2026") {
+                res[mKey] = {
+                    title: "September 2026",
+                    data: [
+                        { date: "30/08/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 2113.98, debit: 0, method: "Previous Balance", paid: "YES" },
+                        { date: "17/09/2026", desc: "Aldi", cost: "Supermarket", creditCat: "", type: "Variable", credit: 0, debit: 39.58, method: "Debit", paid: "Yes" },
+                        { date: "17/09/2026", desc: "Tasman", cost: "Butcher Shop", creditCat: "", type: "Variable", credit: 0, debit: 5.62, method: "Debit", paid: "Yes" },
+                        { date: "18/09/2026", desc: "Vodafone", cost: "Phone Plan", creditCat: "", type: "Fixed", credit: 0, debit: 53.00, method: "Debit", paid: "NO" },
+                        { date: "20/09/2026", desc: "Pay Will for RWC", cost: "Car", creditCat: "", type: "Variable", credit: 0, debit: 450.00, method: "Transfer", paid: "NO" },
+                        { date: "20/09/2026", desc: "Fuel - Corolla", cost: "Corolla", creditCat: "", type: "Fixed", credit: 0, debit: 50.00, method: "Debit", paid: "Yes" },
+                        { date: "20/09/2026", desc: "Oil for Corolla", cost: "Car", creditCat: "", type: "Variable", credit: 0, debit: 49.99, method: "Debit", paid: "NO" },
+                        { date: "23/09/2026", desc: "Wages", cost: "", creditCat: "Wages", type: "Fixed", credit: 2247.23, debit: 0, method: "ComBank", paid: "NO" }
+                    ]
+                };
+            } else {
+                res[mKey] = {
+                    title: fullMonthTitle,
+                    data: [{ date: `${dayStr}/${monthNumStr}/${yr}`, desc: idx === 0 ? "Starting Balance" : "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }]
+                };
+            }
+        });
+        return res;
+    }
+
+    let datasets = createDefaultDatasetForYear("2026");
+
+    // Ensure datasets exist for chosen year
+    function ensureYearDatasetsExist(yr) {
+        rawMonthNames.forEach((m, idx) => {
+            let mKey = m + yr;
+            if (!datasets[mKey]) {
+                let fullMonthTitle = m.charAt(0).toUpperCase() + m.slice(1) + " " + yr;
+                let monthNumStr = String(idx + 1).padStart(2, '0');
+                datasets[mKey] = {
+                    title: fullMonthTitle,
+                    data: [{ date: `01/${monthNumStr}/${yr}`, desc: idx === 0 ? "Starting Balance" : "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }]
+                };
+            }
+        });
+    }
 
     // Toggle options dropdown menu
     function toggleDropdown(event) {
@@ -814,8 +1057,14 @@
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
 
-            activeMonthKey = getCurrentMonthKey();
-            document.getElementById('month-dropdown').value = activeMonthKey;
+            selectedYear = getCurrentYearString();
+            document.getElementById('year-dropdown').value = selectedYear;
+            ensureYearDatasetsExist(selectedYear);
+
+            selectedMonthName = getCurrentMonthNameString();
+            document.getElementById('month-dropdown').value = selectedMonthName;
+            activeMonthKey = selectedMonthName + selectedYear;
+
             syncRolloverBalances();
             sortTransactions();
             renderApp();
@@ -833,6 +1082,7 @@
         }
         try {
             await fetchAndDecryptCloudData();
+            ensureYearDatasetsExist(selectedYear);
             syncRolloverBalances();
             sortTransactions();
             renderApp();
@@ -964,13 +1214,16 @@
         showToast("Encrypted & saved to cloud");
     }
 
-    // Determine current month key based on live date
-    function getCurrentMonthKey() {
-        const now = new Date();
+    // Get current year string
+    function getCurrentYearString() {
+        const y = new Date().getFullYear().toString();
+        return ["2025","2026","2027","2028","2029","2030"].includes(y) ? y : "2026";
+    }
+
+    // Get current month name string
+    function getCurrentMonthNameString() {
         const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-        let currentMonthName = monthNames[now.getMonth()];
-        let key = currentMonthName + "2026";
-        return monthKeysOrder.includes(key) ? key : "september2026";
+        return monthNames[new Date().getMonth()];
     }
 
     // Format date string from AU (DD/MM/YYYY) to ISO (YYYY-MM-DD)
@@ -998,21 +1251,26 @@
         const now = new Date();
         const todayDay = String(now.getDate()).padStart(2, '0');
         const todayMonth = String(now.getMonth() + 1).padStart(2, '0');
-        const todayYear = now.getFullYear();
+        const todayYear = now.getFullYear().toString();
         
-        const currentActiveMonthNum = String(monthKeysOrder.indexOf(monthKey) + 1).padStart(2, '0');
-        if (todayMonth === currentActiveMonthNum) {
+        let monthKeys = getMonthKeysOrderForYear(selectedYear);
+        const currentActiveMonthNum = String(monthKeys.indexOf(monthKey) + 1).padStart(2, '0');
+        
+        if (todayYear === selectedYear && todayMonth === currentActiveMonthNum) {
             return `${todayDay}/${todayMonth}/${todayYear}`;
         }
-        return `01/${currentActiveMonthNum}/${todayYear}`;
+        return `01/${currentActiveMonthNum}/${selectedYear}`;
     }
 
     // Automatically roll over projected balances into the next month's starting balance
     function syncRolloverBalances() {
+        ensureYearDatasetsExist(selectedYear);
+        let monthKeys = getMonthKeysOrderForYear(selectedYear);
         let changed = false;
-        for (let i = 1; i < monthKeysOrder.length; i++) {
-            let prevKey = monthKeysOrder[i - 1];
-            let currKey = monthKeysOrder[i];
+        
+        for (let i = 1; i < monthKeys.length; i++) {
+            let prevKey = monthKeys[i - 1];
+            let currKey = monthKeys[i];
             
             let prevProj = parseFloat(calculateProjectedBalanceForMonth(prevKey).toFixed(2));
             let currData = datasets[currKey].data;
@@ -1025,7 +1283,7 @@
                 }
             } else {
                 currData.unshift({
-                    date: `01/${String(i + 1).padStart(2, '0')}/2026`,
+                    date: `01/${String(i + 1).padStart(2, '0')}/${selectedYear}`,
                     desc: "Previous Period Balance",
                     cost: "",
                     creditCat: "Starting Balance",
@@ -1045,6 +1303,7 @@
 
     // Calculate projected account balance for a specific month
     function calculateProjectedBalanceForMonth(monthKey) {
+        if (!datasets[monthKey] || !datasets[monthKey].data) return 0;
         let transactions = datasets[monthKey].data;
         let prevBal = transactions
             .filter(t => t.desc.toLowerCase().includes('previous period') || t.desc.toLowerCase().includes('starting balance') || t.method === 'Previous Balance')
@@ -1106,12 +1365,43 @@
         showToast("Transactions sorted by date!");
     }
 
-    // Switch active month dataset
-    function switchMonth(monthKey) {
+    // Switch selected year
+    function switchYear(yr) {
+        selectedYear = yr;
+        ensureYearDatasetsExist(selectedYear);
         syncRolloverBalances();
-        activeMonthKey = monthKey;
-        sortTransactions();
-        renderApp();
+
+        if (selectedMonthName === 'annual-summary') {
+            renderAnnualSummary();
+            showToast(`Switched to ${selectedYear} Annual Summary`);
+        } else {
+            activeMonthKey = selectedMonthName + selectedYear;
+            sortTransactions();
+            renderApp();
+            showToast(`Switched to ${selectedYear}`);
+        }
+    }
+
+    // Switch selected month or Annual Summary view
+    function switchMonth(val) {
+        selectedMonthName = val;
+        
+        const monthlyView = document.getElementById('monthly-view');
+        const annualView = document.getElementById('annual-view');
+
+        if (val === 'annual-summary') {
+            monthlyView.style.display = 'none';
+            annualView.style.display = 'block';
+            renderAnnualSummary();
+            showToast(`Switched to ${selectedYear} Annual Summary`);
+        } else {
+            activeMonthKey = selectedMonthName + selectedYear;
+            annualView.style.display = 'none';
+            monthlyView.style.display = 'grid';
+            syncRolloverBalances();
+            sortTransactions();
+            renderApp();
+        }
     }
 
     // Set filter pill state
@@ -1124,10 +1414,143 @@
 
     // Main render controller
     function renderApp() {
+        document.getElementById('app-title-header').innerText = `Financial Movement Dashboard — ${selectedYear}`;
+        
+        if (selectedMonthName === 'annual-summary') {
+            renderAnnualSummary();
+            return;
+        }
         syncRolloverBalances();
         renderTransactions();
         renderCategoryManagement();
         calculateMetrics();
+    }
+
+    // ==========================================
+    // RENDER ANNUAL SUMMARY & GRAPHICS
+    // ==========================================
+    function renderAnnualSummary() {
+        ensureYearDatasetsExist(selectedYear);
+        let monthKeys = getMonthKeysOrderForYear(selectedYear);
+        
+        let totalIncomeAll = 0;
+        let totalSpendAll = 0;
+        let monthlyDataList = [];
+        let annualCatMap = {};
+
+        monthKeys.forEach((mKey, idx) => {
+            let txs = datasets[mKey] ? datasets[mKey].data || [] : [];
+            
+            // Income calculation (exclude starting balance rollover)
+            let mIncome = txs
+                .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && (parseFloat(t.credit) || 0) > 0)
+                .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+
+            // Spends calculation
+            let mSpend = txs
+                .filter(t => (parseFloat(t.debit) || 0) > 0)
+                .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+
+            totalIncomeAll += mIncome;
+            totalSpendAll += mSpend;
+
+            // Category aggregation
+            txs.forEach(t => {
+                let dVal = parseFloat(t.debit) || 0;
+                if (t.cost && dVal > 0) {
+                    annualCatMap[t.cost] = (annualCatMap[t.cost] || 0) + dVal;
+                }
+            });
+
+            const shortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            monthlyDataList.push({
+                name: shortNames[idx],
+                income: mIncome,
+                spend: mSpend,
+                diff: mIncome - mSpend
+            });
+        });
+
+        let netSavings = totalIncomeAll - totalSpendAll;
+        let avgSpend = totalSpendAll / 12;
+
+        document.getElementById('annual-chart-title').innerText = `Monthly Income vs Spends Performance (${selectedYear})`;
+        document.getElementById('ann-total-income').innerText = `$${totalIncomeAll.toFixed(2)}`;
+        document.getElementById('ann-total-spends').innerText = `$${totalSpendAll.toFixed(2)}`;
+        
+        let netEl = document.getElementById('ann-net-savings');
+        netEl.innerText = `$${netSavings.toFixed(2)}`;
+        netEl.className = netSavings >= 0 ? 'stat-card-value text-success' : 'stat-card-value text-danger';
+
+        document.getElementById('ann-avg-spend').innerText = `$${avgSpend.toFixed(2)}`;
+
+        // Render Bar Chart
+        const chartEl = document.getElementById('annual-bar-chart');
+        chartEl.innerHTML = '';
+        
+        let maxVal = Math.max(...monthlyDataList.map(m => Math.max(m.income, m.spend)), 1000);
+
+        monthlyDataList.forEach(m => {
+            let incomeHeight = Math.round((m.income / maxVal) * 100);
+            let spendHeight = Math.round((m.spend / maxVal) * 100);
+
+            let col = document.createElement('div');
+            col.className = 'bar-column';
+            col.innerHTML = `
+                <div class="bar-tooltip">
+                    <strong>${m.name} ${selectedYear}</strong><br>
+                    Income: $${m.income.toFixed(2)}<br>
+                    Spend: $${m.spend.toFixed(2)}<br>
+                    Diff: ${m.diff >= 0 ? '+' : ''}$${m.diff.toFixed(2)}
+                </div>
+                <div class="bar-group-flex">
+                    <div class="bar-bar bar-income" style="height: ${incomeHeight}%;"></div>
+                    <div class="bar-bar bar-spend" style="height: ${spendHeight}%;"></div>
+                </div>
+                <div class="bar-label">${m.name}</div>
+            `;
+            chartEl.appendChild(col);
+        });
+
+        // Render Top 20 Annual Categories
+        let catTbody = document.getElementById('annual-categories-tbody');
+        catTbody.innerHTML = '';
+        let sortedCats = Object.keys(annualCatMap).sort((a,b) => annualCatMap[b] - annualCatMap[a]);
+        
+        sortedCats.slice(0, 20).forEach((cat, index) => {
+            let amt = annualCatMap[cat];
+            let share = totalSpendAll > 0 ? (amt / totalSpendAll) * 100 : 0;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span style="color:var(--text-muted); font-size:0.7rem; margin-right:6px;">#${index + 1}</span>${cat}</td>
+                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td style="padding-left: 12px;">
+                    <div class="progress-cell">
+                        <span style="font-size:0.7rem;">${share.toFixed(1)}%</span>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${share}%"></div></div>
+                    </div>
+                </td>
+            `;
+            catTbody.appendChild(tr);
+        });
+
+        // Render Monthly Table with Difference Column
+        let monthsTbody = document.getElementById('annual-months-tbody');
+        monthsTbody.innerHTML = '';
+        const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        monthlyDataList.forEach((m, idx) => {
+            let diffClass = m.diff >= 0 ? 'text-success' : 'text-danger';
+            let diffSign = m.diff >= 0 ? '+' : '';
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight: 500;">${fullMonthNames[idx]}</td>
+                <td class="col-num text-success">$${m.income.toFixed(2)}</td>
+                <td class="col-num text-danger">$${m.spend.toFixed(2)}</td>
+                <td class="col-num ${diffClass}" style="font-weight: 700;">${diffSign}$${m.diff.toFixed(2)}</td>
+            `;
+            monthsTbody.appendChild(tr);
+        });
     }
 
     // Render category management table list
@@ -1216,13 +1639,13 @@
                 delete categoryBudgets[oldName];
             }
 
-            for (let mKey of monthKeysOrder) {
+            Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
                     datasets[mKey].data.forEach(tx => {
                         if (tx.cost === oldName) tx.cost = trimmed;
                     });
                 }
-            }
+            });
         } else {
             if (creditCategories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
                 alert('A credit category with this name already exists.');
@@ -1231,13 +1654,13 @@
             const idx = creditCategories.indexOf(oldName);
             if (idx !== -1) creditCategories[idx] = trimmed;
 
-            for (let mKey of monthKeysOrder) {
+            Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
                     datasets[mKey].data.forEach(tx => {
                         if (tx.creditCat === oldName) tx.creditCat = trimmed;
                     });
                 }
-            }
+            });
         }
 
         renderApp();
@@ -1254,22 +1677,22 @@
         if (type === 'Expense') {
             categories = categories.filter(c => c !== catName);
             delete categoryBudgets[catName];
-            for (let mKey of monthKeysOrder) {
+            Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
                     datasets[mKey].data.forEach(tx => {
                         if (tx.cost === catName) tx.cost = "";
                     });
                 }
-            }
+            });
         } else {
             creditCategories = creditCategories.filter(c => c !== catName);
-            for (let mKey of monthKeysOrder) {
+            Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
                     datasets[mKey].data.forEach(tx => {
                         if (tx.creditCat === catName) tx.creditCat = "";
                     });
                 }
-            }
+            });
         }
 
         renderApp();
@@ -1281,6 +1704,10 @@
     function renderTransactions() {
         const tbody = document.getElementById('txn-tbody');
         tbody.innerHTML = '';
+
+        if (!datasets[activeMonthKey]) {
+            ensureYearDatasetsExist(selectedYear);
+        }
 
         let transactions = datasets[activeMonthKey].data;
         const searchInput = document.getElementById('search-input');
@@ -1365,13 +1792,14 @@
 
     // Transfer transaction entry to the following month
     function transferToNextMonth(index) {
-        let currentMonthIndex = monthKeysOrder.indexOf(activeMonthKey);
-        if (currentMonthIndex === -1 || currentMonthIndex >= monthKeysOrder.length - 1) {
-            alert("This is the last month of the year; cannot transfer further.");
+        let monthKeys = getMonthKeysOrderForYear(selectedYear);
+        let currentMonthIndex = monthKeys.indexOf(activeMonthKey);
+        if (currentMonthIndex === -1 || currentMonthIndex >= monthKeys.length - 1) {
+            alert("This is the last month of the year; cannot transfer further within this year.");
             return;
         }
 
-        let nextMonthKey = monthKeysOrder[currentMonthIndex + 1];
+        let nextMonthKey = monthKeys[currentMonthIndex + 1];
         let txToTransfer = datasets[activeMonthKey].data[index];
 
         if (txToTransfer.desc.toLowerCase().includes('previous period') || txToTransfer.desc.toLowerCase().includes('starting balance') || txToTransfer.method === 'Previous Balance') {
@@ -1394,7 +1822,7 @@
         datasets[nextMonthKey].data.sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
 
         saveToSupabase();
-        showToast(`Transferred to ${nextMonthKey.replace('2026', ' 2026')} as Pending!`);
+        showToast(`Transferred to next month as Pending!`);
     }
 
     // Duplicate transaction row
@@ -1466,8 +1894,9 @@
 
     // Reset current month data back to defaults
     function resetMonthData() {
-        if (confirm(`Reset all changes for ${document.getElementById('month-dropdown').selectedOptions[0].text}?`)) {
-            datasets[activeMonthKey] = JSON.parse(JSON.stringify(defaultDatasets[activeMonthKey]));
+        if (confirm(`Reset all changes for ${selectedMonthName.toUpperCase()} ${selectedYear}?`)) {
+            let defaults = createDefaultDatasetForYear(selectedYear);
+            datasets[activeMonthKey] = JSON.parse(JSON.stringify(defaults[activeMonthKey]));
             sortTransactions();
             renderApp();
             saveToSupabase();
@@ -1481,7 +1910,7 @@
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vaultPayload, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `finance_backup_2026.json`);
+        downloadAnchor.setAttribute("download", `finance_backup_${selectedYear}.json`);
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
@@ -1505,6 +1934,7 @@
                     } else {
                         datasets = imported;
                     }
+                    ensureYearDatasetsExist(selectedYear);
                     sortTransactions();
                     saveToSupabase();
                     renderApp();
