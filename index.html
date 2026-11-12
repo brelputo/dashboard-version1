@@ -627,6 +627,256 @@
             body { background: #fff; color: #000; padding: 0; }
             .card, .stat-card, .chart-container { box-shadow: none; break-inside: avoid; }
         }
+
+        /* ==========================================
+           11. MODERN THEME (added)
+           ========================================== */
+        :root:not([data-theme="light"]) {
+            --bg-main: #060912;
+            --surface: #0d1527;
+            --surface-card: #17213a;
+            --border: #283552;
+            --border-soft: rgba(148, 163, 184, 0.13);
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-2: #6366f1;
+            --accent-grad: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            --accent-glow: rgba(59, 130, 246, 0.32);
+            --radius: 16px;
+            --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px -22px rgba(0, 0, 0, 0.8);
+            --table-th-bg: #101a30;
+            --table-tr-hover: rgba(59, 130, 246, 0.08);
+            --table-tfoot-bg: #0f1830;
+            --input-bg: #09101f;
+            --pill-bg: #131c32;
+            --pill-hover: #1e2a47;
+            --header-gradient: linear-gradient(135deg, #0b1226 0%, #1b1f5e 55%, #2347b8 100%);
+        }
+        [data-theme="light"] {
+            --bg-main: #eef2f9;
+            --surface: #ffffff;
+            --surface-card: #ffffff;
+            --border: #d5dcea;
+            --border-soft: rgba(15, 23, 42, 0.08);
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-2: #4f46e5;
+            --accent-grad: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            --accent-glow: rgba(37, 99, 235, 0.24);
+            --radius: 16px;
+            --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 14px 32px -18px rgba(15, 23, 42, 0.2);
+            --table-th-bg: #f1f5fb;
+            --table-tr-hover: rgba(37, 99, 235, 0.05);
+            --table-tfoot-bg: #f1f5fb;
+            --input-bg: #f8fafd;
+            --pill-bg: #e8edf6;
+            --pill-hover: #dbe3f1;
+            --header-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b4fd8 55%, #4f8df5 100%);
+        }
+
+        body { background: var(--bg-main); padding: 24px 16px 56px; -webkit-font-smoothing: antialiased; font-feature-settings: "cv11", "ss03"; }
+        body::before {
+            content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background:
+                radial-gradient(900px 520px at 8% -10%, rgba(59, 130, 246, 0.17), transparent 60%),
+                radial-gradient(800px 480px at 96% -6%, rgba(99, 102, 241, 0.15), transparent 60%),
+                radial-gradient(700px 520px at 82% 112%, rgba(16, 185, 129, 0.07), transparent 60%);
+        }
+        [data-theme="light"] body::before {
+            background:
+                radial-gradient(900px 520px at 8% -10%, rgba(59, 130, 246, 0.15), transparent 60%),
+                radial-gradient(800px 480px at 96% -6%, rgba(99, 102, 241, 0.10), transparent 60%);
+        }
+
+        /* header */
+        header { border-radius: 22px; padding: 28px 32px; border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 34px 60px -30px rgba(35, 71, 184, 0.7); margin-bottom: 22px; }
+        header::before {
+            content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(460px 260px at 100% 0%, rgba(255, 255, 255, 0.16), transparent 70%),
+                radial-gradient(380px 240px at 0% 100%, rgba(129, 140, 248, 0.45), transparent 70%);
+        }
+        header > * { position: relative; z-index: 1; }
+        header > .header-top-row { z-index: 5; }
+        header h1 { font-size: 1.9rem; letter-spacing: -0.035em; }
+        .header-sub { margin-top: 4px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255, 255, 255, 0.72); }
+        header .icon-btn-tooltip, header .select-picker {
+            background: rgba(255, 255, 255, 0.11); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; height: 38px;
+        }
+        header .icon-btn-tooltip { width: 38px; }
+        header .icon-btn-tooltip:hover, header .select-picker:hover { background: rgba(255, 255, 255, 0.22); border-color: rgba(255, 255, 255, 0.38); }
+        header .select-picker option { background: #ffffff; color: #0f172a; }
+        .dropdown-content { border-radius: 14px; padding: 6px; box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.5); }
+        .dropdown-content button, .dropdown-content label { border-radius: 9px; }
+
+        /* cards */
+        .card, .stat-card, .chart-container { border: 1px solid var(--border-soft); box-shadow: var(--shadow-card); border-radius: var(--radius); }
+        .card { padding: 20px; margin-bottom: 20px; }
+        .card:hover { border-color: rgba(96, 165, 250, 0.28); }
+        .card-header { border-bottom: 1px solid var(--border-soft); padding-bottom: 12px; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
+        .card-header h2, .chart-header h3 { display: flex; align-items: center; gap: 10px; font-size: 1rem; letter-spacing: -0.01em; }
+        .card-header h2::before, .chart-header h3::before { content: ""; width: 4px; height: 16px; border-radius: 4px; background: var(--accent-grad); flex: none; }
+        .chart-header { border-bottom: 1px solid var(--border-soft); }
+
+        .stat-card { position: relative; overflow: hidden; padding: 20px 22px; gap: 6px; }
+        .stat-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent-grad); }
+        .stat-card::after { content: ""; position: absolute; right: -34px; top: -34px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, var(--accent-glow), transparent 70%); opacity: 0.55; pointer-events: none; }
+        .stat-card-title { font-size: 0.72rem; letter-spacing: 0.08em; }
+        .stat-card-value { font-size: 1.75rem; letter-spacing: -0.02em; }
+        .stat-card-sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; min-height: 1em; }
+
+        /* tables */
+        .table-container, .table-container-clean, .table-container-scrollable, .table-container-annual-cats { border: 1px solid var(--border-soft); border-radius: 12px; }
+        th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; padding: 12px 8px; border-bottom: 1px solid var(--border); }
+        td { padding: 9px 8px; border-bottom: 1px solid var(--border-soft); }
+        tbody tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: var(--surface); background-image: linear-gradient(var(--table-tr-hover), var(--table-tr-hover)); }
+        tfoot td { border-top: 1px solid var(--border); }
+        .table-container-scrollable th, .table-container-annual-cats th { position: sticky; top: 0; z-index: 2; }
+        .data-table-auto { table-layout: auto; }
+
+        /* ledger: calm until hovered */
+        .ledger-table td { padding: 5px 4px; }
+        .ledger-table input, .ledger-table select { background: transparent; border-color: transparent; height: 34px; border-radius: 8px; }
+        .ledger-table input:hover, .ledger-table select:hover { background: var(--input-bg); border-color: var(--border); }
+        .ledger-table input:focus, .ledger-table select:focus { background: var(--surface); border-color: var(--border-focus); }
+        .ledger-table select.col-paid { border-radius: 999px; text-align-last: center; }
+        .ledger-table tbody td:nth-child(6) input { color: var(--success); font-weight: 600; }
+        .ledger-table tbody td:nth-child(7) input { color: var(--danger); font-weight: 600; }
+
+        /* inputs & buttons */
+        input[type="text"], input[type="number"], input[type="password"], input[type="date"], select { height: 36px; border-radius: 10px; padding: 6px 10px; font-size: 0.82rem; }
+        .btn { background: var(--accent-grad); border-radius: 10px; padding: 8px 16px; letter-spacing: 0.01em; box-shadow: 0 10px 22px -10px var(--accent-glow), 0 1px 0 rgba(255, 255, 255, 0.22) inset; }
+        .btn:hover { background: var(--accent-grad); filter: brightness(1.08); box-shadow: 0 14px 26px -10px var(--accent-glow), 0 1px 0 rgba(255, 255, 255, 0.22) inset; }
+        .btn-secondary { background: transparent; border-radius: 10px; }
+        .btn-secondary:hover { background: var(--pill-bg); }
+        .btn-transfer, .btn-copy, .btn-danger { border-radius: 8px; }
+
+        /* segmented pills */
+        .filter-pills, .seg-pills { display: flex; background: var(--pill-bg); border: 1px solid var(--border-soft); padding: 4px; border-radius: 12px; gap: 2px; flex-wrap: wrap; }
+        .filter-pills .pill, .seg-pills .pill { background: transparent; border: none; border-radius: 9px; padding: 6px 14px; }
+        .filter-pills .pill:hover, .seg-pills .pill:hover { background: var(--pill-hover); }
+        .pill.active, .filter-pills .pill.active, .seg-pills .pill.active, .filter-pills .pill.active:hover, .seg-pills .pill.active:hover { background: var(--accent-grad); color: #fff; box-shadow: 0 8px 16px -8px var(--accent-glow); }
+
+        /* progress + charts */
+        .progress-bar-bg { height: 6px; border-radius: 6px; background: var(--border); }
+        .progress-bar-fill { background: var(--accent-grad); border-radius: 6px; transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .progress-bar-fill.over-budget { background: linear-gradient(90deg, #f87171, #ef4444); }
+        .progress-bar-fill.success-fill { background: linear-gradient(90deg, #34d399, #10b981); }
+        .progress-bar-fill.warn { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        .bar-bar { border-radius: 7px 7px 0 0; }
+        .bar-income { background: linear-gradient(180deg, #34d399, #059669); }
+        .bar-spend { background: linear-gradient(180deg, #f87171, #dc2626); }
+        .bar-savings, .bar-trend { background: linear-gradient(180deg, #60a5fa, #4f46e5); }
+        .bar-chart-grid, .multi-year-bar-grid, .trend-chart-grid { border-bottom: 1px solid var(--border); }
+        .highlight-box { border-radius: 12px; }
+
+        /* overlays */
+        .modal-overlay { background: rgba(3, 7, 18, 0.62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        .modal-card { border-radius: 20px; border: 1px solid var(--border-soft); box-shadow: 0 40px 80px -24px rgba(0, 0, 0, 0.65); animation: modalIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        #toast { left: 50%; right: auto; bottom: 28px; transform: translate(-50%, 12px); border-radius: 999px; padding: 11px 22px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.5); transition: opacity 0.25s ease, transform 0.25s ease; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
+        #toast.show { transform: translate(-50%, 0); }
+        #login-overlay { border-radius: 22px; padding: 36px; border-color: var(--border-soft); box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.7); }
+
+        @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+        #monthly-view, #annual-view, #multi-year-view, #monthly-trend-view, #goals-view, #forecast-view, #subs-view { animation: viewIn 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ==========================================
+           12. FORECAST, SUBSCRIPTIONS & COMPARISON (added)
+           ========================================== */
+        .fc-banner { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; margin-bottom: 14px; border: 1px solid; line-height: 1.45; }
+        .fc-banner.ok { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+        .fc-banner.warn { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.35); color: #f59e0b; }
+        .fc-banner.bad { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.35); color: var(--danger); }
+        .fc-chart-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+        .fc-grid-line { stroke: var(--border); stroke-dasharray: 3 5; opacity: 0.8; }
+        .fc-zero-line { stroke: var(--danger); stroke-dasharray: 6 4; opacity: 0.75; }
+        .fc-axis-text { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: inherit; }
+        .fc-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+        .fc-line.pos { stroke: var(--accent); }
+        .fc-line.neg { stroke: var(--danger); }
+        .fc-dot { stroke: var(--surface); stroke-width: 2; }
+        .fc-dot.in { fill: var(--success); }
+        .fc-dot.out { fill: var(--danger); }
+        .fc-low-ring { fill: none; stroke: #f59e0b; stroke-width: 2; }
+        .fc-low-label { fill: #f59e0b; font-size: 11px; font-weight: 700; font-family: inherit; }
+
+        .tag { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: var(--pill-bg); border: 1px solid var(--border-soft); color: var(--text-muted); letter-spacing: 0.02em; }
+        .tag-sub { background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.4); color: #818cf8; }
+        .tag-bad { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: var(--danger); }
+        .tag-ok { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--success); }
+        .tag-paused { opacity: 0.7; }
+
+        .subs-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1.1fr 1.4fr auto; gap: 8px; }
+        @media (max-width: 1100px) { .subs-form { grid-template-columns: 1fr 1fr; } }
+        .sub-row-paused td { opacity: 0.55; }
+        .suggest-list { display: flex; flex-direction: column; gap: 8px; }
+        .suggest-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--table-th-bg); font-size: 0.85rem; }
+        .suggest-item small { display: block; color: var(--text-muted); font-size: 0.74rem; margin-top: 2px; }
+        .empty-note { text-align: center; color: var(--text-muted); font-style: italic; padding: 18px 10px; font-size: 0.85rem; }
+
+        .cmp-summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.84rem; margin-bottom: 14px; padding: 10px 12px; border-radius: 12px; background: var(--table-th-bg); border: 1px solid var(--border-soft); }
+        .cmp-list { display: flex; flex-direction: column; gap: 14px; }
+        .cmp-row { display: flex; flex-direction: column; gap: 6px; }
+        .cmp-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.83rem; }
+        .cmp-name { font-weight: 600; }
+        .cmp-delta { font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
+        .cmp-delta.up { background: rgba(239, 68, 68, 0.14); color: var(--danger); }
+        .cmp-delta.down { background: rgba(16, 185, 129, 0.14); color: var(--success); }
+        .cmp-delta.new { background: rgba(99, 102, 241, 0.16); color: #818cf8; }
+        .cmp-bar { position: relative; height: 6px; background: var(--border); border-radius: 6px; }
+        .cmp-fill { height: 100%; border-radius: 6px; }
+        .cmp-fill.up { background: linear-gradient(90deg, #f87171, #ef4444); }
+        .cmp-fill.down { background: linear-gradient(90deg, #34d399, #10b981); }
+        .cmp-fill.new { background: var(--accent-grad); }
+        .cmp-tick { position: absolute; top: -3px; width: 2px; height: 12px; background: var(--text-main); border-radius: 2px; opacity: 0.65; }
+        .cmp-sub { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .cmp-foot { margin-top: 14px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+
+        @media (max-width: 700px) {
+            header { padding: 20px 16px; }
+            header h1 { font-size: 1.4rem; }
+            .stat-card-value { font-size: 1.45rem; }
+        }
+
+        /* ==========================================
+           13. REFINEMENTS (added after visual review)
+           ========================================== */
+        .search-box input { padding-left: 38px; }
+        .password-wrapper input { padding-right: 44px; }
+        header .btn-secondary { background: rgba(255, 255, 255, 0.11); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; border-radius: 12px; height: 38px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        header .btn-secondary:hover { background: rgba(255, 255, 255, 0.22); border-color: rgba(255, 255, 255, 0.38); }
+        [data-theme="light"] .stat-card::after { opacity: 0.22; }
+        .fc-low-label { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+
+        .dashboard-grid { grid-template-columns: minmax(0, 1fr) 410px; }
+        .dashboard-grid > * { min-width: 0; }
+        @media (max-width: 1450px) { .dashboard-grid { grid-template-columns: minmax(0, 1fr); } }
+        .ledger-table { min-width: 1150px; }
+        .col-date { width: 124px; }
+        .col-desc { width: 150px; }
+        .col-cat { width: 128px; }
+        .col-type { width: 100px; }
+        .col-method { width: 100px; }
+        .col-paid { width: 72px; }
+        .col-action { width: 110px; }
+        .ledger-table input, .ledger-table select { padding-left: 6px; padding-right: 6px; }
+
+        @media (max-width: 700px) {
+            .header-top-row { flex-wrap: wrap; justify-content: space-between; row-gap: 12px; }
+            .header-top-row > .header-title { order: -1; flex: 1 0 100% !important; }
+            .header-actions { flex-wrap: nowrap; gap: 8px; }
+            header .select-picker { padding: 6px 4px; font-size: 0.8rem; }
+            #year-dropdown { width: 100px !important; flex: none; }
+            #month-dropdown { flex: 1; min-width: 0; width: auto !important; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .filter-pills { justify-content: space-between; }
+        }
     </style>
 </head>
 <body class="locked">
@@ -722,8 +972,9 @@
                 </div>
             </div>
             
-            <div style="flex: 1; text-align: center;">
+            <div class="header-title" style="flex: 1; text-align: center;">
                 <h1 id="app-title-header">Financial Movement Dashboard</h1>
+                <div class="header-sub">🔒 Encrypted · Synced to cloud</div>
             </div>
 
             <div class="header-controls-row">
@@ -764,6 +1015,8 @@
                 <option value="multi-year-summary">📈 Multi-Year Comparison</option>
                 <option value="monthly-trend-view">📉 Monthly Spending Trend</option>
                 <option value="savings-goals">🎯 Savings Goals</option>
+                <option value="cashflow-forecast">🔮 Cash-Flow Forecast</option>
+                <option value="subscriptions">🔁 Subscriptions &amp; Bills</option>
             </select>
             <button class="icon-btn-tooltip" onclick="changeMonth(1)" aria-label="Next month">›</button>
         </div>
@@ -816,6 +1069,149 @@
                     <tbody id="multi-year-tbody"></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- CASH-FLOW FORECAST VIEW CONTAINER -->
+    <div id="forecast-view" style="display: none;">
+        <div class="annual-grid">
+            <div class="stat-card">
+                <span class="stat-card-title">Balance Today</span>
+                <span id="fc-today" class="stat-card-value">$0.00</span>
+                <span class="stat-card-sub">Cleared money this month</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title" id="fc-end-title">Balance in 30 Days</span>
+                <span id="fc-end" class="stat-card-value">$0.00</span>
+                <span class="stat-card-sub" id="fc-end-sub">&nbsp;</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Lowest Point</span>
+                <span id="fc-low" class="stat-card-value">$0.00</span>
+                <span class="stat-card-sub" id="fc-low-date">--</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Safe to Spend Now</span>
+                <span id="fc-safe" class="stat-card-value" style="color: var(--accent);">$0.00</span>
+                <span class="stat-card-sub">Without dipping below $0 in this window</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Cash-Flow Forecast</h2>
+                <div class="seg-pills" id="fc-pills">
+                    <div class="pill" data-days="14" onclick="setForecastDays(14)">14 days</div>
+                    <div class="pill active" data-days="30" onclick="setForecastDays(30)">30 days</div>
+                    <div class="pill" data-days="60" onclick="setForecastDays(60)">60 days</div>
+                    <div class="pill" data-days="90" onclick="setForecastDays(90)">90 days</div>
+                </div>
+            </div>
+            <div id="fc-banner" class="fc-banner ok"></div>
+            <div id="forecast-chart" class="fc-chart-wrap"></div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div> Projected balance</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--success);"></div> Money in</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--danger);"></div> Money out</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Upcoming Money Movements</h2>
+                <span id="fc-count" class="chip">0 items</span>
+            </div>
+            <div class="table-container-scrollable" style="max-height: 440px;">
+                <table class="data-table-auto">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>What</th>
+                            <th>Source</th>
+                            <th class="col-num">Amount</th>
+                            <th class="col-num">Balance After</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forecast-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTIONS VIEW CONTAINER -->
+    <div id="subs-view" style="display: none;">
+        <div class="annual-grid">
+            <div class="stat-card">
+                <span class="stat-card-title">Monthly Cost</span>
+                <span id="subs-monthly" class="stat-card-value">$0.00</span>
+                <span class="stat-card-sub">Active subscriptions &amp; bills</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Yearly Cost</span>
+                <span id="subs-yearly" class="stat-card-value" style="color: var(--accent);">$0.00</span>
+                <span class="stat-card-sub" id="subs-yearly-sub">&nbsp;</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Active</span>
+                <span id="subs-count" class="stat-card-value">0</span>
+                <span class="stat-card-sub" id="subs-paused">&nbsp;</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Next Due</span>
+                <span id="subs-next" class="stat-card-value" style="font-size: 1.25rem;">--</span>
+                <span class="stat-card-sub" id="subs-next-date">&nbsp;</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Add a Subscription or Recurring Bill</h2>
+            </div>
+            <div class="subs-form">
+                <input type="text" id="sub-name" placeholder="Name (e.g. Netflix)" aria-label="Name" onkeydown="if(event.key==='Enter') addSubscription()">
+                <input type="number" step="0.01" id="sub-amount" placeholder="Amount ($)" aria-label="Amount">
+                <select id="sub-cycle" aria-label="Billing cycle">
+                    <option value="monthly">Monthly</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="fortnightly">Fortnightly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+                <input type="date" id="sub-next" title="Next (or any past) due date" aria-label="Next due date">
+                <select id="sub-cat" aria-label="Expense category"></select>
+                <button class="btn" onclick="addSubscription()">+ Add</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Tracked Subscriptions</h2>
+            </div>
+            <div class="table-container-clean">
+                <table class="data-table-auto">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Cycle</th>
+                            <th class="col-num">Amount</th>
+                            <th class="col-num">Per Month</th>
+                            <th class="col-num">Per Year</th>
+                            <th>Next Due</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subs-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Detected in Your Ledger</h2>
+                <span class="chip">Repeating charges you are not tracking yet</span>
+            </div>
+            <div id="subs-suggestions" class="suggest-list"></div>
         </div>
     </div>
 
@@ -1090,9 +1486,17 @@
                     <div class="metric-row"><span>Savings rate (month):</span> <span id="bh-rate">--</span></div>
                     <div class="metric-row"><span>Days left in month:</span> <span id="bh-days">--</span></div>
                     <div class="metric-row"><span>Safe to spend per day:</span> <span id="bh-daily">--</span></div>
+                    <div class="metric-row"><span>Bills due in next 7 days:</span> <span id="bh-due7">--</span></div>
                     <div class="divider"></div>
                     <div id="bh-alerts" class="alert-list"></div>
                 </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Spending vs 3-Month Average</h2>
+                </div>
+                <div id="cmp-body"></div>
             </div>
 
             <div class="card">
@@ -1203,6 +1607,9 @@
     let activeMonthKey = "september2026";
     let lastMonthName = "september"; // last real month picked (used by the trend view)
     let savingsGoals = [];
+    let subscriptions = [];
+    let forecastDays = 30;
+    let subCandidates = [];
     let currentFilter = 'all';
 
     function getMonthKeysOrderForYear(yr) {
@@ -1653,6 +2060,567 @@
         }
     }
 
+
+    // ==========================================
+    // DATE HELPERS (forecast / subscriptions)
+    // ==========================================
+    const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const fmtCompact = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', notation: 'compact', maximumFractionDigits: 1 });
+
+    function startOfToday() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+    function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+    function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+    function monthKeyOfDate(d) { return rawMonthNames[d.getMonth()] + d.getFullYear(); }
+    function parseTxDate(str) {
+        const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(str || '').trim());
+        if (!m) return null;
+        const d = new Date(+m[3], +m[2] - 1, +m[1]);
+        return isNaN(d) ? null : d;
+    }
+    function parseIso(str) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(str || ''));
+        if (!m) return null;
+        const d = new Date(+m[1], +m[2] - 1, +m[3]);
+        return isNaN(d) ? null : d;
+    }
+    function isoDate(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    function fmtDay(d) { return d.getDate() + ' ' + SHORT_MONTHS[d.getMonth()]; }
+    function fmtDayLong(d) { return SHORT_DAYS[d.getDay()] + ' ' + fmtDay(d); }
+    function relDays(n) { return n <= 0 ? 'today' : n === 1 ? 'tomorrow' : `in ${n} days`; }
+    function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    function signedMoney(v) { return (v < 0 ? '−' : '+') + fmt(Math.abs(v)); }
+
+    // ==========================================
+    // SUBSCRIPTIONS: SCHEDULE MATHS
+    // ==========================================
+    const SUB_CYCLES = {
+        weekly:      { label: 'Weekly',      perYear: 52, tol: 3 },
+        fortnightly: { label: 'Fortnightly', perYear: 26, tol: 6 },
+        monthly:     { label: 'Monthly',     perYear: 12, tol: 12 },
+        quarterly:   { label: 'Quarterly',   perYear: 4,  tol: 20 },
+        yearly:      { label: 'Yearly',      perYear: 1,  tol: 30 }
+    };
+
+    function addMonthsClamped(d, n) {
+        const day = d.getDate();
+        const r = new Date(d.getFullYear(), d.getMonth() + n, 1);
+        const last = new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate();
+        r.setDate(Math.min(day, last));
+        return r;
+    }
+    function subOccurrence(sub, k) {
+        const a = parseIso(sub.nextDue);
+        if (!a) return null;
+        switch (sub.cycle) {
+            case 'weekly': return addDays(a, 7 * k);
+            case 'fortnightly': return addDays(a, 14 * k);
+            case 'quarterly': return addMonthsClamped(a, 3 * k);
+            case 'yearly': return addMonthsClamped(a, 12 * k);
+            default: return addMonthsClamped(a, k);
+        }
+    }
+    function subOccurrencesBetween(sub, from, to) {
+        const out = [];
+        for (let k = 0; k < 4000; k++) {
+            const d = subOccurrence(sub, k);
+            if (!d || d > to) break;
+            if (d >= from) out.push(d);
+        }
+        return out;
+    }
+    function subNextOccurrence(sub, from) {
+        for (let k = 0; k < 4000; k++) {
+            const d = subOccurrence(sub, k);
+            if (!d) return null;
+            if (d >= from) return d;
+        }
+        return null;
+    }
+    function subMonthlyCost(sub) {
+        const c = SUB_CYCLES[sub.cycle] || SUB_CYCLES.monthly;
+        return (Number(sub.amount) || 0) * c.perYear / 12;
+    }
+
+    // Is this occurrence already in the ledger (paid or pending)? Avoids double counting in the forecast.
+    function ledgerHasSubOccurrence(sub, occ) {
+        const nm = String(sub.name || '').toLowerCase().trim();
+        if (!nm) return false;
+        const tol = (SUB_CYCLES[sub.cycle] || SUB_CYCLES.monthly).tol;
+        for (let off = -1; off <= 1; off++) {
+            const md = new Date(occ.getFullYear(), occ.getMonth() + off, 1);
+            const ds = datasets[monthKeyOfDate(md)];
+            if (!ds || !Array.isArray(ds.data)) continue;
+            const hit = ds.data.some(t => {
+                if (isRolloverTx(t) || !((parseFloat(t.debit) || 0) > 0)) return false;
+                const td = String(t.desc || '').toLowerCase().trim();
+                if (!td || !(td.includes(nm) || (td.length >= 3 && nm.includes(td)))) return false;
+                const dt = parseTxDate(t.date);
+                return dt ? Math.abs(daysBetween(dt, occ)) <= tol : false;
+            });
+            if (hit) return true;
+        }
+        return false;
+    }
+
+    // ==========================================
+    // CASH-FLOW FORECAST
+    // ==========================================
+    function buildForecast(days) {
+        const today = startOfToday();
+        const yr = String(today.getFullYear());
+        if (!allYears.includes(yr)) return null;
+        if (!datasets[monthKeyOfDate(today)]) ensureYearDatasetsExist(yr);
+        const cur = datasets[monthKeyOfDate(today)];
+        if (!cur) return null;
+        const end = addDays(today, days);
+
+        // Money you have right now = opening balance + everything already cleared this month
+        let start = 0;
+        cur.data.forEach(t => {
+            const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
+            if (isRolloverTx(t) || String(t.paid).toLowerCase() === 'yes') start += c - d;
+        });
+
+        const events = [];
+        for (let off = 0; off <= 4; off++) {
+            const md = new Date(today.getFullYear(), today.getMonth() + off, 1);
+            const ds = datasets[monthKeyOfDate(md)];
+            if (!ds || !Array.isArray(ds.data)) continue;
+            ds.data.forEach(t => {
+                if (isRolloverTx(t) || String(t.paid).toLowerCase() === 'yes') return;
+                const amt = (parseFloat(t.credit) || 0) - (parseFloat(t.debit) || 0);
+                if (!amt) return;
+                const dt = parseTxDate(t.date) || (off === 0 ? today : md);
+                const overdue = dt < today;
+                const when = overdue ? today : dt;
+                if (when > end) return;
+                events.push({ date: when, desc: t.desc || '(no description)', amount: amt, source: 'Ledger', overdue, cat: t.cost || t.creditCat || '' });
+            });
+        }
+
+        subscriptions.forEach(sub => {
+            if (!sub.active) return;
+            subOccurrencesBetween(sub, today, end).forEach(d => {
+                if (ledgerHasSubOccurrence(sub, d)) return;
+                events.push({ date: d, desc: sub.name, amount: -Math.abs(Number(sub.amount) || 0), source: 'Subscription', overdue: false, cat: sub.category || '' });
+            });
+        });
+
+        events.sort((a, b) => (a.date - b.date) || (a.amount - b.amount));
+
+        const series = [];
+        let bal = start, ei = 0;
+        for (let i = 0; i <= days; i++) {
+            const flows = [];
+            while (ei < events.length && daysBetween(today, events[ei].date) <= i) {
+                bal += events[ei].amount;
+                events[ei].after = bal;
+                flows.push(events[ei]);
+                ei++;
+            }
+            series.push({ date: addDays(today, i), balance: bal, flows });
+        }
+
+        let low = series[0];
+        series.forEach(p => { if (p.balance < low.balance) low = p; });
+        return {
+            today, end, days, start, events, series, low,
+            endBalance: series[series.length - 1].balance,
+            firstNeg: series.find(p => p.balance < 0) || null,
+            totalIn: events.filter(e => e.amount > 0).reduce((a, e) => a + e.amount, 0),
+            totalOut: events.filter(e => e.amount < 0).reduce((a, e) => a + e.amount, 0)
+        };
+    }
+
+    function setForecastDays(n) {
+        forecastDays = n;
+        document.querySelectorAll('#fc-pills .pill').forEach(p => p.classList.toggle('active', Number(p.dataset.days) === n));
+        renderForecast();
+    }
+
+    function buildForecastSvg(f) {
+        const W = 900, H = 300, pl = 66, pr = 18, pt = 16, pb = 30;
+        const iw = W - pl - pr, ih = H - pt - pb;
+        const vals = f.series.map(p => p.balance);
+        let minV = Math.min(0, ...vals), maxV = Math.max(0, ...vals);
+        if (maxV === minV) maxV = minV + 1;
+        const pad = (maxV - minV) * 0.08;
+        if (minV < 0) minV -= pad;
+        maxV += pad;
+        const rough = (maxV - minV) / 4;
+        const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+        const norm = rough / mag;
+        const tickStep = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag;
+        minV = Math.floor(minV / tickStep) * tickStep;
+        maxV = Math.ceil(maxV / tickStep) * tickStep;
+        const n = Math.max(1, f.series.length - 1);
+        const x = i => pl + (i / n) * iw;
+        const y = v => pt + (1 - (v - minV) / (maxV - minV)) * ih;
+        const y0 = y(0);
+
+        let grid = '', ylab = '';
+        for (let v = minV; v <= maxV + tickStep / 2; v += tickStep) {
+            v = Math.round(v / tickStep) * tickStep;
+            grid += `<line class="fc-grid-line" x1="${pl}" x2="${W - pr}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/>`;
+            ylab += `<text class="fc-axis-text" x="${pl - 10}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${fmtCompact.format(v)}</text>`;
+        }
+        const zero = minV < 0 ? `<line class="fc-zero-line" x1="${pl}" x2="${W - pr}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}"/>` : '';
+
+        let xlab = '';
+        const step = Math.max(1, Math.ceil(n / 6));
+        for (let i = 0; i <= n; i += step) {
+            xlab += `<text class="fc-axis-text" x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : 'middle'}">${i === 0 ? 'Today' : fmtDay(f.series[i].date)}</text>`;
+        }
+
+        let d = `M${x(0).toFixed(1)},${y(vals[0]).toFixed(1)}`;
+        for (let i = 1; i <= n; i++) d += ` L${x(i).toFixed(1)},${y(vals[i - 1]).toFixed(1)} L${x(i).toFixed(1)},${y(vals[i]).toFixed(1)}`;
+        const area = `${d} L${x(n).toFixed(1)},${y0.toFixed(1)} L${x(0).toFixed(1)},${y0.toFixed(1)} Z`;
+
+        let hover = '', dots = '';
+        const bw = iw / n;
+        f.series.forEach((p, i) => {
+            hover += `<rect x="${(x(i) - bw / 2).toFixed(1)}" y="${pt}" width="${bw.toFixed(1)}" height="${ih}" fill="transparent"><title>${esc(fmtDayLong(p.date))} — balance ${esc(fmt(p.balance))}</title></rect>`;
+            if (p.flows.length) {
+                const net = p.flows.reduce((a, e) => a + e.amount, 0);
+                const tip = p.flows.map(e => `${e.desc}: ${signedMoney(e.amount)}`).join('\n');
+                dots += `<circle class="fc-dot ${net >= 0 ? 'in' : 'out'}" cx="${x(i).toFixed(1)}" cy="${y(p.balance).toFixed(1)}" r="4.5"><title>${esc(fmtDayLong(p.date))}\n${esc(tip)}\nBalance after: ${esc(fmt(p.balance))}</title></circle>`;
+            }
+        });
+
+        const li = f.series.indexOf(f.low);
+        const lowMark = li >= 0 ? `<circle class="fc-low-ring" cx="${x(li).toFixed(1)}" cy="${y(f.low.balance).toFixed(1)}" r="8"/><text class="fc-low-label" x="${Math.min(Math.max(x(li), pl + 14), W - pr - 14).toFixed(1)}" y="${(y(f.low.balance) - 14).toFixed(1)}" text-anchor="middle">Low ${esc(fmtCompact.format(f.low.balance))}</text>` : '';
+
+        return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Projected balance over the next ${f.days} days">
+            <defs>
+                <linearGradient id="fcAreaPos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color: var(--accent); stop-opacity: 0.38"/><stop offset="100%" style="stop-color: var(--accent); stop-opacity: 0.02"/></linearGradient>
+                <linearGradient id="fcAreaNeg" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" style="stop-color: var(--danger); stop-opacity: 0.4"/><stop offset="100%" style="stop-color: var(--danger); stop-opacity: 0.03"/></linearGradient>
+                <clipPath id="fcAbove"><rect x="0" y="0" width="${W}" height="${Math.max(0, y0).toFixed(1)}"/></clipPath>
+                <clipPath id="fcBelow"><rect x="0" y="${y0.toFixed(1)}" width="${W}" height="${Math.max(0, H - y0).toFixed(1)}"/></clipPath>
+            </defs>
+            ${grid}${ylab}${xlab}
+            <path d="${area}" fill="url(#fcAreaPos)" clip-path="url(#fcAbove)"/>
+            <path d="${area}" fill="url(#fcAreaNeg)" clip-path="url(#fcBelow)"/>
+            ${zero}
+            <path class="fc-line pos" d="${d}" clip-path="url(#fcAbove)"/>
+            <path class="fc-line neg" d="${d}" clip-path="url(#fcBelow)"/>
+            ${hover}${dots}${lowMark}
+        </svg>`;
+    }
+
+    function renderForecast() {
+        const chart = document.getElementById('forecast-chart');
+        if (!chart) return;
+        const f = buildForecast(forecastDays);
+        const banner = document.getElementById('fc-banner');
+        if (!f) {
+            chart.innerHTML = '<div class="empty-note">Forecast is only available for years that exist in the dashboard.</div>';
+            banner.style.display = 'none';
+            return;
+        }
+        banner.style.display = 'flex';
+
+        const setVal = (id, v, colorize) => {
+            const el = document.getElementById(id);
+            el.innerText = fmt(v);
+            if (colorize) el.classList.toggle('text-danger', v < 0);
+        };
+        setVal('fc-today', f.start, true);
+        document.getElementById('fc-end-title').innerText = `Balance in ${f.days} Days`;
+        setVal('fc-end', f.endBalance, true);
+        const delta = f.endBalance - f.start;
+        document.getElementById('fc-end-sub').innerText = `${delta >= 0 ? 'Up' : 'Down'} ${fmt(Math.abs(delta))} from today`;
+        setVal('fc-low', f.low.balance, true);
+        document.getElementById('fc-low-date').innerText = f.low.date.getTime() === f.today.getTime() ? 'Right now' : fmtDayLong(f.low.date);
+        setVal('fc-safe', Math.max(0, f.low.balance), false);
+
+        const overdue = f.events.filter(e => e.overdue).length;
+        const overdueNote = overdue ? ` ${overdue} overdue pending item${overdue > 1 ? 's are' : ' is'} counted as due today.` : '';
+        if (f.firstNeg) {
+            banner.className = 'fc-banner bad';
+            banner.innerText = `⚠️ Your balance is projected to go below $0 on ${fmtDayLong(f.firstNeg.date)} (lowest: ${fmt(f.low.balance)}). Move a bill or top up before then.${overdueNote}`;
+        } else if (f.low.balance < 100) {
+            banner.className = 'fc-banner warn';
+            banner.innerText = `⚡ Tight: your balance drops to ${fmt(f.low.balance)} on ${fmtDayLong(f.low.date)}.${overdueNote}`;
+        } else {
+            banner.className = 'fc-banner ok';
+            banner.innerText = `✓ You stay above $0 for the next ${f.days} days. Lowest point: ${fmt(f.low.balance)} on ${fmtDayLong(f.low.date)}.${overdueNote}`;
+        }
+
+        chart.innerHTML = buildForecastSvg(f);
+
+        const tbody = document.getElementById('forecast-tbody');
+        document.getElementById('fc-count').innerText = `${f.events.length} item${f.events.length === 1 ? '' : 's'} · ${fmt(Math.abs(f.totalOut))} out · ${fmt(f.totalIn)} in`;
+        if (!f.events.length) {
+            tbody.innerHTML = '<tr class="empty-state"><td colspan="5">Nothing pending or scheduled in this window. Mark items as "NO" (unpaid) in the ledger, or add subscriptions, to see them here.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = f.events.map(e => `
+            <tr>
+                <td>${esc(fmtDayLong(e.date))}${e.overdue ? ' <span class="tag tag-bad">Overdue</span>' : ''}</td>
+                <td>${esc(e.desc)}${e.cat ? `<span style="color: var(--text-muted);"> · ${esc(e.cat)}</span>` : ''}</td>
+                <td><span class="tag ${e.source === 'Subscription' ? 'tag-sub' : ''}">${e.source}</span></td>
+                <td class="col-num ${e.amount < 0 ? 'text-danger' : 'text-success'}">${signedMoney(e.amount)}</td>
+                <td class="col-num ${e.after < 0 ? 'text-danger' : ''}">${fmt(e.after)}</td>
+            </tr>`).join('');
+    }
+
+    function renderUpcomingSummary() {
+        const el = document.getElementById('bh-due7');
+        if (!el) return;
+        const f = buildForecast(7);
+        if (!f) { el.innerText = '--'; el.className = ''; return; }
+        const out = Math.abs(f.totalOut);
+        el.innerText = out > 0 ? fmt(out) : fmt(0);
+        el.className = out > 0 ? 'text-danger' : '';
+    }
+
+    // ==========================================
+    // SPENDING VS 3-MONTH AVERAGE
+    // ==========================================
+    function spendByCategory(key, cutoffDay) {
+        const map = {};
+        let total = 0;
+        const ds = datasets[key];
+        if (!ds || !Array.isArray(ds.data)) return { map, total };
+        ds.data.forEach(t => {
+            if (isRolloverTx(t)) return;
+            const d = parseFloat(t.debit) || 0;
+            if (d <= 0) return;
+            const day = parseInt(String(t.date).slice(0, 2), 10);
+            if (cutoffDay && day > cutoffDay) return;
+            const c = t.cost || 'Uncategorised';
+            map[c] = (map[c] || 0) + d;
+            total += d;
+        });
+        return { map, total };
+    }
+
+    function renderCategoryComparison() {
+        const box = document.getElementById('cmp-body');
+        if (!box) return;
+        const mName = rawMonthNames.find(m => activeMonthKey.startsWith(m));
+        if (!mName) { box.innerHTML = ''; return; }
+        const yr = parseInt(activeMonthKey.slice(mName.length), 10);
+        const mIdx = rawMonthNames.indexOf(mName);
+        const today = startOfToday();
+        const monthStart = new Date(yr, mIdx, 1);
+        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        if (monthStart > thisMonthStart) {
+            box.innerHTML = '<div class="empty-note">Comparisons are available for the current and past months.</div>';
+            return;
+        }
+        const isCurrent = monthStart.getTime() === thisMonthStart.getTime();
+        const cutoff = isCurrent ? today.getDate() : 0;
+
+        const cur = spendByCategory(activeMonthKey, cutoff);
+        const prior = [];
+        for (let k = 1; k <= 3; k++) {
+            const r = spendByCategory(monthKeyOfDate(new Date(yr, mIdx - k, 1)), cutoff);
+            if (r.total > 0) prior.push(r);
+        }
+        if (!prior.length) {
+            box.innerHTML = '<div class="empty-note">Not enough history yet. Comparisons appear once a previous month has spending.</div>';
+            return;
+        }
+
+        const n = prior.length;
+        const avg = {};
+        let avgTotal = 0;
+        prior.forEach(p => {
+            Object.keys(p.map).forEach(c => { avg[c] = (avg[c] || 0) + p.map[c] / n; });
+            avgTotal += p.total / n;
+        });
+
+        const cats = new Set([...Object.keys(cur.map), ...Object.keys(avg)]);
+        const rows = [...cats].map(c => ({ c, cur: cur.map[c] || 0, avg: avg[c] || 0 }))
+            .map(r => ({ ...r, diff: r.cur - r.avg }))
+            .filter(r => Math.abs(r.diff) >= 5)
+            .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
+            .slice(0, 6);
+
+        const totalDiff = cur.total - avgTotal;
+        const totalPct = avgTotal > 0 ? (totalDiff / avgTotal) * 100 : null;
+        const tCls = totalDiff > 0 ? 'up' : 'down';
+        const summary = `
+            <div class="cmp-summary">
+                <span><strong>${fmt(cur.total)}</strong> <span style="color: var(--text-muted);">vs ${fmt(avgTotal)} average</span></span>
+                ${totalPct === null ? '' : `<span class="cmp-delta ${tCls}">${totalDiff > 0 ? '▲' : '▼'} ${Math.abs(totalPct).toFixed(0)}%</span>`}
+            </div>`;
+
+        const list = rows.length ? rows.map(r => {
+            const isNew = r.avg === 0;
+            const cls = isNew ? 'new' : (r.diff > 0 ? 'up' : 'down');
+            const pct = isNew ? 'New' : `${r.diff > 0 ? '▲' : '▼'} ${Math.abs((r.diff / r.avg) * 100).toFixed(0)}%`;
+            const max = Math.max(r.cur, r.avg, 1);
+            return `
+                <div class="cmp-row">
+                    <div class="cmp-top"><span class="cmp-name">${esc(r.c)}</span><span class="cmp-delta ${cls}">${pct}</span></div>
+                    <div class="cmp-bar"><div class="cmp-fill ${cls}" style="width: ${((r.cur / max) * 100).toFixed(1)}%"></div><div class="cmp-tick" style="left: calc(${((r.avg / max) * 100).toFixed(1)}% - 1px)" title="Average"></div></div>
+                    <div class="cmp-sub"><span>This month ${fmt(r.cur)}</span><span>Avg ${fmt(r.avg)}</span></div>
+                </div>`;
+        }).join('') : '<div class="empty-note">Spending is in line with your average.</div>';
+
+        const note = `Average of your previous ${n} month${n > 1 ? 's' : ''}${isCurrent ? `, compared at the same point of the month (day ${cutoff})` : ''}. The tick marks the average.`;
+        box.innerHTML = `${summary}<div class="cmp-list">${list}</div><div class="cmp-foot">${note}</div>`;
+    }
+
+    // ==========================================
+    // SUBSCRIPTIONS & BILLS
+    // ==========================================
+    function median(arr) {
+        const a = [...arr].sort((x, y) => x - y);
+        const m = Math.floor(a.length / 2);
+        return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+    }
+
+    function detectSubscriptionCandidates() {
+        const found = {};
+        const yrs = [String(selectedYear)];
+        const prev = String(parseInt(selectedYear, 10) - 1);
+        if (allYears.includes(prev)) yrs.push(prev);
+        yrs.forEach(yr => {
+            getMonthKeysOrderForYear(yr).forEach(key => {
+                const ds = datasets[key];
+                if (!ds || !Array.isArray(ds.data)) return;
+                ds.data.forEach(t => {
+                    const amt = parseFloat(t.debit) || 0;
+                    const raw = String(t.desc || '').trim();
+                    if (isRolloverTx(t) || amt <= 0 || raw.length < 2) return;
+                    const k = raw.toLowerCase().replace(/\s+/g, ' ');
+                    const dt = parseTxDate(t.date);
+                    const rec = found[k] || (found[k] = { name: raw, amounts: [], months: new Set(), hasFixed: false, last: null, lastAmt: amt, cat: '' });
+                    rec.amounts.push(amt);
+                    rec.months.add(key);
+                    if (t.type === 'Fixed') rec.hasFixed = true;
+                    if (dt && (!rec.last || dt >= rec.last)) { rec.last = dt; rec.lastAmt = amt; rec.name = raw; rec.cat = t.cost || ''; }
+                });
+            });
+        });
+        return Object.keys(found).map(k => ({ key: k, ...found[k] })).filter(r => {
+            if (r.months.size < 2 || !r.last) return false;
+            if (!(r.hasFixed || r.months.size >= 3)) return false;
+            const med = median(r.amounts);
+            if (!(med > 0) || (Math.max(...r.amounts) - Math.min(...r.amounts)) / med > 0.15) return false;
+            return !subscriptions.some(s => {
+                const nm = String(s.name || '').toLowerCase().trim();
+                return nm && (r.key.includes(nm) || nm.includes(r.key));
+            });
+        }).sort((a, b) => b.lastAmt - a.lastAmt).slice(0, 8);
+    }
+
+    function addSubscription() {
+        const name = document.getElementById('sub-name').value.trim();
+        const amount = parseFloat(document.getElementById('sub-amount').value) || 0;
+        const cycle = document.getElementById('sub-cycle').value;
+        const nextDue = document.getElementById('sub-next').value;
+        const category = document.getElementById('sub-cat').value;
+        if (!name || amount <= 0) { showToast('Enter a name and an amount above $0', true); return; }
+        if (!SUB_CYCLES[cycle]) { showToast('Pick a billing cycle', true); return; }
+        if (!parseIso(nextDue)) { showToast('Pick the next due date', true); return; }
+        subscriptions.push({ id: newId(), name, amount, cycle, nextDue, category, active: true });
+        ['sub-name', 'sub-amount', 'sub-next'].forEach(id => { document.getElementById(id).value = ''; });
+        renderSubscriptions();
+        saveToSupabase();
+        showToast(`"${name}" is now tracked`);
+    }
+
+    function trackCandidate(i) {
+        const c = subCandidates[i];
+        if (!c) return;
+        subscriptions.push({ id: newId(), name: c.name, amount: c.lastAmt, cycle: 'monthly', nextDue: isoDate(c.last), category: c.cat || '', active: true });
+        renderSubscriptions();
+        saveToSupabase();
+        showToast(`"${c.name}" is now tracked`);
+    }
+
+    function toggleSubscription(id) {
+        const s = subscriptions.find(x => x.id === id);
+        if (!s) return;
+        s.active = !s.active;
+        renderSubscriptions();
+        saveToSupabase();
+    }
+
+    function editSubscriptionAmount(id) {
+        const s = subscriptions.find(x => x.id === id);
+        if (!s) return;
+        const input = prompt(`New ${SUB_CYCLES[s.cycle].label.toLowerCase()} amount for "${s.name}":`, s.amount);
+        if (input === null) return;
+        const v = parseFloat(input);
+        if (!isFinite(v) || v <= 0) { showToast('Enter a valid amount', true); return; }
+        s.amount = v;
+        renderSubscriptions();
+        saveToSupabase();
+    }
+
+    function deleteSubscription(id) {
+        const s = subscriptions.find(x => x.id === id);
+        if (!s || !confirm(`Stop tracking "${s.name}"?`)) return;
+        subscriptions = subscriptions.filter(x => x.id !== id);
+        renderSubscriptions();
+        saveToSupabase();
+    }
+
+    function renderSubscriptions() {
+        const tbody = document.getElementById('subs-tbody');
+        if (!tbody) return;
+        const today = startOfToday();
+
+        const sel = document.getElementById('sub-cat');
+        const keep = sel.value;
+        sel.innerHTML = '<option value="">Category (optional)</option>' + [...categories].sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        if ([...sel.options].some(o => o.value === keep)) sel.value = keep;
+
+        const rows = subscriptions.map(s => ({ s, next: subNextOccurrence(s, today) })).sort((a, b) => {
+            if (a.s.active !== b.s.active) return a.s.active ? -1 : 1;
+            const ta = a.next ? a.next.getTime() : Infinity, tb = b.next ? b.next.getTime() : Infinity;
+            return ta < tb ? -1 : ta > tb ? 1 : 0;
+        });
+
+        const active = rows.filter(r => r.s.active);
+        const monthly = active.reduce((a, r) => a + subMonthlyCost(r.s), 0);
+        document.getElementById('subs-monthly').innerText = fmt(monthly);
+        document.getElementById('subs-yearly').innerText = fmt(monthly * 12);
+        document.getElementById('subs-yearly-sub').innerText = monthly > 0 ? `About ${fmt(monthly * 12 / 52)} every week` : ' ';
+        document.getElementById('subs-count').innerText = String(active.length);
+        document.getElementById('subs-paused').innerText = rows.length - active.length ? `${rows.length - active.length} paused` : ' ';
+        const soonest = active.filter(r => r.next)[0];
+        document.getElementById('subs-next').innerText = soonest ? soonest.s.name : '--';
+        document.getElementById('subs-next-date').innerText = soonest ? `${fmtDayLong(soonest.next)} · ${relDays(daysBetween(today, soonest.next))}` : ' ';
+
+        if (!rows.length) {
+            tbody.innerHTML = '<tr class="empty-state"><td colspan="8">Nothing tracked yet. Add one above, or pick from the detected charges below.</td></tr>';
+        } else {
+            tbody.innerHTML = rows.map(({ s, next }) => `
+                <tr class="${s.active ? '' : 'sub-row-paused'}">
+                    <td style="font-weight: 600;">${esc(s.name)}${s.active ? '' : ' <span class="tag tag-paused">Paused</span>'}</td>
+                    <td>${esc(s.category || '--')}</td>
+                    <td>${esc((SUB_CYCLES[s.cycle] || SUB_CYCLES.monthly).label)}</td>
+                    <td class="col-num">${fmt(s.amount)}</td>
+                    <td class="col-num">${fmt(subMonthlyCost(s))}</td>
+                    <td class="col-num">${fmt(subMonthlyCost(s) * 12)}</td>
+                    <td>${next ? `${esc(fmtDayLong(next))} <span style="color: var(--text-muted);">· ${relDays(daysBetween(today, next))}</span>` : '--'}</td>
+                    <td class="col-action">
+                        <div class="btn-action-row">
+                            <button class="btn-transfer" onclick="toggleSubscription('${s.id}')" title="${s.active ? 'Pause' : 'Resume'}">${s.active ? 'Pause' : 'Resume'}</button>
+                            <button class="btn-copy" onclick="editSubscriptionAmount('${s.id}')" title="Change amount">✏️</button>
+                            <button class="btn-danger" onclick="deleteSubscription('${s.id}')" title="Stop tracking">✕</button>
+                        </div>
+                    </td>
+                </tr>`).join('');
+        }
+
+        subCandidates = detectSubscriptionCandidates();
+        const sug = document.getElementById('subs-suggestions');
+        sug.innerHTML = subCandidates.length ? subCandidates.map((c, i) => `
+            <div class="suggest-item">
+                <div><strong>${esc(c.name)}</strong><small>Seen in ${c.months.size} months · about ${fmt(c.lastAmt)} each time${c.cat ? ' · ' + esc(c.cat) : ''}</small></div>
+                <button class="btn" style="padding: 6px 12px; font-size: 0.78rem;" onclick="trackCandidate(${i})">Track monthly</button>
+            </div>`).join('') : '<div class="empty-note">No untracked repeating charges found. Charges that appear in 2+ months at a similar amount will show up here.</div>';
+    }
+
     function toggleDropdown(event) {
         event.stopPropagation();
         document.getElementById('options-dropdown').classList.toggle('show');
@@ -1806,6 +2774,7 @@
                 recurringTemplates = parsedVault.recurringTemplates || recurringTemplates;
                 autoCategorizationMap = parsedVault.autoCategorizationMap || autoCategorizationMap;
                 savingsGoals = Array.isArray(parsedVault.savingsGoals) ? parsedVault.savingsGoals : [];
+                subscriptions = Array.isArray(parsedVault.subscriptions) ? parsedVault.subscriptions : [];
             } else {
                 datasets = parsedVault;
             }
@@ -1831,7 +2800,9 @@
         vaultSalt = null;
         datasets = {};
         savingsGoals = [];
-        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list').forEach(el => { el.innerHTML = ''; });
+        subscriptions = [];
+        subCandidates = [];
+        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #cmp-body').forEach(el => { el.innerHTML = ''; });
         const searchEl = document.getElementById('search-input');
         if (searchEl) searchEl.value = '';
         document.getElementById('main-app').style.display = 'none';
@@ -1867,7 +2838,8 @@
                 enableBudgetRollover,
                 recurringTemplates,
                 autoCategorizationMap,
-                savingsGoals
+                savingsGoals,
+                subscriptions
             };
             const encryptedString = await encryptVault(vaultPayload);
 
@@ -2058,6 +3030,10 @@
         } else if (selectedMonthName === 'multi-year-summary') {
             renderMultiYearSummary();
             showToast("Switched to Multi-Year Trend View");
+        } else if (selectedMonthName === 'cashflow-forecast') {
+            renderForecast();
+        } else if (selectedMonthName === 'subscriptions') {
+            renderSubscriptions();
         } else if (selectedMonthName === 'savings-goals') {
             renderGoals();
         } else if (selectedMonthName === 'monthly-trend-view') {
@@ -2080,12 +3056,16 @@
         const multiYearView = document.getElementById('multi-year-view');
         const monthlyTrendView = document.getElementById('monthly-trend-view');
         const goalsView = document.getElementById('goals-view');
+        const forecastView = document.getElementById('forecast-view');
+        const subsView = document.getElementById('subs-view');
 
         monthlyView.style.display = 'none';
         annualView.style.display = 'none';
         multiYearView.style.display = 'none';
         monthlyTrendView.style.display = 'none';
         goalsView.style.display = 'none';
+        forecastView.style.display = 'none';
+        subsView.style.display = 'none';
 
         if (val === 'annual-summary') {
             annualView.style.display = 'block';
@@ -2095,6 +3075,14 @@
             multiYearView.style.display = 'block';
             renderMultiYearSummary();
             showToast("Switched to Multi-Year Comparison");
+        } else if (val === 'cashflow-forecast') {
+            forecastView.style.display = 'block';
+            renderForecast();
+            showToast('Cash-Flow Forecast');
+        } else if (val === 'subscriptions') {
+            subsView.style.display = 'block';
+            renderSubscriptions();
+            showToast('Subscriptions & Bills');
         } else if (val === 'savings-goals') {
             goalsView.style.display = 'block';
             renderGoals();
@@ -2126,6 +3114,8 @@
         if (selectedMonthName === 'multi-year-summary') { renderMultiYearSummary(); return; }
         if (selectedMonthName === 'monthly-trend-view') { renderMonthlyTrendView(); return; }
         if (selectedMonthName === 'savings-goals') { renderGoals(); return; }
+        if (selectedMonthName === 'cashflow-forecast') { renderForecast(); return; }
+        if (selectedMonthName === 'subscriptions') { renderSubscriptions(); return; }
         
         syncRolloverBalances();
         renderTransactions();
@@ -2847,7 +3837,7 @@
     }
 
     function exportJSON() {
-        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals };
+        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vaultPayload, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
@@ -2875,6 +3865,7 @@
                         recurringTemplates = imported.recurringTemplates || recurringTemplates;
                         autoCategorizationMap = imported.autoCategorizationMap || autoCategorizationMap;
                         savingsGoals = Array.isArray(imported.savingsGoals) ? imported.savingsGoals : savingsGoals;
+                        subscriptions = Array.isArray(imported.subscriptions) ? imported.subscriptions : subscriptions;
                     } else {
                         datasets = imported;
                     }
@@ -2995,6 +3986,8 @@
         });
 
         renderBudgetHealth(catMap, projBal, transactions);
+        renderUpcomingSummary();
+        renderCategoryComparison();
 
         let catTfoot = document.getElementById('category-tfoot');
         catTfoot.innerHTML = `
