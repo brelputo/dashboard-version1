@@ -559,15 +559,87 @@
 
         #toast { position: fixed; bottom: 24px; right: 24px; background: #10b981; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 1000; }
         #toast.show { opacity: 1; }
+
+        /* ==========================================
+           10. POLISH (added)
+           ========================================== */
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        ::-webkit-scrollbar-track { background: transparent; }
+        :focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+        input:focus-visible, select:focus-visible { outline: none; }
+        body.locked { align-items: center; }
+
+        .login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+        .login-brand .login-logo { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: var(--header-gradient); box-shadow: 0 6px 16px var(--accent-glow); }
+        #login-overlay h2 { margin-bottom: 0; }
+        .login-hint { color: var(--text-muted); font-size: 0.8rem; margin: 0 0 20px; line-height: 1.5; }
+        .login-error { display: none; color: var(--danger); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; font-weight: 500; margin-bottom: 14px; }
+        .login-account { margin-bottom: 16px; }
+        .login-account summary { cursor: pointer; color: var(--text-muted); font-size: 0.78rem; font-weight: 600; margin-bottom: 8px; }
+        .login-account input { margin-bottom: 8px; height: 38px; }
+
+        .table-container { overflow-x: auto; }
+        .ledger-table { min-width: 1068px; }
+        .empty-state td { text-align: center; color: var(--text-muted); padding: 26px 8px !important; font-style: italic; }
+        .btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
+        .btn:active, .btn-secondary:active { transform: translateY(0); }
+        .icon-btn-tooltip { font-size: 1.1rem; line-height: 1; }
+        .icon-btn-tooltip:focus-visible { border-color: var(--border-focus); }
+        tbody tr { transition: background-color 0.15s; }
+        .stat-card, .card, .chart-container { transition: border-color 0.2s, transform 0.2s; }
+        .stat-card:hover { border-color: var(--text-muted); transform: translateY(-1px); }
+
+        .progress-bar-fill.warn { background: #f59e0b; }
+        .alert-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+        .alert-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.78rem; padding: 7px 10px; border-radius: 8px; border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .alert-item.over { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        .alert-item.ok { border-left-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .alert-item strong { font-weight: 700; }
+
+        .goal-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; }
+        .goals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }
+        .goal-card:hover { border-color: var(--text-muted); }
+        .goal-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .goal-name { font-weight: 700; font-size: 1rem; }
+        .goal-pct { font-weight: 800; font-size: 1.1rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+        .goal-card .progress-bar-bg { height: 8px; }
+        .goal-amounts { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .goal-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.75rem; color: var(--text-muted); }
+        .chip { background: var(--pill-bg); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 0.72rem; font-weight: 600; color: var(--text-main); }
+        .chip-ok { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--success); }
+        .chip-bad { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: var(--danger); }
+        .goal-actions { display: flex; gap: 6px; margin-top: 4px; }
+        .empty-goals { grid-column: 1 / -1; text-align: center; color: var(--text-muted); font-style: italic; padding: 30px 10px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); }
+        @media (max-width: 900px) { .goal-form { grid-template-columns: 1fr 1fr; } }
+
+        @media (max-width: 700px) {
+            header { padding: 18px 14px; }
+            .header-top-row { flex-wrap: wrap; gap: 10px; justify-content: center; }
+            .header-actions { flex-wrap: wrap; }
+            #month-dropdown { width: 100% !important; }
+        }
+        @media print {
+            header, .toolbar, .btn, .btn-secondary, .btn-action-row, #toast, .dropdown { display: none !important; }
+            body { background: #fff; color: #000; padding: 0; }
+            .card, .stat-card, .chart-container { box-shadow: none; break-inside: avoid; }
+        }
     </style>
 </head>
-<body>
+<body class="locked">
 
 <!-- ==========================================
    9. SECURE LOGIN SCREEN OVERLAY
    ========================================== -->
 <div id="login-overlay">
-    <h2>Secure Vault Login</h2>
+    <div class="login-brand">
+        <div class="login-logo">💲</div>
+        <h2>Secure Vault</h2>
+    </div>
+    <p class="login-hint">Your data is encrypted in the browser with your passphrase before it is sent to the cloud.</p>
     
     <div class="password-wrapper">
         <input type="password" id="master-pwd" placeholder="Enter secret password..." onkeydown="if(event.key==='Enter') initSession()">
@@ -576,13 +648,21 @@
         </button>
     </div>
 
-    <button class="btn" style="width: 100%; justify-content: center;" onclick="initSession()">Unlock Dashboard</button>
+    <div id="login-error" class="login-error" role="alert"></div>
+
+    <details class="login-account">
+        <summary>Cloud account sign-in (optional)</summary>
+        <input type="text" id="acct-email" placeholder="Account email" autocomplete="username">
+        <input type="password" id="acct-pwd" placeholder="Account password" autocomplete="current-password" onkeydown="if(event.key==='Enter') initSession()">
+    </details>
+
+    <button id="unlock-btn" class="btn" style="width: 100%; justify-content: center;" onclick="initSession()">Unlock Dashboard</button>
 </div>
 
 <!-- ==========================================
    RECURRING TEMPLATES MODAL DIALOG
    ========================================== -->
-<div id="recurring-modal" class="modal-overlay">
+<div id="recurring-modal" class="modal-overlay" onclick="if(event.target===this) closeRecurringModal()">
     <div class="modal-card">
         <div class="card-header" style="margin-bottom: 16px;">
             <h2>Manage Recurring Templates</h2>
@@ -634,10 +714,10 @@
                     <button onclick="openRecurringModal()">🔄 Recurring Templates</button>
                     <button onclick="sortTransactionsByDateManual()">📅 Sort by Date</button>
                     <button onclick="exportJSON()">💾 Backup JSON</button>
+                    <button onclick="exportCSV()">📄 Export Month (CSV)</button>
                     <label style="cursor: pointer;">
                         📂 Import JSON <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importJSON(event)">
                     </label>
-                    <button onclick="requestPasswordReset()">🔑 Reset Password</button>
                     <button onclick="resetMonthData()">🔄 Reset Month</button>
                 </div>
             </div>
@@ -666,6 +746,7 @@
                 <option value="2030">🗓️ 2030</option>
             </select>
 
+            <button class="icon-btn-tooltip" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
             <select id="month-dropdown" class="select-picker" style="width: 250px;" onchange="switchMonth(this.value)">
                 <option value="january">📅 January</option>
                 <option value="february">📅 February</option>
@@ -682,7 +763,9 @@
                 <option value="annual-summary">📊 Annual Summary</option>
                 <option value="multi-year-summary">📈 Multi-Year Comparison</option>
                 <option value="monthly-trend-view">📉 Monthly Spending Trend</option>
+                <option value="savings-goals">🎯 Savings Goals</option>
             </select>
+            <button class="icon-btn-tooltip" onclick="changeMonth(1)" aria-label="Next month">›</button>
         </div>
     </header>
 
@@ -691,7 +774,7 @@
         <div class="chart-container">
             <div class="chart-header">
                 <h3 id="trend-chart-title">Cumulative Spending Trend</h3>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Day-by-day accumulated spend vs monthly budget limit</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Day-by-day accumulated spend for the last selected month</span>
             </div>
             <div id="trend-bar-chart" class="trend-chart-grid"></div>
             <div class="chart-legend">
@@ -734,6 +817,44 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <!-- SAVINGS GOALS VIEW CONTAINER -->
+    <div id="goals-view" style="display: none;">
+        <div class="annual-grid">
+            <div class="stat-card">
+                <span class="stat-card-title">Total Saved</span>
+                <span id="goals-total-saved" class="stat-card-value text-success">$0.00</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Total Target</span>
+                <span id="goals-total-target" class="stat-card-value">$0.00</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title">Needed Per Month</span>
+                <span id="goals-needed" class="stat-card-value" style="color: var(--accent);">$0.00</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card-title" id="goals-avg-title">Avg Net Savings / Month</span>
+                <span id="goals-avg" class="stat-card-value">$0.00</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Add a Goal</h2>
+                <span id="goals-status" class="chip">No goals yet</span>
+            </div>
+            <div class="goal-form">
+                <input type="text" id="goal-name" placeholder="Goal name (e.g. Emergency fund)" aria-label="Goal name" onkeydown="if(event.key==='Enter') addGoal()">
+                <input type="number" step="0.01" id="goal-target" placeholder="Target ($)" aria-label="Target amount">
+                <input type="number" step="0.01" id="goal-saved" placeholder="Saved so far ($)" aria-label="Already saved">
+                <input type="date" id="goal-deadline" title="Target date (optional)" aria-label="Target date">
+                <button class="btn" onclick="addGoal()">+ Add Goal</button>
+            </div>
+        </div>
+
+        <div id="goals-list" class="goals-grid"></div>
     </div>
 
     <!-- ANNUAL SUMMARY VIEW CONTAINER -->
@@ -959,6 +1080,23 @@
 
             <div class="card">
                 <div class="card-header">
+                    <h2>Budget Health</h2>
+                </div>
+                <div class="metric-group">
+                    <div class="metric-row"><span>Budget limits (total):</span> <span id="bh-budget">$0.00</span></div>
+                    <div class="metric-row"><span>Spent in budgeted categories:</span> <span id="bh-spent">$0.00</span></div>
+                    <div class="metric-row"><span>Left in budgets:</span> <span id="bh-left">$0.00</span></div>
+                    <div class="divider"></div>
+                    <div class="metric-row"><span>Savings rate (month):</span> <span id="bh-rate">--</span></div>
+                    <div class="metric-row"><span>Days left in month:</span> <span id="bh-days">--</span></div>
+                    <div class="metric-row"><span>Safe to spend per day:</span> <span id="bh-daily">--</span></div>
+                    <div class="divider"></div>
+                    <div id="bh-alerts" class="alert-list"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
                     <h2>Fixed vs Variable Expenses</h2>
                 </div>
                 <div class="metric-group">
@@ -1063,6 +1201,8 @@
     let selectedYear = "2026";
     let selectedMonthName = "september"; 
     let activeMonthKey = "september2026";
+    let lastMonthName = "september"; // last real month picked (used by the trend view)
+    let savingsGoals = [];
     let currentFilter = 'all';
 
     function getMonthKeysOrderForYear(yr) {
@@ -1117,6 +1257,402 @@
         });
     }
 
+
+    // ==========================================
+    // HELPERS
+    // ==========================================
+    const moneyFmt = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' });
+    function fmt(n) { return moneyFmt.format(Number(n) || 0); }
+
+    // Escape anything user-typed before it is placed inside innerHTML / attributes
+    function esc(v) {
+        return String(v ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    // System rows that carry the previous month's balance forward
+    function isRolloverTx(t) {
+        const d = (t.desc || '').toLowerCase();
+        return d.includes('previous period') || d.includes('starting balance') || t.method === 'Previous Balance';
+    }
+
+    // ==========================================
+    // ENCRYPTION (AES-GCM + PBKDF2 via WebCrypto; reads legacy CryptoJS vaults)
+    // ==========================================
+    const VAULT_PREFIX = 'v2:';
+    const PBKDF2_ITERATIONS = 310000;
+    let vaultKey = null;
+    let vaultSalt = null;
+
+    function bytesToB64(buf) {
+        const b = new Uint8Array(buf);
+        let out = '';
+        for (let i = 0; i < b.length; i += 0x8000) out += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+        return btoa(out);
+    }
+    function b64ToBytes(str) {
+        const bin = atob(str);
+        const b = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+        return b;
+    }
+    async function deriveVaultKey(passphrase, salt) {
+        const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+            base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+        );
+    }
+    const hasSubtle = () => !!(window.crypto && crypto.subtle);
+
+    async function encryptVault(obj) {
+        const json = JSON.stringify(obj);
+        if (!hasSubtle()) return CryptoJS.AES.encrypt(json, masterKey).toString(); // very old / insecure-context fallback
+        if (!vaultKey) {
+            vaultSalt = crypto.getRandomValues(new Uint8Array(16));
+            vaultKey = await deriveVaultKey(masterKey, vaultSalt);
+        }
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, vaultKey, new TextEncoder().encode(json));
+        const out = new Uint8Array(16 + 12 + ct.byteLength);
+        out.set(vaultSalt, 0);
+        out.set(iv, 16);
+        out.set(new Uint8Array(ct), 28);
+        return VAULT_PREFIX + bytesToB64(out);
+    }
+
+    async function decryptVault(str) {
+        if (str.startsWith(VAULT_PREFIX)) {
+            const raw = b64ToBytes(str.slice(VAULT_PREFIX.length));
+            const salt = raw.slice(0, 16), iv = raw.slice(16, 28), ct = raw.slice(28);
+            const key = await deriveVaultKey(masterKey, salt);
+            let plain;
+            try {
+                plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+            } catch (_) {
+                throw new Error('Incorrect master passphrase or corrupted vault data.');
+            }
+            vaultKey = key;
+            vaultSalt = salt;
+            return JSON.parse(new TextDecoder().decode(plain));
+        }
+        // Legacy CryptoJS format (auto-migrated to v2 on the next save)
+        let text = '';
+        try { text = CryptoJS.AES.decrypt(str, masterKey).toString(CryptoJS.enc.Utf8); } catch (_) { /* wrong key */ }
+        if (!text) throw new Error('Incorrect master passphrase or unreadable vault data.');
+        return JSON.parse(text);
+    }
+
+    // ==========================================
+    // AUTO-LOCK AFTER INACTIVITY
+    // ==========================================
+    const IDLE_MS = 10 * 60 * 1000;
+    let idleTimer = null;
+    function resetIdleTimer() {
+        clearTimeout(idleTimer);
+        if (!masterKey) return;
+        idleTimer = setTimeout(() => { lockVault(); }, IDLE_MS);
+    }
+    ['click', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, resetIdleTimer, { passive: true }));
+
+    // Warn before leaving with unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+        if (saveTimer || saving) {
+            e.preventDefault();
+            e.returnValue = '';
+            saveNow();
+        }
+    });
+
+
+    // ==========================================
+    // LOGIN UI HELPERS
+    // ==========================================
+    function showLoginError(msg) {
+        const el = document.getElementById('login-error');
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+    function setLoginBusy(busy) {
+        const btn = document.getElementById('unlock-btn');
+        btn.disabled = busy;
+        btn.textContent = busy ? 'Unlocking…' : 'Unlock Dashboard';
+        if (busy) document.getElementById('login-error').style.display = 'none';
+    }
+
+    // ==========================================
+    // MONTH NAVIGATION, CSV EXPORT, KEYBOARD
+    // ==========================================
+    function changeMonth(delta) {
+        let idx = rawMonthNames.indexOf(selectedMonthName);
+        if (idx === -1) idx = rawMonthNames.indexOf(lastMonthName);
+        idx += delta;
+        let yr = parseInt(selectedYear, 10);
+        if (idx < 0) { idx = 11; yr--; }
+        else if (idx > 11) { idx = 0; yr++; }
+        if (!allYears.includes(String(yr))) { showToast(`No data beyond ${selectedYear}`, true); return; }
+
+        selectedYear = String(yr);
+        document.getElementById('year-dropdown').value = selectedYear;
+        ensureYearDatasetsExist(selectedYear);
+        document.getElementById('month-dropdown').value = rawMonthNames[idx];
+        switchMonth(rawMonthNames[idx]);
+    }
+
+    function exportCSV() {
+        const key = lastMonthName + selectedYear;
+        if (!datasets[key]) return;
+        const rows = [['Date', 'Description', 'Expense Category', 'Credit Category', 'Type', 'Credit', 'Debit', 'Method', 'Paid']];
+        datasets[key].data.forEach(t => rows.push([
+            t.date, t.desc, t.cost, t.creditCat, t.type,
+            (parseFloat(t.credit) || 0).toFixed(2), (parseFloat(t.debit) || 0).toFixed(2), t.method, t.paid
+        ]));
+        const csv = rows.map(r => r.map(v => {
+            let x = String(v ?? '');
+            if (/^[=+\-@]/.test(x) && isNaN(Number(x))) x = "'" + x; // stop spreadsheet formula injection
+            return '"' + x.replace(/"/g, '""') + '"';
+        }).join(',')).join('\r\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `finance_${key}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('CSV exported');
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRecurringModal(); });
+
+    // Re-read the vault from the cloud and redraw (used on sync + after a save conflict)
+    async function reloadFromCloud() {
+        await fetchAndDecryptCloudData();
+        ensureYearDatasetsExist(selectedYear);
+        document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
+        syncRolloverBalances();
+        sortTransactions();
+        renderApp();
+    }
+
+
+    // ==========================================
+    // BUDGET HEALTH & ALERTS
+    // ==========================================
+    function renderBudgetHealth(catMap, projBal, transactions) {
+        let totalBudget = 0, spentBudgeted = 0;
+        const alerts = [];
+
+        categories.forEach(cat => {
+            const base = getCategoryBudgetForMonth(cat, activeMonthKey);
+            if (!(base > 0)) return;
+            const limit = base + getCategoryRolloverCarryover(cat, activeMonthKey);
+            const spent = catMap[cat] || 0;
+            totalBudget += limit;
+            spentBudgeted += spent;
+            const pct = (spent / limit) * 100;
+            if (pct >= 80) alerts.push({ cat, spent, limit, pct, over: spent > limit });
+        });
+        alerts.sort((a, b) => b.pct - a.pct);
+
+        const left = totalBudget - spentBudgeted;
+        document.getElementById('bh-budget').innerText = fmt(totalBudget);
+        document.getElementById('bh-spent').innerText = fmt(spentBudgeted);
+        const leftEl = document.getElementById('bh-left');
+        leftEl.innerText = totalBudget > 0 ? fmt(left) : '--';
+        leftEl.className = totalBudget > 0 ? (left < 0 ? 'text-danger' : 'text-success') : '';
+
+        // Savings rate = (income - spend) / income, ignoring the carried-over balance line
+        const income = transactions.filter(t => !isRolloverTx(t)).reduce((a, t) => a + (parseFloat(t.credit) || 0), 0);
+        const spend = transactions.reduce((a, t) => a + (parseFloat(t.debit) || 0), 0);
+        const rateEl = document.getElementById('bh-rate');
+        if (income > 0) {
+            const rate = ((income - spend) / income) * 100;
+            rateEl.innerText = rate.toFixed(1) + '%';
+            rateEl.className = rate >= 0 ? 'text-success' : 'text-danger';
+        } else {
+            rateEl.innerText = '--';
+            rateEl.className = '';
+        }
+
+        // Daily allowance only makes sense for the month we are currently in
+        const now = new Date();
+        const isCurrent = activeMonthKey === rawMonthNames[now.getMonth()] + now.getFullYear();
+        const daysEl = document.getElementById('bh-days');
+        const dailyEl = document.getElementById('bh-daily');
+        if (isCurrent) {
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const daysLeft = daysInMonth - now.getDate() + 1;
+            daysEl.innerText = String(daysLeft);
+            dailyEl.innerText = projBal > 0 ? fmt(projBal / daysLeft) : fmt(0);
+            dailyEl.className = projBal > 0 ? '' : 'text-danger';
+        } else {
+            daysEl.innerText = '--';
+            dailyEl.innerText = '--';
+            dailyEl.className = '';
+        }
+
+        const box = document.getElementById('bh-alerts');
+        if (totalBudget <= 0) {
+            box.innerHTML = '<div class="alert-item">No budget limits set yet. Add limits in Manage Categories to get alerts.</div>';
+        } else if (!alerts.length) {
+            box.innerHTML = '<div class="alert-item ok"><span>All budgets are on track</span><strong>✓</strong></div>';
+        } else {
+            box.innerHTML = alerts.map(a => `
+                <div class="alert-item ${a.over ? 'over' : ''}">
+                    <span>${esc(a.cat)}: ${fmt(a.spent)} of ${fmt(a.limit)}</span>
+                    <strong>${a.over ? 'Over by ' + fmt(a.spent - a.limit) : a.pct.toFixed(0) + '%'}</strong>
+                </div>`).join('');
+        }
+    }
+
+    // ==========================================
+    // SAVINGS GOALS
+    // ==========================================
+    function getYearNetStats(yr) {
+        let income = 0, spend = 0;
+        getMonthKeysOrderForYear(yr).forEach(k => {
+            ((datasets[k] && datasets[k].data) || []).forEach(t => {
+                const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
+                if (c > 0 && !isRolloverTx(t)) income += c;
+                if (d > 0) spend += d;
+            });
+        });
+        const now = new Date();
+        const months = String(now.getFullYear()) === String(yr) ? now.getMonth() + 1 : 12;
+        return { net: income - spend, months, avg: (income - spend) / months };
+    }
+
+    function addGoal() {
+        const name = document.getElementById('goal-name').value.trim();
+        const target = parseFloat(document.getElementById('goal-target').value) || 0;
+        const saved = parseFloat(document.getElementById('goal-saved').value) || 0;
+        const deadline = document.getElementById('goal-deadline').value;
+        if (!name || target <= 0) {
+            showToast('Enter a goal name and a target above $0', true);
+            return;
+        }
+        savingsGoals.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, target, saved: Math.max(0, saved), deadline });
+        ['goal-name', 'goal-target', 'goal-saved', 'goal-deadline'].forEach(id => { document.getElementById(id).value = ''; });
+        renderGoals();
+        saveToSupabase();
+        showToast(`Goal "${name}" added`);
+    }
+
+    function contributeToGoal(id) {
+        const g = savingsGoals.find(x => x.id === id);
+        if (!g) return;
+        const input = prompt(`Add funds to "${g.name}" (use a negative number to withdraw):`, '');
+        if (input === null) return;
+        const v = parseFloat(input);
+        if (!isFinite(v) || v === 0) { showToast('Enter a valid amount', true); return; }
+        g.saved = Math.max(0, (Number(g.saved) || 0) + v);
+        renderGoals();
+        saveToSupabase();
+    }
+
+    function editGoalTarget(id) {
+        const g = savingsGoals.find(x => x.id === id);
+        if (!g) return;
+        const input = prompt(`New target amount for "${g.name}":`, g.target);
+        if (input === null) return;
+        const v = parseFloat(input);
+        if (!isFinite(v) || v <= 0) { showToast('Enter a valid target', true); return; }
+        g.target = v;
+        renderGoals();
+        saveToSupabase();
+    }
+
+    function deleteGoal(id) {
+        const g = savingsGoals.find(x => x.id === id);
+        if (!g || !confirm(`Delete goal "${g.name}"?`)) return;
+        savingsGoals = savingsGoals.filter(x => x.id !== id);
+        renderGoals();
+        saveToSupabase();
+    }
+
+    function renderGoals() {
+        const list = document.getElementById('goals-list');
+        if (!list) return;
+        const now = new Date();
+        const stats = getYearNetStats(selectedYear);
+        let totalTarget = 0, totalSaved = 0, totalNeeded = 0;
+
+        list.innerHTML = '';
+        if (!savingsGoals.length) {
+            list.innerHTML = '<div class="empty-goals">No goals yet. Add one above, e.g. an emergency fund, a holiday or a car deposit.</div>';
+        }
+
+        savingsGoals.forEach(g => {
+            const target = Number(g.target) || 0;
+            const saved = Number(g.saved) || 0;
+            const remaining = Math.max(0, target - saved);
+            const pct = target > 0 ? Math.min(100, (saved / target) * 100) : 0;
+            totalTarget += target;
+            totalSaved += Math.min(saved, target);
+
+            let chip = '<span class="chip">No target date</span>';
+            let deadlineText = '';
+            if (g.deadline) {
+                const dl = new Date(g.deadline + 'T00:00:00');
+                const monthsLeft = (dl - now) / (1000 * 60 * 60 * 24 * 30.44);
+                deadlineText = `Target date ${toAUFormat(g.deadline)}`;
+                if (remaining <= 0) {
+                    chip = '<span class="chip chip-ok">Goal reached 🎉</span>';
+                } else if (monthsLeft <= 0) {
+                    chip = '<span class="chip chip-bad">Past target date</span>';
+                } else {
+                    const needed = remaining / Math.max(1, Math.ceil(monthsLeft));
+                    totalNeeded += needed;
+                    chip = `<span class="chip">Need ${fmt(needed)}/month</span>`;
+                }
+            } else if (remaining <= 0) {
+                chip = '<span class="chip chip-ok">Goal reached 🎉</span>';
+            }
+
+            const card = document.createElement('div');
+            card.className = 'goal-card';
+            card.innerHTML = `
+                <div class="goal-top">
+                    <span class="goal-name">${esc(g.name)}</span>
+                    <span class="goal-pct">${pct.toFixed(0)}%</span>
+                </div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill ${remaining <= 0 ? 'success-fill' : ''}" style="width: ${pct}%"></div></div>
+                <div class="goal-amounts"><span>${fmt(saved)} saved</span><span>of ${fmt(target)}</span></div>
+                <div class="goal-meta">${chip}<span>${esc(deadlineText)}</span></div>
+                <div class="goal-actions">
+                    <button class="btn" style="padding: 5px 10px; font-size: 0.75rem;" onclick="contributeToGoal('${g.id}')">+ Add funds</button>
+                    <button class="btn-secondary" onclick="editGoalTarget('${g.id}')" title="Change target">✏️</button>
+                    <button class="btn-danger" onclick="deleteGoal('${g.id}')" title="Delete goal">✕</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+
+        document.getElementById('goals-total-saved').innerText = fmt(totalSaved);
+        document.getElementById('goals-total-target').innerText = fmt(totalTarget);
+        document.getElementById('goals-needed').innerText = fmt(totalNeeded);
+        document.getElementById('goals-avg-title').innerText = `Avg Net Savings / Month (${selectedYear})`;
+        const avgEl = document.getElementById('goals-avg');
+        avgEl.innerText = fmt(stats.avg);
+        avgEl.className = 'stat-card-value ' + (stats.avg >= 0 ? 'text-success' : 'text-danger');
+
+        const status = document.getElementById('goals-status');
+        if (!savingsGoals.length) {
+            status.className = 'chip';
+            status.innerText = 'No goals yet';
+        } else if (totalNeeded <= 0) {
+            status.className = 'chip chip-ok';
+            status.innerText = 'Nothing due right now';
+        } else if (stats.avg >= totalNeeded) {
+            status.className = 'chip chip-ok';
+            status.innerText = 'On track: your average savings cover these goals';
+        } else {
+            status.className = 'chip chip-bad';
+            status.innerText = `Shortfall of ${fmt(totalNeeded - stats.avg)} per month`;
+        }
+    }
+
     function toggleDropdown(event) {
         event.stopPropagation();
         document.getElementById('options-dropdown').classList.toggle('show');
@@ -1133,11 +1669,14 @@
         }
     }
 
-    function showToast(message) {
+    let toastTimer = null;
+    function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
         toast.innerText = message;
+        toast.style.background = isError ? 'var(--danger)' : '#10b981';
         toast.className = 'show';
-        setTimeout(() => { toast.className = ''; }, 2000);
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toast.className = ''; }, isError ? 4500 : 2000);
     }
 
     function togglePasswordVisibility() {
@@ -1156,14 +1695,28 @@
     async function initSession() {
         masterKey = document.getElementById('master-pwd').value.trim();
         if (!masterKey) {
-            alert('Please enter your Master Encryption Passphrase.');
+            showLoginError('Please enter your master passphrase.');
             return;
         }
 
         try {
+            setLoginBusy(true);
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // Optional Supabase Auth sign-in (needed once row-level security is switched on)
+            const acctEmail = document.getElementById('acct-email').value.trim();
+            if (acctEmail) {
+                const { error: authErr } = await supabaseClient.auth.signInWithPassword({
+                    email: acctEmail,
+                    password: document.getElementById('acct-pwd').value
+                });
+                if (authErr) throw new Error('Account sign-in failed: ' + authErr.message);
+            }
+            document.getElementById('acct-pwd').value = '';
+
             await fetchAndDecryptCloudData();
 
+            document.body.classList.remove('locked');
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
 
@@ -1171,19 +1724,25 @@
             document.getElementById('year-dropdown').value = selectedYear;
             ensureYearDatasetsExist(selectedYear);
 
-            selectedMonthName = "september";
+            selectedMonthName = rawMonthNames[new Date().getMonth()];
+            lastMonthName = selectedMonthName;
             document.getElementById('month-dropdown').value = selectedMonthName;
             activeMonthKey = selectedMonthName + selectedYear;
 
             document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
             populateRecurringCategoryDropdown();
 
-            syncRolloverBalances();
-            sortTransactions();
-            renderApp();
+            switchMonth(selectedMonthName);
+            resetIdleTimer();
             showToast("Vault unlocked & synced");
         } catch (e) {
-            alert('Connection or decryption error: ' + e.message);
+            supabaseClient = null;
+            masterKey = '';
+            vaultKey = null;
+            vaultSalt = null;
+            showLoginError('Could not unlock: ' + e.message);
+        } finally {
+            setLoginBusy(false);
         }
     }
 
@@ -1192,16 +1751,12 @@
             alert('Session expired. Please log in again.');
             return;
         }
+        if ((saveTimer || saving) && !confirm('You have changes that are still saving. Reload from the cloud anyway?')) return;
         try {
-            await fetchAndDecryptCloudData();
-            ensureYearDatasetsExist(selectedYear);
-            document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
-            syncRolloverBalances();
-            sortTransactions();
-            renderApp();
+            await reloadFromCloud();
             showToast("Refreshed & synced from cloud!");
         } catch (e) {
-            alert('Refresh failed: ' + e.message);
+            showToast('Refresh failed: ' + e.message, true);
         }
     }
 
@@ -1238,32 +1793,47 @@
         if (error) throw error;
 
         if (data && data.length > 0 && data[0].encrypted_data) {
-            const bytes = CryptoJS.AES.decrypt(data[0].encrypted_data, masterKey);
-            const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-            if (decryptedString) {
-                const parsedVault = JSON.parse(decryptedString);
-                if (parsedVault.categories && Array.isArray(parsedVault.categories)) {
-                    categories = parsedVault.categories;
-                    creditCategories = parsedVault.creditCategories || creditCategories;
-                    datasets = parsedVault.datasets;
-                    categoryBudgets = parsedVault.categoryBudgets || {};
-                    enableBudgetRollover = parsedVault.enableBudgetRollover || false;
-                    recurringTemplates = parsedVault.recurringTemplates || recurringTemplates;
-                    autoCategorizationMap = parsedVault.autoCategorizationMap || autoCategorizationMap;
-                } else {
-                    datasets = parsedVault;
-                }
+            const stored = data[0].encrypted_data;
+            const parsedVault = await decryptVault(stored);
+            lastSyncedCipher = stored;
+
+            if (parsedVault.categories && Array.isArray(parsedVault.categories)) {
+                categories = parsedVault.categories;
+                creditCategories = parsedVault.creditCategories || creditCategories;
+                datasets = parsedVault.datasets;
+                categoryBudgets = parsedVault.categoryBudgets || {};
+                enableBudgetRollover = parsedVault.enableBudgetRollover || false;
+                recurringTemplates = parsedVault.recurringTemplates || recurringTemplates;
+                autoCategorizationMap = parsedVault.autoCategorizationMap || autoCategorizationMap;
+                savingsGoals = Array.isArray(parsedVault.savingsGoals) ? parsedVault.savingsGoals : [];
             } else {
-                throw new Error('Incorrect master passphrase or unreadable vault data.');
+                datasets = parsedVault;
             }
+
+            // Upgrade old CryptoJS vaults to AES-GCM
+            if (!stored.startsWith(VAULT_PREFIX) && hasSubtle()) saveToSupabase();
         } else {
-            await saveToSupabase();
+            await saveNow();
         }
     }
 
-    function lockVault() {
+    async function lockVault() {
+        // Flush any pending edits before the key is wiped
+        if (saveTimer || saving) { await saveNow(); }
+        clearTimeout(idleTimer);
+        try { if (supabaseClient) await supabaseClient.auth.signOut(); } catch (_) { /* not signed in */ }
         supabaseClient = null;
         masterKey = '';
+        lastSyncedCipher = null;
+        document.getElementById('acct-pwd').value = '';
+        document.body.classList.add('locked');
+        vaultKey = null;
+        vaultSalt = null;
+        datasets = {};
+        savingsGoals = [];
+        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list').forEach(el => { el.innerHTML = ''; });
+        const searchEl = document.getElementById('search-input');
+        if (searchEl) searchEl.value = '';
         document.getElementById('main-app').style.display = 'none';
         document.getElementById('login-overlay').style.display = 'block';
         document.getElementById('master-pwd').value = '';
@@ -1271,61 +1841,73 @@
         document.getElementById('eye-icon').innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
     }
 
-    async function requestPasswordReset() {
-        const email = prompt("Enter your account email to receive a password reset link:");
-        if (!email) return;
+    // Debounced save: many quick edits => one encrypted upload
+    let saveTimer = null;
+    let saving = false;
+    let lastSyncedCipher = null; // the encrypted blob this device last read from / wrote to the cloud
 
-        if (!supabaseClient) {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-
-        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin,
-        });
-
-        if (error) {
-            alert("Error: " + error.message);
-        } else {
-            alert("Password reset link sent! Check your email inbox.");
-        }
+    function saveToSupabase() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveNow, 700);
     }
 
-    async function saveToSupabase() {
+    async function saveNow() {
+        clearTimeout(saveTimer);
+        saveTimer = null;
         if (!supabaseClient || !masterKey) return;
+        if (saving) { saveToSupabase(); return; } // run again once the current upload finishes
+        saving = true;
 
-        const vaultPayload = {
-            categories,
-            creditCategories,
-            datasets,
-            categoryBudgets,
-            enableBudgetRollover,
-            recurringTemplates,
-            autoCategorizationMap
-        };
+        try {
+            const vaultPayload = {
+                categories,
+                creditCategories,
+                datasets,
+                categoryBudgets,
+                enableBudgetRollover,
+                recurringTemplates,
+                autoCategorizationMap,
+                savingsGoals
+            };
+            const encryptedString = await encryptVault(vaultPayload);
 
-        const encryptedString = CryptoJS.AES.encrypt(JSON.stringify(vaultPayload), masterKey).toString();
-
-        const { data, error: fetchError } = await supabaseClient
-            .from('user_finances')
-            .select('id')
-            .limit(1);
-
-        if (fetchError) {
-            console.error('Fetch error:', fetchError.message);
-            return;
-        }
-
-        if (data && data.length > 0) {
-            await supabaseClient
+            const { data, error: fetchError } = await supabaseClient
                 .from('user_finances')
-                .update({ encrypted_data: encryptedString })
-                .eq('id', data[0].id);
-        } else {
-            await supabaseClient
-                .from('user_finances')
-                .insert([{ encrypted_data: encryptedString }]);
+                .select('id, encrypted_data')
+                .order('created_at', { ascending: false })
+                .limit(1);
+            if (fetchError) throw fetchError;
+
+            // Another device saved since we last synced? Don't silently overwrite its work.
+            if (data && data.length > 0 && lastSyncedCipher !== null && data[0].encrypted_data !== lastSyncedCipher) {
+                const overwrite = confirm(
+                    'This vault was changed on another device since you last synced.\n\n' +
+                    'OK = overwrite the cloud with THIS device\'s data\n' +
+                    'Cancel = discard your recent edits here and load the cloud version'
+                );
+                if (!overwrite) {
+                    await reloadFromCloud();
+                    showToast('Loaded the latest cloud version');
+                    return;
+                }
+            }
+
+            let result;
+            if (data && data.length > 0) {
+                result = await supabaseClient.from('user_finances').update({ encrypted_data: encryptedString }).eq('id', data[0].id);
+            } else {
+                result = await supabaseClient.from('user_finances').insert([{ encrypted_data: encryptedString }]);
+            }
+            if (result.error) throw result.error;
+            lastSyncedCipher = encryptedString;
+
+            showToast("Encrypted & saved to cloud");
+        } catch (e) {
+            console.error('Cloud save failed:', e);
+            showToast('⚠️ Cloud save failed: ' + (e.message || e), true);
+        } finally {
+            saving = false;
         }
-        showToast("Encrypted & saved to cloud");
     }
 
     function getCurrentYearString() {
@@ -1366,19 +1948,27 @@
         return `01/${currentActiveMonthNum}/${selectedYear}`;
     }
 
-    function syncRolloverBalances() {
-        ensureYearDatasetsExist(selectedYear);
-        let monthKeys = getMonthKeysOrderForYear(selectedYear);
+    // Carries each month's projected balance into the next month's opening line.
+    // January also picks up the previous December, but only when that December has real
+    // transactions (so a manually typed opening balance is never overwritten by a blank year).
+    function syncRolloverBalances(yr = selectedYear, depth = 0) {
         let changed = false;
-        
-        for (let i = 1; i < monthKeys.length; i++) {
-            let prevKey = monthKeys[i - 1];
-            let currKey = monthKeys[i];
-            
-            let prevProj = parseFloat(calculateProjectedBalanceForMonth(prevKey).toFixed(2));
-            let currData = datasets[currKey].data;
-            let rolloverItem = currData.find(t => t.desc.toLowerCase().includes('previous period') || t.desc.toLowerCase().includes('starting balance') || t.method === 'Previous Balance');
-            
+        const prevYr = String(parseInt(yr, 10) - 1);
+        const prevDec = datasets['december' + prevYr];
+        const carryFromPrevYear = depth < 6 && allYears.includes(prevYr) && prevDec && Array.isArray(prevDec.data) && prevDec.data.some(t => !isRolloverTx(t));
+        if (carryFromPrevYear && syncRolloverBalances(prevYr, depth + 1)) changed = true;
+
+        ensureYearDatasetsExist(yr);
+        const monthKeys = getMonthKeysOrderForYear(yr);
+
+        for (let i = carryFromPrevYear ? 0 : 1; i < monthKeys.length; i++) {
+            const prevKey = i === 0 ? 'december' + prevYr : monthKeys[i - 1];
+            const currKey = monthKeys[i];
+
+            const prevProj = parseFloat(calculateProjectedBalanceForMonth(prevKey).toFixed(2));
+            const currData = datasets[currKey].data;
+            const rolloverItem = currData.find(t => isRolloverTx(t));
+
             if (rolloverItem) {
                 if (rolloverItem.credit !== prevProj) {
                     rolloverItem.credit = prevProj;
@@ -1386,7 +1976,7 @@
                 }
             } else {
                 currData.unshift({
-                    date: `01/${String(i + 1).padStart(2, '0')}/${selectedYear}`,
+                    date: `01/${String(i + 1).padStart(2, '0')}/${yr}`,
                     desc: "Previous Period Balance",
                     cost: "",
                     creditCat: "Starting Balance",
@@ -1399,20 +1989,19 @@
                 changed = true;
             }
         }
-        if (changed) {
-            saveToSupabase();
-        }
+        if (depth === 0 && changed) saveToSupabase();
+        return changed;
     }
 
     function calculateProjectedBalanceForMonth(monthKey) {
         if (!datasets[monthKey] || !datasets[monthKey].data) return 0;
         let transactions = datasets[monthKey].data;
         let prevBal = transactions
-            .filter(t => t.desc.toLowerCase().includes('previous period') || t.desc.toLowerCase().includes('starting balance') || t.method === 'Previous Balance')
+            .filter(t => isRolloverTx(t))
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let paidCredits = transactions
-            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
+            .filter(t => !isRolloverTx(t) && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let creditsRcvdTotal = prevBal + paidCredits;
@@ -1422,7 +2011,7 @@
 
         let currBal = creditsRcvdTotal - debitsPaid;
         let creditsRecv = transactions
-            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
+            .filter(t => !isRolloverTx(t) && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let debitsPay = transactions
@@ -1469,6 +2058,8 @@
         } else if (selectedMonthName === 'multi-year-summary') {
             renderMultiYearSummary();
             showToast("Switched to Multi-Year Trend View");
+        } else if (selectedMonthName === 'savings-goals') {
+            renderGoals();
         } else if (selectedMonthName === 'monthly-trend-view') {
             renderMonthlyTrendView();
             showToast("Switched to Monthly Spending Trend View");
@@ -1481,19 +2072,20 @@
     }
 
     function switchMonth(val) {
-        if (val !== 'monthly-trend-view') {
-            selectedMonthName = val;
-        }
+        selectedMonthName = val;
+        if (rawMonthNames.includes(val)) lastMonthName = val;
         
         const monthlyView = document.getElementById('monthly-view');
         const annualView = document.getElementById('annual-view');
         const multiYearView = document.getElementById('multi-year-view');
         const monthlyTrendView = document.getElementById('monthly-trend-view');
+        const goalsView = document.getElementById('goals-view');
 
         monthlyView.style.display = 'none';
         annualView.style.display = 'none';
         multiYearView.style.display = 'none';
         monthlyTrendView.style.display = 'none';
+        goalsView.style.display = 'none';
 
         if (val === 'annual-summary') {
             annualView.style.display = 'block';
@@ -1503,10 +2095,14 @@
             multiYearView.style.display = 'block';
             renderMultiYearSummary();
             showToast("Switched to Multi-Year Comparison");
+        } else if (val === 'savings-goals') {
+            goalsView.style.display = 'block';
+            renderGoals();
+            showToast('Savings Goals');
         } else if (val === 'monthly-trend-view') {
             monthlyTrendView.style.display = 'block';
             renderMonthlyTrendView();
-            showToast(`Switched to Monthly Trend View (${selectedMonthName.toUpperCase()})`);
+            showToast(`Switched to Monthly Trend View (${lastMonthName.toUpperCase()})`);
         } else {
             activeMonthKey = selectedMonthName + selectedYear;
             monthlyView.style.display = 'grid';
@@ -1518,7 +2114,7 @@
 
     function setFilter(filterType, element) {
         currentFilter = filterType;
-        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.filter-pills .pill').forEach(p => p.classList.remove('active'));
         element.classList.add('active');
         renderApp();
     }
@@ -1529,6 +2125,7 @@
         if (selectedMonthName === 'annual-summary') { renderAnnualSummary(); return; }
         if (selectedMonthName === 'multi-year-summary') { renderMultiYearSummary(); return; }
         if (selectedMonthName === 'monthly-trend-view') { renderMonthlyTrendView(); return; }
+        if (selectedMonthName === 'savings-goals') { renderGoals(); return; }
         
         syncRolloverBalances();
         renderTransactions();
@@ -1549,7 +2146,7 @@
     function populateRecurringCategoryDropdown() {
         const select = document.getElementById('rec-cat');
         if (!select) return;
-        select.innerHTML = '<option value="">-- Expense Cat --</option>' + categories.sort().map(c => `<option value="${c}">${c}</option>`).join('');
+        select.innerHTML = '<option value="">-- Expense Cat --</option>' + categories.sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
     }
 
     function addRecurringTemplate() {
@@ -1583,9 +2180,9 @@
         recurringTemplates.forEach((t, index) => {
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${t.desc}</td>
-                <td>${t.category || '--'}</td>
-                <td class="col-num">$${t.amount.toFixed(2)}</td>
+                <td>${esc(t.desc)}</td>
+                <td>${esc(t.category || '--')}</td>
+                <td class="col-num">${fmt(t.amount)}</td>
                 <td style="text-align: center;"><button class="btn-danger" onclick="deleteRecurringTemplate(${index})">✕</button></td>
             `;
             tbody.appendChild(tr);
@@ -1620,12 +2217,12 @@
     }
 
     function renderMonthlyTrendView() {
-        activeMonthKey = selectedMonthName + selectedYear;
-        if (!datasets[activeMonthKey]) ensureYearDatasetsExist(selectedYear);
-        let txs = datasets[activeMonthKey].data || [];
-        document.getElementById('trend-chart-title').innerText = `Cumulative Spending Trend (${selectedMonthName.toUpperCase()} ${selectedYear})`;
+        const trendKey = lastMonthName + selectedYear;
+        if (!datasets[trendKey]) ensureYearDatasetsExist(selectedYear);
+        let txs = datasets[trendKey].data || [];
+        document.getElementById('trend-chart-title').innerText = `Cumulative Spending Trend (${lastMonthName.toUpperCase()} ${selectedYear})`;
 
-        let monthNum = rawMonthNames.indexOf(selectedMonthName) + 1;
+        let monthNum = rawMonthNames.indexOf(lastMonthName) + 1;
         let daysInMonth = new Date(parseInt(selectedYear), monthNum, 0).getDate();
         
         let dailySpends = new Array(daysInMonth + 1).fill(0);
@@ -1664,8 +2261,8 @@
             col.className = 'bar-column';
             col.innerHTML = `
                 <div class="bar-tooltip">
-                    <strong>Day ${idx + 1} ${selectedMonthName}</strong><br>
-                    Cumulative Spend: $${amt.toFixed(2)}
+                    <strong>Day ${idx + 1} ${lastMonthName}</strong><br>
+                    Cumulative Spend: ${fmt(amt)}
                 </div>
                 <div class="bar-bar bar-trend" style="height: ${heightPct}%;"></div>
                 <div class="bar-label">${idx + 1}</div>
@@ -1687,7 +2284,7 @@
                 if (datasets[mKey] && datasets[mKey].data) {
                     let txs = datasets[mKey].data;
                     let mInc = txs
-                        .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && (parseFloat(t.credit) || 0) > 0)
+                        .filter(t => !isRolloverTx(t) && (parseFloat(t.credit) || 0) > 0)
                         .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
                     let mSpd = txs
                         .filter(t => (parseFloat(t.debit) || 0) > 0)
@@ -1716,9 +2313,9 @@
             col.innerHTML = `
                 <div class="bar-tooltip">
                     <strong>Year ${d.year}</strong><br>
-                    Income: $${d.income.toFixed(2)}<br>
-                    Spend: $${d.spend.toFixed(2)}<br>
-                    Net Savings: $${d.savings.toFixed(2)}
+                    Income: ${fmt(d.income)}<br>
+                    Spend: ${fmt(d.spend)}<br>
+                    Net Savings: ${fmt(d.savings)}
                 </div>
                 <div class="bar-group-flex">
                     <div class="bar-bar bar-income" style="height: ${incHeight}%;"></div>
@@ -1737,10 +2334,10 @@
             let savClass = d.savings >= 0 ? 'text-success' : 'text-danger';
             tr.innerHTML = `
                 <td style="font-weight: 700;">${d.year}</td>
-                <td class="col-num text-success">$${d.income.toFixed(2)}</td>
-                <td class="col-num text-danger">$${d.spend.toFixed(2)}</td>
-                <td class="col-num ${savClass}" style="font-weight: 700;">$${d.savings.toFixed(2)}</td>
-                <td class="col-num" style="color: var(--accent);">$${d.avgSpend.toFixed(2)}</td>
+                <td class="col-num text-success">${fmt(d.income)}</td>
+                <td class="col-num text-danger">${fmt(d.spend)}</td>
+                <td class="col-num ${savClass}" style="font-weight: 700;">${fmt(d.savings)}</td>
+                <td class="col-num" style="color: var(--accent);">${fmt(d.avgSpend)}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -1758,7 +2355,7 @@
         monthKeys.forEach((mKey, idx) => {
             let txs = datasets[mKey] ? datasets[mKey].data || [] : [];
             let mIncome = txs
-                .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && (parseFloat(t.credit) || 0) > 0)
+                .filter(t => !isRolloverTx(t) && (parseFloat(t.credit) || 0) > 0)
                 .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
             let mSpend = txs
@@ -1783,14 +2380,14 @@
         let avgSpend = totalSpendAll / 12;
 
         document.getElementById('annual-chart-title').innerText = `Monthly Income vs Spends Performance (${selectedYear})`;
-        document.getElementById('ann-total-income').innerText = `$${totalIncomeAll.toFixed(2)}`;
-        document.getElementById('ann-total-spends').innerText = `$${totalSpendAll.toFixed(2)}`;
+        document.getElementById('ann-total-income').innerText = `${fmt(totalIncomeAll)}`;
+        document.getElementById('ann-total-spends').innerText = `${fmt(totalSpendAll)}`;
         
         let netEl = document.getElementById('ann-net-savings');
-        netEl.innerText = `$${netSavings.toFixed(2)}`;
+        netEl.innerText = `${fmt(netSavings)}`;
         netEl.className = netSavings >= 0 ? 'stat-card-value text-success' : 'stat-card-value text-danger';
 
-        document.getElementById('ann-avg-spend').innerText = `$${avgSpend.toFixed(2)}`;
+        document.getElementById('ann-avg-spend').innerText = `${fmt(avgSpend)}`;
 
         const chartEl = document.getElementById('annual-bar-chart');
         chartEl.innerHTML = '';
@@ -1805,9 +2402,9 @@
             col.innerHTML = `
                 <div class="bar-tooltip">
                     <strong>${m.name} ${selectedYear}</strong><br>
-                    Income: $${m.income.toFixed(2)}<br>
-                    Spend: $${m.spend.toFixed(2)}<br>
-                    Diff: ${m.diff >= 0 ? '+' : ''}$${m.diff.toFixed(2)}
+                    Income: ${fmt(m.income)}<br>
+                    Spend: ${fmt(m.spend)}<br>
+                    Diff: ${m.diff >= 0 ? '+' : ''}${fmt(m.diff)}
                 </div>
                 <div class="bar-group-flex">
                     <div class="bar-bar bar-income" style="height: ${incomeHeight}%;"></div>
@@ -1827,8 +2424,8 @@
             let share = totalSpendAll > 0 ? (amt / totalSpendAll) * 100 : 0;
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><span style="color:var(--text-muted); font-size:0.7rem; margin-right:6px;">#${index + 1}</span>${cat}</td>
-                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td><span style="color:var(--text-muted); font-size:0.7rem; margin-right:6px;">#${index + 1}</span>${esc(cat)}</td>
+                <td class="col-num">${fmt(amt)}</td>
                 <td style="padding-left: 12px;">
                     <div class="progress-cell">
                         <span style="font-size:0.7rem;">${share.toFixed(1)}%</span>
@@ -1849,9 +2446,9 @@
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-weight: 500;">${fullMonthNames[idx]}</td>
-                <td class="col-num text-success">$${m.income.toFixed(2)}</td>
-                <td class="col-num text-danger">$${m.spend.toFixed(2)}</td>
-                <td class="col-num ${diffClass}" style="font-weight: 700;">${diffSign}$${m.diff.toFixed(2)}</td>
+                <td class="col-num text-success">${fmt(m.income)}</td>
+                <td class="col-num text-danger">${fmt(m.spend)}</td>
+                <td class="col-num ${diffClass}" style="font-weight: 700;">${diffSign}${fmt(m.diff)}</td>
             `;
             monthsTbody.appendChild(tr);
         });
@@ -1903,13 +2500,13 @@
             let limitVal = isExpense ? getCategoryBudgetForMonth(item.name, activeMonthKey) : '';
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="font-weight: 500;">${item.name}</td>
+                <td style="font-weight: 500;">${esc(item.name)}</td>
                 <td style="text-align: center;"><span class="pill" style="padding: 2px 4px; font-size: 0.6rem; background: ${isExpense ? 'rgba(37,99,235,0.15)' : 'rgba(16,185,129,0.15)'}; color: ${isExpense ? '#60a5fa' : '#34d399'}; border-color: ${isExpense ? 'rgba(37,99,235,0.3)' : 'rgba(16,185,129,0.3)'};">${item.type}</span></td>
-                <td>${isExpense ? `<input type="number" step="10" placeholder="No limit" value="${limitVal > 0 ? Number(limitVal).toFixed(2) : ''}" onchange="updateCategoryBudget('${item.name.replace(/'/g, "\\'")}', parseFloat(this.value)||0)" style="height: 28px; padding: 2px 4px; font-size: 0.75rem;">` : '<span style="color:var(--text-muted); font-size:0.7rem; text-align:right; display:block;">N/A</span>'}</td>
+                <td>${isExpense ? `<input type="number" step="10" placeholder="No limit" value="${limitVal > 0 ? Number(limitVal).toFixed(2) : ''}" data-name="${esc(item.name)}" onchange="updateCategoryBudget(this.dataset.name, parseFloat(this.value)||0)" style="height: 28px; padding: 2px 4px; font-size: 0.75rem;">` : '<span style="color:var(--text-muted); font-size:0.7rem; text-align:right; display:block;">N/A</span>'}</td>
                 <td style="text-align: right; padding-right: 8px;">
                     <div class="btn-action-row" style="justify-content: flex-end;">
-                        <button class="btn-transfer" onclick="renameCategory('${item.name.replace(/'/g, "\\'")}', '${item.type}')" title="Rename Category">✏️</button>
-                        <button class="btn-danger" onclick="deleteCategory('${item.name.replace(/'/g, "\\'")}', '${item.type}')" title="Delete Category">✕</button>
+                        <button class="btn-transfer" data-name="${esc(item.name)}" data-type="${item.type}" onclick="renameCategory(this.dataset.name, this.dataset.type)" title="Rename Category">✏️</button>
+                        <button class="btn-danger" data-name="${esc(item.name)}" data-type="${item.type}" onclick="deleteCategory(this.dataset.name, this.dataset.type)" title="Delete Category">✕</button>
                     </div>
                 </td>
             `;
@@ -1969,6 +2566,10 @@
             }
             const idx = categories.indexOf(oldName);
             if (idx !== -1) categories[idx] = trimmed;
+
+            // keep learned auto-tags and recurring templates pointing at the renamed category
+            Object.keys(autoCategorizationMap).forEach(k => { if (autoCategorizationMap[k] === oldName) autoCategorizationMap[k] = trimmed; });
+            recurringTemplates.forEach(t => { if (t.category === oldName) t.category = trimmed; });
 
             Object.keys(categoryBudgets).forEach(bKey => {
                 if (bKey === oldName) {
@@ -2071,17 +2672,17 @@
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><input type="date" class="col-date" value="${isoDate}" onchange="updateTxDate(${index}, this.value)"></td>
-                <td><input type="text" class="col-desc" value="${tx.desc}" onchange="updateTxDesc(${index}, this.value)"></td>
+                <td><input type="text" class="col-desc" value="${esc(tx.desc)}" onchange="updateTxDesc(${index}, this.value)"></td>
                 <td>
                     <select class="col-cat" id="cost-select-${index}" onchange="updateTx(${index}, 'cost', this.value)">
                         <option value="">-- None --</option>
-                        ${categories.sort().map(c => `<option value="${c}" ${tx.cost === c ? 'selected' : ''}>${c}</option>`).join('')}
+                        ${categories.sort().map(c => `<option value="${esc(c)}" ${tx.cost === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
                     </select>
                 </td>
                 <td>
                     <select class="col-cat" onchange="updateTx(${index}, 'creditCat', this.value)">
                         <option value="">-- None --</option>
-                        ${creditCategories.sort().map(c => `<option value="${c}" ${tx.creditCat === c ? 'selected' : ''}>${c}</option>`).join('')}
+                        ${creditCategories.sort().map(c => `<option value="${esc(c)}" ${tx.creditCat === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
                     </select>
                 </td>
                 <td>
@@ -2093,7 +2694,7 @@
                 </td>
                 <td><input type="number" step="0.01" class="col-num" value="${tx.credit !== '' && tx.credit !== undefined ? Number(tx.credit).toFixed(2) : ''}" onchange="updateTx(${index}, 'credit', parseFloat(this.value)||0)"></td>
                 <td><input type="number" step="0.01" class="col-num" value="${tx.debit !== '' && tx.debit !== undefined && tx.debit > 0 ? Number(tx.debit).toFixed(2) : ''}" onchange="updateTx(${index}, 'debit', parseFloat(this.value)||0)"></td>
-                <td><input type="text" class="col-method" value="${tx.method}" onchange="updateTx(${index}, 'method', this.value)"></td>
+                <td><input type="text" class="col-method" value="${esc(tx.method)}" onchange="updateTx(${index}, 'method', this.value)"></td>
                 <td>
                     <select class="col-paid ${paidClass}" id="paid-select-${index}" onchange="handlePaidChange(${index}, this.value)">
                         <option value="Yes" ${isYes ? 'selected' : ''}>Yes</option>
@@ -2111,12 +2712,16 @@
             tbody.appendChild(tr);
         });
 
+        if (!tbody.children.length) {
+            tbody.innerHTML = '<tr class="empty-state"><td colspan="10">No transactions found for this view.</td></tr>';
+        }
+
         const tfoot = document.getElementById('txn-tfoot');
         tfoot.innerHTML = `
             <tr>
                 <td colspan="5" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
-                <td class="col-num text-success">$${totalCreditSum.toFixed(2)}</td>
-                <td class="col-num text-danger">$${totalDebitSum.toFixed(2)}</td>
+                <td class="col-num text-success">${fmt(totalCreditSum)}</td>
+                <td class="col-num text-danger">${fmt(totalDebitSum)}</td>
                 <td colspan="3" style="text-align: right; padding-right: 8px;">
                     <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addTransaction()">+ Add Transaction</button>
                 </td>
@@ -2131,7 +2736,7 @@
         for (let keyword in autoCategorizationMap) {
             if (lowerDesc.includes(keyword)) {
                 let suggestedCat = autoCategorizationMap[keyword];
-                if (categories.includes(suggestedCat)) {
+                if (!datasets[activeMonthKey].data[index]['cost'] && categories.includes(suggestedCat)) {
                     datasets[activeMonthKey].data[index]['cost'] = suggestedCat;
                     showToast(`🧠 Auto-tagged as "${suggestedCat}"`);
                     break;
@@ -2242,7 +2847,7 @@
     }
 
     function exportJSON() {
-        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap };
+        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vaultPayload, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
@@ -2269,6 +2874,7 @@
                         enableBudgetRollover = imported.enableBudgetRollover || false;
                         recurringTemplates = imported.recurringTemplates || recurringTemplates;
                         autoCategorizationMap = imported.autoCategorizationMap || autoCategorizationMap;
+                        savingsGoals = Array.isArray(imported.savingsGoals) ? imported.savingsGoals : savingsGoals;
                     } else {
                         datasets = imported;
                     }
@@ -2290,11 +2896,11 @@
         let transactions = datasets[activeMonthKey].data;
 
         let prevBal = transactions
-            .filter(t => t.desc.toLowerCase().includes('previous period') || t.desc.toLowerCase().includes('starting balance') || t.method === 'Previous Balance')
+            .filter(t => isRolloverTx(t))
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let paidCredits = transactions
-            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
+            .filter(t => !isRolloverTx(t) && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let creditsRcvdTotal = prevBal + paidCredits;
@@ -2305,7 +2911,7 @@
         let currBal = creditsRcvdTotal - debitsPaid;
 
         let creditsRecv = transactions
-            .filter(t => !t.desc.toLowerCase().includes('previous period') && !t.desc.toLowerCase().includes('starting balance') && t.method !== 'Previous Balance' && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
+            .filter(t => !isRolloverTx(t) && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
             .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
         let debitsPay = transactions
@@ -2315,29 +2921,31 @@
         let projBal = currBal + creditsRecv - debitsPay;
         let totalCreditsAll = transactions.filter(t => (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
 
-        document.getElementById('lbl-credits-rcvd').innerText = `$${creditsRcvdTotal.toFixed(2)}`;
-        document.getElementById('lbl-debits-paid').innerText = `$${debitsPaid.toFixed(2)}`;
-        document.getElementById('lbl-curr-bal').innerText = `$${currBal.toFixed(2)}`;
+        document.getElementById('lbl-credits-rcvd').innerText = `${fmt(creditsRcvdTotal)}`;
+        document.getElementById('lbl-debits-paid').innerText = `${fmt(debitsPaid)}`;
+        document.getElementById('lbl-curr-bal').innerText = `${fmt(currBal)}`;
+        document.getElementById('lbl-curr-bal').classList.toggle('text-danger', currBal < 0);
         
         const creditsRecvEl = document.getElementById('lbl-credits-recv');
-        creditsRecvEl.innerText = `$${creditsRecv.toFixed(2)}`;
+        creditsRecvEl.innerText = `${fmt(creditsRecv)}`;
         creditsRecvEl.className = creditsRecv > 0 ? 'text-success' : '';
 
         const debitsPayEl = document.getElementById('lbl-debits-pay');
-        debitsPayEl.innerText = `$${debitsPay.toFixed(2)}`;
+        debitsPayEl.innerText = `${fmt(debitsPay)}`;
         debitsPayEl.className = debitsPay > 0 ? 'text-danger' : '';
 
-        document.getElementById('lbl-proj-bal').innerText = `$${projBal.toFixed(2)}`;
+        document.getElementById('lbl-proj-bal').innerText = `${fmt(projBal)}`;
+        document.getElementById('lbl-proj-bal').classList.toggle('text-danger', projBal < 0);
 
         let fixedTotal = transactions.filter(t => t.type === 'Fixed').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
         let varTotal = transactions.filter(t => t.type === 'Variable').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        let totalDebits = fixedTotal + varTotal;
+        let totalDebits = transactions.reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0); // includes rows with no Fixed/Variable type
 
-        document.getElementById('lbl-fixed').innerText = `$${fixedTotal.toFixed(2)}`;
+        document.getElementById('lbl-fixed').innerText = `${fmt(fixedTotal)}`;
         document.getElementById('lbl-fixed-pct').innerText = `(${totalDebits > 0 ? ((fixedTotal/totalDebits)*100).toFixed(1) : 0}%)`;
-        document.getElementById('lbl-variable').innerText = `$${varTotal.toFixed(2)}`;
+        document.getElementById('lbl-variable').innerText = `${fmt(varTotal)}`;
         document.getElementById('lbl-variable-pct').innerText = `(${totalDebits > 0 ? ((varTotal/totalDebits)*100).toFixed(1) : 0}%)`;
-        document.getElementById('lbl-total-debits').innerText = `$${totalDebits.toFixed(2)}`;
+        document.getElementById('lbl-total-debits').innerText = `${fmt(totalDebits)}`;
 
         let catMap = {};
         transactions.forEach(t => {
@@ -2359,10 +2967,10 @@
             if (effectiveLimit > 0) {
                 let pctUsed = Math.min((amt / effectiveLimit) * 100, 100);
                 let isOver = amt > effectiveLimit;
-                let barClass = isOver ? 'progress-bar-fill over-budget' : 'progress-bar-fill';
+                let barClass = isOver ? 'progress-bar-fill over-budget' : (pctUsed >= 80 ? 'progress-bar-fill warn' : 'progress-bar-fill');
                 let rolloverLabel = rolloverCarryover > 0 ? ` (+$${rolloverCarryover.toFixed(0)} roll)` : '';
                 displayInfo = `
-                    <div class="progress-cell" title="Budget: $${effectiveLimit.toFixed(2)}${rolloverLabel} (${pctUsed.toFixed(1)}%)">
+                    <div class="progress-cell" title="Budget: ${fmt(effectiveLimit)}${rolloverLabel} (${pctUsed.toFixed(1)}%)">
                         <span style="font-size:0.7rem; color:${isOver ? 'var(--danger)' : 'var(--text-muted)'}">$${effectiveLimit.toFixed(0)}${rolloverLabel} (${pctUsed.toFixed(0)}%)</span>
                         <div class="progress-bar-bg"><div class="${barClass}" style="width: ${pctUsed}%"></div></div>
                     </div>
@@ -2379,18 +2987,20 @@
 
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${cat}</td>
-                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td>${esc(cat)}</td>
+                <td class="col-num">${fmt(amt)}</td>
                 <td style="padding-left: 12px;">${displayInfo}</td>
             `;
             catTbody.appendChild(tr);
         });
 
+        renderBudgetHealth(catMap, projBal, transactions);
+
         let catTfoot = document.getElementById('category-tfoot');
         catTfoot.innerHTML = `
             <tr>
                 <td style="font-weight: 700; color: var(--text-muted);">Total</td>
-                <td class="col-num text-danger" style="font-weight: 700;">$${totalDebits.toFixed(2)}</td>
+                <td class="col-num text-danger" style="font-weight: 700;">${fmt(totalDebits)}</td>
                 <td style="padding-left: 12px; font-weight: 700;">100.0%</td>
             </tr>
         `;
@@ -2412,8 +3022,8 @@
             let share = totalCreditsAll > 0 ? (amt / totalCreditsAll) * 100 : 0;
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${cCat}</td>
-                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td>${esc(cCat)}</td>
+                <td class="col-num">${fmt(amt)}</td>
                 <td style="padding-left: 12px;">
                     <div class="progress-cell">
                         <span style="font-size:0.7rem;">${share.toFixed(1)}%</span>
@@ -2428,7 +3038,7 @@
         creditsTfoot.innerHTML = `
             <tr>
                 <td style="font-weight: 700; color: var(--text-muted);">Total</td>
-                <td class="col-num text-success" style="font-weight: 700;">$${totalCreditsAll.toFixed(2)}</td>
+                <td class="col-num text-success" style="font-weight: 700;">${fmt(totalCreditsAll)}</td>
                 <td style="padding-left: 12px; font-weight: 700;">100.0%</td>
             </tr>
         `;
@@ -2448,8 +3058,8 @@
             let share = totalMethodDebits > 0 ? (amt / totalMethodDebits) * 100 : 0;
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${m}</td>
-                <td class="col-num">$${amt.toFixed(2)}</td>
+                <td>${esc(m)}</td>
+                <td class="col-num">${fmt(amt)}</td>
                 <td style="padding-left: 12px;">${share.toFixed(1)}%</td>
             `;
             methodsTbody.appendChild(tr);
