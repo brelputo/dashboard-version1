@@ -877,6 +877,135 @@
             .toolbar { flex-direction: column; align-items: stretch; }
             .filter-pills { justify-content: space-between; }
         }
+
+        /* ==========================================
+           14. SIDEBAR, BUDGETS PAGE & NEW MODALS (added)
+           Uses the existing theme variables only, so colors and look stay the same.
+           ========================================== */
+        :root { --accent-soft: rgba(59, 130, 246, 0.15); }
+        [data-theme="light"] { --accent-soft: rgba(37, 99, 235, 0.10); }
+
+        /* layout: sidebar + main column */
+        .app-shell { display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 22px; align-items: start; }
+        .app-main { min-width: 0; }
+        #dashboard-view, #transactions-view, #budgets-view { animation: viewIn 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+        .sidebar {
+            position: sticky; top: 24px; align-self: start;
+            background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius);
+            box-shadow: var(--shadow-card); padding: 12px;
+            max-height: calc(100vh - 48px); overflow-y: auto;
+        }
+        .nav { display: flex; flex-direction: column; gap: 6px; }
+        .nav-item {
+            width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+            background: transparent; border: none; border-radius: 12px; color: var(--text-main);
+            font-size: 0.92rem; font-weight: 600; text-align: left; cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .nav-item .nav-icon { width: 19px; height: 19px; flex: none; color: var(--text-muted); transition: color 0.2s; }
+        .nav-item:hover { background: var(--pill-bg); }
+        .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+        .nav-item.active .nav-icon, .nav-group.has-active > .nav-parent .nav-icon { color: var(--accent); }
+        .nav-group.has-active > .nav-parent { color: var(--accent); }
+        .nav-chevron { margin-left: auto; width: 16px; height: 16px; flex: none; color: var(--text-muted); transition: transform 0.25s ease; }
+        .nav-group.open > .nav-parent .nav-chevron { transform: rotate(180deg); }
+
+        /* sub menus (animated open / close) */
+        .nav-sub-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.25s ease; }
+        .nav-group.open > .nav-sub-list { grid-template-rows: 1fr; }
+        .nav-sub-inner {
+            overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: 2px;
+            margin-left: 28px; padding-left: 10px; border-left: 1px solid var(--border);
+            visibility: hidden; transition: visibility 0s linear 0.25s;
+        }
+        .nav-group.open > .nav-sub-list > .nav-sub-inner { visibility: visible; transition-delay: 0s; }
+        .nav-sub {
+            width: 100%; text-align: left; background: transparent; border: none; border-radius: 10px;
+            padding: 9px 12px; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .nav-group.open > .nav-sub-list > .nav-sub-inner > .nav-sub:first-child { margin-top: 4px; }
+        .nav-group.open > .nav-sub-list > .nav-sub-inner > .nav-sub:last-child { margin-bottom: 2px; }
+        .nav-sub:hover { background: var(--pill-bg); color: var(--text-main); }
+        .nav-sub.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+        .nav-item:focus-visible, .nav-sub:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 1px; }
+
+        .sidebar-backdrop { display: none; position: fixed; inset: 0; z-index: 899; background: rgba(3, 7, 18, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+        .sidebar-backdrop.show { display: block; }
+        .menu-toggle { display: none; }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .month-nav { display: contents; }
+        .month-nav.hidden { display: none; }
+
+        /* wider sidebar layout means the old breakpoints move a little */
+        @media (max-width: 1560px) { .dashboard-grid { grid-template-columns: minmax(0, 1fr); } }
+        @media (max-width: 1300px) { .breakdowns-grid { grid-template-columns: 1fr; } }
+
+        @media (max-width: 1000px) {
+            .app-shell { grid-template-columns: minmax(0, 1fr); }
+            .sidebar {
+                position: fixed; top: 0; left: 0; bottom: 0; z-index: 900; width: 285px; max-width: 86vw; max-height: none;
+                border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 12px;
+                transform: translateX(-105%); visibility: hidden; transition: transform 0.25s ease, visibility 0s linear 0.25s;
+            }
+            .sidebar.open { transform: none; visibility: visible; transition-delay: 0s; }
+            .menu-toggle { display: flex; }
+        }
+
+        /* budgets page */
+        .page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .page-head-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .page-head h2 { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text-main); }
+        .page-head h2::before { content: ""; width: 4px; height: 16px; border-radius: 4px; background: var(--accent-grad); flex: none; }
+
+        .budgets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .budget-card {
+            background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius);
+            box-shadow: var(--shadow-card); padding: 20px 22px; display: flex; flex-direction: column; gap: 10px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .budget-card:hover { border-color: rgba(96, 165, 250, 0.28); }
+        .budget-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .budget-name { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .budget-badge { flex: none; font-size: 0.72rem; font-weight: 600; padding: 4px 11px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+        .budget-badge.warn { background: rgba(245, 158, 11, 0.14); color: #f59e0b; }
+        .budget-badge.over { background: rgba(239, 68, 68, 0.14); color: var(--danger); }
+        .budget-sub { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 26px; }
+        .budget-limit { font-size: 0.8rem; color: var(--text-muted); }
+        .budget-limit strong { color: var(--text-main); font-weight: 600; font-variant-numeric: tabular-nums; }
+        .budget-roll { font-size: 0.72rem; }
+        .budget-actions { display: inline-flex; gap: 4px; }
+        .budget-amounts { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .budget-card .progress-bar-bg { height: 8px; }
+        @media (hover: hover) {
+            .budget-actions { opacity: 0; transition: opacity 0.2s; }
+            .budget-card:hover .budget-actions, .budget-card:focus-within .budget-actions { opacity: 1; }
+        }
+
+        /* modern dialogs (new transaction / budget) */
+        .modal-card.modal-sm { max-width: 480px; padding: 26px; border-radius: 22px; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-head h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, color 0.2s; }
+        .modal-close:hover { background: var(--pill-bg); color: var(--text-main); }
+        .form-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; min-width: 0; }
+        .form-field label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .modal-sm input[type="text"], .modal-sm input[type="number"], .modal-sm input[type="date"], .modal-sm select { height: 44px; border-radius: 12px; padding: 8px 14px; font-size: 0.9rem; }
+        .modal-note { font-size: 0.78rem; color: var(--text-muted); margin: -6px 0 16px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+        .modal-actions .btn, .modal-actions .btn-secondary { height: 42px; padding: 0 20px; border-radius: 12px; justify-content: center; font-size: 0.88rem; }
+        @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; gap: 0; } }
+
+        /* the freshly added ledger line flashes once so you can see where it landed */
+        @keyframes rowFlash { from { box-shadow: inset 0 0 0 300px var(--accent-glow); } to { box-shadow: inset 0 0 0 300px transparent; } }
+        .row-flash td { animation: rowFlash 2.4s ease-out 1; }
+
+        @media print {
+            .sidebar, .sidebar-backdrop, .menu-toggle { display: none !important; }
+            .app-shell { display: block; }
+        }
     </style>
 </head>
 <body class="locked">
@@ -952,12 +1081,139 @@
 </div>
 
 <!-- ==========================================
+   NEW TRANSACTION MODAL DIALOG
+   ========================================== -->
+<div id="txn-modal" class="modal-overlay" onclick="if(event.target===this) closeTransactionModal()">
+    <div class="modal-card modal-sm" role="dialog" aria-modal="true" aria-labelledby="txn-modal-title">
+        <div class="modal-head">
+            <h3 id="txn-modal-title">New Transaction</h3>
+            <button type="button" class="modal-close" onclick="closeTransactionModal()" aria-label="Close">✕</button>
+        </div>
+
+        <div class="form-field">
+            <label for="tm-desc">Description</label>
+            <input type="text" id="tm-desc" placeholder="e.g. Whole Foods Market" autocomplete="off" oninput="onTxnDescInput()" onkeydown="if(event.key==='Enter') saveTransactionFromModal()">
+        </div>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label for="tm-amount">Amount ($)</label>
+                <input type="number" id="tm-amount" step="0.01" min="0" inputmode="decimal" placeholder="45.00" onkeydown="if(event.key==='Enter') saveTransactionFromModal()">
+            </div>
+            <div class="form-field">
+                <label for="tm-type">Type</label>
+                <select id="tm-type" onchange="onTxnTypeChange()">
+                    <option value="expense">Expense</option>
+                    <option value="credit">Credit</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label for="tm-cat">Category</label>
+                <select id="tm-cat" onchange="txmCatTouched = true"></select>
+            </div>
+            <div class="form-field">
+                <label for="tm-date">Date</label>
+                <input type="date" id="tm-date" onkeydown="if(event.key==='Enter') saveTransactionFromModal()">
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeTransactionModal()">Cancel</button>
+            <button type="button" class="btn" onclick="saveTransactionFromModal()">Save Transaction</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+   NEW / EDIT BUDGET MODAL DIALOG
+   ========================================== -->
+<div id="budget-modal" class="modal-overlay" onclick="if(event.target===this) closeBudgetModal()">
+    <div class="modal-card modal-sm" role="dialog" aria-modal="true" aria-labelledby="budget-modal-title">
+        <div class="modal-head">
+            <h3 id="budget-modal-title">New Budget</h3>
+            <button type="button" class="modal-close" onclick="closeBudgetModal()" aria-label="Close">✕</button>
+        </div>
+
+        <div class="form-field">
+            <label for="bm-cat">Category</label>
+            <select id="bm-cat" onchange="onBudgetCatChange()"></select>
+        </div>
+        <div class="form-field">
+            <label for="bm-limit">Budget limit ($)</label>
+            <input type="number" id="bm-limit" step="10" min="0" inputmode="decimal" placeholder="e.g. 600.00" onkeydown="if(event.key==='Enter') saveBudgetFromModal()">
+        </div>
+        <p class="modal-note" id="bm-note"></p>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeBudgetModal()">Cancel</button>
+            <button type="button" class="btn" onclick="saveBudgetFromModal()">Save Budget</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
    10. MAIN DASHBOARD CONTENT (Hidden until login)
    ========================================== -->
 <div class="container" id="main-app" style="display: none;">
     
+    <div class="app-shell">
+    <!-- ==========================================
+       SIDEBAR NAVIGATION
+       ========================================== -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <nav class="nav">
+            <button type="button" class="nav-item active" data-view="dashboard" onclick="showView('dashboard')" aria-current="page">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9v12h14V9"></path><path d="M10 21v-6h4v6"></path></svg>
+                <span>Dashboard</span>
+            </button>
+
+            <button type="button" class="nav-item" data-view="transactions" onclick="showView('transactions')">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+                <span>Transactions</span>
+            </button>
+
+            <div class="nav-group">
+                <button type="button" class="nav-item nav-parent" aria-expanded="false" onclick="toggleNavGroup(this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                    <span>Analytics</span>
+                    <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <div class="nav-sub-list"><div class="nav-sub-inner">
+                    <button type="button" class="nav-sub" data-view="annual" onclick="showView('annual')">Annual Summary</button>
+                    <button type="button" class="nav-sub" data-view="multiyear" onclick="showView('multiyear')">Multi-Year Comparison</button>
+                    <button type="button" class="nav-sub" data-view="trend" onclick="showView('trend')">Monthly Spending Trend</button>
+                </div></div>
+            </div>
+
+            <button type="button" class="nav-item" data-view="budgets" onclick="showView('budgets')">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                <span>Budgets</span>
+            </button>
+
+            <div class="nav-group">
+                <button type="button" class="nav-item nav-parent" aria-expanded="false" onclick="toggleNavGroup(this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+                    <span>Planning</span>
+                    <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <div class="nav-sub-list"><div class="nav-sub-inner">
+                    <button type="button" class="nav-sub" data-view="forecast" onclick="showView('forecast')">Cash-Flow Forecast</button>
+                    <button type="button" class="nav-sub" data-view="goals" onclick="showView('goals')">Savings Goals</button>
+                    <button type="button" class="nav-sub" data-view="subscriptions" onclick="showView('subscriptions')">Subscriptions &amp; Bills</button>
+                </div></div>
+            </div>
+        </nav>
+    </aside>
+
+    <div class="app-main">
     <header>
         <div class="header-top-row">
+            <div class="header-left">
+            <button type="button" class="icon-btn-tooltip menu-toggle" onclick="toggleSidebar()" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
             <div class="dropdown">
                 <button class="btn btn-secondary" style="padding: 8px 12px;" onclick="toggleDropdown(event)">⚙️ Options ▾</button>
                 <div id="options-dropdown" class="dropdown-content">
@@ -970,6 +1226,7 @@
                     </label>
                     <button onclick="resetMonthData()">🔄 Reset Month</button>
                 </div>
+            </div>
             </div>
             
             <div class="header-title" style="flex: 1; text-align: center;">
@@ -997,6 +1254,7 @@
                 <option value="2030">🗓️ 2030</option>
             </select>
 
+            <div id="month-nav" class="month-nav">
             <button class="icon-btn-tooltip" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
             <select id="month-dropdown" class="select-picker" style="width: 250px;" onchange="switchMonth(this.value)">
                 <option value="january">📅 January</option>
@@ -1011,19 +1269,14 @@
                 <option value="october">📅 October</option>
                 <option value="november">📅 November</option>
                 <option value="december">📅 December</option>
-                <option value="annual-summary">📊 Annual Summary</option>
-                <option value="multi-year-summary">📈 Multi-Year Comparison</option>
-                <option value="monthly-trend-view">📉 Monthly Spending Trend</option>
-                <option value="savings-goals">🎯 Savings Goals</option>
-                <option value="cashflow-forecast">🔮 Cash-Flow Forecast</option>
-                <option value="subscriptions">🔁 Subscriptions &amp; Bills</option>
             </select>
             <button class="icon-btn-tooltip" onclick="changeMonth(1)" aria-label="Next month">›</button>
+            </div>
         </div>
     </header>
 
     <!-- MONTHLY TREND VIEW CONTAINER -->
-    <div id="monthly-trend-view" style="display: none;">
+    <div id="monthly-trend-view" class="view-pane" style="display: none;">
         <div class="chart-container">
             <div class="chart-header">
                 <h3 id="trend-chart-title">Cumulative Spending Trend</h3>
@@ -1037,7 +1290,7 @@
     </div>
 
     <!-- MULTI-YEAR COMPARISON VIEW CONTAINER -->
-    <div id="multi-year-view" style="display: none;">
+    <div id="multi-year-view" class="view-pane" style="display: none;">
         <div class="chart-container">
             <div class="chart-header">
                 <h3>Multi-Year Financial Trend (2025 - 2030)</h3>
@@ -1073,7 +1326,7 @@
     </div>
 
     <!-- CASH-FLOW FORECAST VIEW CONTAINER -->
-    <div id="forecast-view" style="display: none;">
+    <div id="forecast-view" class="view-pane" style="display: none;">
         <div class="annual-grid">
             <div class="stat-card">
                 <span class="stat-card-title">Balance Today</span>
@@ -1139,7 +1392,7 @@
     </div>
 
     <!-- SUBSCRIPTIONS VIEW CONTAINER -->
-    <div id="subs-view" style="display: none;">
+    <div id="subs-view" class="view-pane" style="display: none;">
         <div class="annual-grid">
             <div class="stat-card">
                 <span class="stat-card-title">Monthly Cost</span>
@@ -1216,7 +1469,7 @@
     </div>
 
     <!-- SAVINGS GOALS VIEW CONTAINER -->
-    <div id="goals-view" style="display: none;">
+    <div id="goals-view" class="view-pane" style="display: none;">
         <div class="annual-grid">
             <div class="stat-card">
                 <span class="stat-card-title">Total Saved</span>
@@ -1254,7 +1507,7 @@
     </div>
 
     <!-- ANNUAL SUMMARY VIEW CONTAINER -->
-    <div id="annual-view" style="display: none;">
+    <div id="annual-view" class="view-pane" style="display: none;">
         <div class="annual-grid">
             <div class="stat-card">
                 <span class="stat-card-title">Total Annual Income</span>
@@ -1326,49 +1579,9 @@
         </div>
     </div>
 
-    <!-- MONTHLY VIEW CONTAINER -->
-    <div class="dashboard-grid" id="monthly-view">
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view" class="dashboard-grid view-pane" data-display="grid" style="display: none;">
         <div>
-            <div class="card">
-                <div class="card-header">
-                    <h2>Transactions Ledger</h2>
-                    <button class="btn" onclick="addTransaction()">+ Add Transaction</button>
-                </div>
-                <div class="toolbar">
-                    <div class="search-box">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="search-input" placeholder="Search description or category..." oninput="renderApp()">
-                    </div>
-                    <div class="filter-pills">
-                        <div class="pill active" onclick="setFilter('all', this)">All</div>
-                        <div class="pill" onclick="setFilter('cleared', this)">Cleared</div>
-                        <div class="pill" onclick="setFilter('pending', this)">Pending</div>
-                        <div class="pill" onclick="setFilter('credits', this)">Credits</div>
-                        <div class="pill" onclick="setFilter('debits', this)">Debits</div>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table class="ledger-table">
-                        <thead>
-                            <tr>
-                                <th class="col-date">Date</th>
-                                <th class="col-desc">Description</th>
-                                <th class="col-cat">Expense Cat</th>
-                                <th class="col-cat">Credit Cat</th>
-                                <th class="col-type">Type</th>
-                                <th class="col-num">Credit ($)</th>
-                                <th class="col-num">Debit ($)</th>
-                                <th class="col-method">Method</th>
-                                <th class="col-paid">Paid</th>
-                                <th class="col-action">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="txn-tbody"></tbody>
-                        <tfoot id="txn-tfoot"></tfoot>
-                    </table>
-                </div>
-            </div>
-
             <div class="breakdowns-grid">
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
@@ -1409,40 +1622,37 @@
                 </div>
             </div>
 
+            
+            <div class="breakdowns-grid">
+<div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <h2>Spending vs 3-Month Average</h2>
+                </div>
+                <div id="cmp-body"></div>
+            </div>
+
             <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
-                    <h2>Manage Categories</h2>
-                    <label style="font-size: 0.75rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                        <input type="checkbox" id="budget-rollover-toggle" onchange="toggleBudgetRollover(this.checked)">
-                        🔄 Auto-Rollover Unused Budget
-                    </label>
+                    <h2>Payment Methods</h2>
                 </div>
-                <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-                    <button type="button" class="pill active" id="type-pill-expense" onclick="setCategoryCreationType('expense')" style="flex:1; text-align:center;">Expense</button>
-                    <button type="button" class="pill" id="type-pill-credit" onclick="setCategoryCreationType('credit')" style="flex:1; text-align:center;">Credit</button>
-                </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <input type="text" id="new-category-input" placeholder="New category name..." onkeydown="if(event.key==='Enter') addNewCategory()">
-                    <button class="btn" style="padding: 6px 10px;" onclick="addNewCategory()">+ Add</button>
-                </div>
-                <div class="table-container-scrollable">
+                <div class="table-container-clean">
                     <table>
                         <thead>
                             <tr>
-                                <th>Category Name</th>
-                                <th style="width: 70px; text-align: center;">Type</th>
-                                <th class="col-num">Limit for Month ($)</th>
-                                <th style="width: 75px; text-align: right; padding-right: 8px;">Actions</th>
+                                <th>Method</th>
+                                <th class="col-num">Total ($)</th>
+                                <th style="padding-left: 12px;">Share</th>
                             </tr>
                         </thead>
-                        <tbody id="manage-categories-tbody"></tbody>
+                        <tbody id="methods-tbody"></tbody>
                     </table>
                 </div>
+            </div>
             </div>
         </div>
 
         <div>
-            <div class="card">
+<div class="card">
                 <div class="card-header">
                     <h2>Period Summary (Cleared)</h2>
                 </div>
@@ -1494,13 +1704,6 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2>Spending vs 3-Month Average</h2>
-                </div>
-                <div id="cmp-body"></div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
                     <h2>Fixed vs Variable Expenses</h2>
                 </div>
                 <div class="metric-group">
@@ -1511,25 +1714,99 @@
                 </div>
             </div>
 
-            <div class="card">
+                    </div>
+    </div>
+
+    <!-- TRANSACTIONS VIEW -->
+    <div id="transactions-view" class="view-pane" style="display: none;">
+<div class="card">
                 <div class="card-header">
-                    <h2>Payment Methods</h2>
+                    <h2>Transactions Ledger</h2>
+                    <button class="btn" onclick="openTransactionModal()">+ Add Transaction</button>
                 </div>
-                <div class="table-container-clean">
-                    <table>
+                <div class="toolbar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-input" placeholder="Search description or category..." oninput="renderTransactions()">
+                    </div>
+                    <div class="filter-pills">
+                        <div class="pill active" onclick="setFilter('all', this)">All</div>
+                        <div class="pill" onclick="setFilter('cleared', this)">Cleared</div>
+                        <div class="pill" onclick="setFilter('pending', this)">Pending</div>
+                        <div class="pill" onclick="setFilter('credits', this)">Credits</div>
+                        <div class="pill" onclick="setFilter('debits', this)">Debits</div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="ledger-table">
                         <thead>
                             <tr>
-                                <th>Method</th>
-                                <th class="col-num">Total ($)</th>
-                                <th style="padding-left: 12px;">Share</th>
+                                <th class="col-date">Date</th>
+                                <th class="col-desc">Description</th>
+                                <th class="col-cat">Expense Cat</th>
+                                <th class="col-cat">Credit Cat</th>
+                                <th class="col-type">Type</th>
+                                <th class="col-num">Credit ($)</th>
+                                <th class="col-num">Debit ($)</th>
+                                <th class="col-method">Method</th>
+                                <th class="col-paid">Paid</th>
+                                <th class="col-action">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="methods-tbody"></tbody>
+                        <tbody id="txn-tbody"></tbody>
+                        <tfoot id="txn-tfoot"></tfoot>
                     </table>
                 </div>
             </div>
-        </div>
+
     </div>
+
+    <!-- BUDGETS VIEW -->
+    <div id="budgets-view" class="view-pane" style="display: none;">
+        <div class="page-head">
+            <div class="page-head-title">
+                <h2>Budgets</h2>
+                <span class="chip" id="budgets-month">--</span>
+                <span class="chip" id="budgets-status">No budgets yet</span>
+            </div>
+            <button type="button" class="btn" onclick="openBudgetModal()">+ New Budget</button>
+        </div>
+        <div id="budgets-grid" class="budgets-grid"></div>
+
+<div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <h2>Manage Categories</h2>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <input type="checkbox" id="budget-rollover-toggle" onchange="toggleBudgetRollover(this.checked)">
+                        🔄 Auto-Rollover Unused Budget
+                    </label>
+                </div>
+                <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                    <button type="button" class="pill active" id="type-pill-expense" onclick="setCategoryCreationType('expense')" style="flex:1; text-align:center;">Expense</button>
+                    <button type="button" class="pill" id="type-pill-credit" onclick="setCategoryCreationType('credit')" style="flex:1; text-align:center;">Credit</button>
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <input type="text" id="new-category-input" placeholder="New category name..." onkeydown="if(event.key==='Enter') addNewCategory()">
+                    <button class="btn" style="padding: 6px 10px;" onclick="addNewCategory()">+ Add</button>
+                </div>
+                <div class="table-container-scrollable">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th style="width: 70px; text-align: center;">Type</th>
+                                <th class="col-num">Limit for Month ($)</th>
+                                <th style="width: 75px; text-align: right; padding-right: 8px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-categories-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+    </div>
+
+    </div><!-- /.app-main -->
+    </div><!-- /.app-shell -->
 </div>
 
 <div id="toast">Synced with Supabase securely</div>
@@ -1830,7 +2107,7 @@
         showToast('CSV exported');
     }
 
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRecurringModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAllModals(); closeSidebar(); } });
 
     // Re-read the vault from the cloud and redraw (used on sync + after a save conflict)
     async function reloadFromCloud() {
@@ -2621,6 +2898,332 @@
             </div>`).join('') : '<div class="empty-note">No untracked repeating charges found. Charges that appear in 2+ months at a similar amount will show up here.</div>';
     }
 
+    // ==========================================
+    // SIDEBAR NAVIGATION & VIEW SWITCHING
+    // ==========================================
+    let currentView = 'dashboard';
+    const VIEWS = {
+        dashboard:     { pane: 'dashboard-view',     month: true },
+        transactions:  { pane: 'transactions-view',  month: true },
+        budgets:       { pane: 'budgets-view',       month: true },
+        trend:         { pane: 'monthly-trend-view', month: true },
+        annual:        { pane: 'annual-view',        month: false },
+        goals:         { pane: 'goals-view',         month: false },
+        subscriptions: { pane: 'subs-view',          month: false },
+        multiyear:     { pane: 'multi-year-view',    month: false, year: false },
+        forecast:      { pane: 'forecast-view',      month: false, year: false }
+    };
+
+    function setNavGroupOpen(group, open) {
+        group.classList.toggle('open', open);
+        const btn = group.querySelector('.nav-parent');
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function toggleNavGroup(btn) {
+        const group = btn.closest('.nav-group');
+        if (group) setNavGroupOpen(group, !group.classList.contains('open'));
+    }
+
+    function toggleSidebar() {
+        const open = document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebar-backdrop').classList.toggle('show', open);
+    }
+
+    function closeSidebar() {
+        const sb = document.getElementById('sidebar');
+        const bd = document.getElementById('sidebar-backdrop');
+        if (sb) sb.classList.remove('open');
+        if (bd) bd.classList.remove('show');
+    }
+
+    function showView(view) {
+        if (!VIEWS[view]) view = 'dashboard';
+        currentView = view;
+        const meta = VIEWS[view];
+
+        document.querySelectorAll('.view-pane').forEach(p => { p.style.display = 'none'; });
+        const pane = document.getElementById(meta.pane);
+        pane.style.display = pane.dataset.display || 'block';
+
+        // highlight the active menu entry (and open its parent group)
+        document.querySelectorAll('.nav-item[data-view], .nav-sub[data-view]').forEach(b => {
+            const on = b.dataset.view === view;
+            b.classList.toggle('active', on);
+            if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+        });
+        document.querySelectorAll('.nav-group').forEach(g => {
+            const hasActive = !!g.querySelector('.nav-sub[data-view="' + view + '"]');
+            g.classList.toggle('has-active', hasActive);
+            if (hasActive) setNavGroupOpen(g, true);
+        });
+
+        // only show the header pickers that the page actually uses
+        document.getElementById('month-nav').classList.toggle('hidden', !meta.month);
+        document.getElementById('year-dropdown').style.display = meta.year === false ? 'none' : '';
+
+        closeSidebar();
+        renderApp();
+        window.scrollTo(0, 0);
+    }
+
+    // ==========================================
+    // BUDGETS PAGE
+    // ==========================================
+    let editingBudgetCat = null;
+
+    function currentMonthLabel() {
+        return selectedMonthName.charAt(0).toUpperCase() + selectedMonthName.slice(1) + ' ' + selectedYear;
+    }
+
+    function renderBudgets() {
+        const grid = document.getElementById('budgets-grid');
+        if (!grid) return;
+        const txs = (datasets[activeMonthKey] && datasets[activeMonthKey].data) || [];
+        const spentMap = {};
+        txs.forEach(t => {
+            const d = parseFloat(t.debit) || 0;
+            if (t.cost && d > 0) spentMap[t.cost] = (spentMap[t.cost] || 0) + d;
+        });
+
+        const rows = [...categories].sort().map(cat => {
+            const base = getCategoryBudgetForMonth(cat, activeMonthKey);
+            if (!(base > 0)) return null;
+            const carry = getCategoryRolloverCarryover(cat, activeMonthKey);
+            const limit = base + carry;
+            const spent = spentMap[cat] || 0;
+            return { cat, carry, limit, spent, left: limit - spent, pct: limit > 0 ? (spent / limit) * 100 : 0 };
+        }).filter(Boolean);
+
+        document.getElementById('budgets-month').innerText = currentMonthLabel();
+
+        const status = document.getElementById('budgets-status');
+        if (!rows.length) {
+            status.className = 'chip';
+            status.innerText = 'No budgets yet';
+        } else {
+            const totalLeft = rows.reduce((a, r) => a + r.left, 0);
+            status.className = 'chip ' + (totalLeft >= 0 ? 'chip-ok' : 'chip-bad');
+            status.innerText = `${rows.length} budget${rows.length === 1 ? '' : 's'} · ${fmt(Math.abs(totalLeft))} ${totalLeft >= 0 ? 'left' : 'over'}`;
+        }
+
+        if (!rows.length) {
+            grid.innerHTML = `<div class="empty-goals">No budgets set for ${esc(currentMonthLabel())}. Click "+ New Budget" to set a monthly limit for a category.</div>`;
+            return;
+        }
+
+        grid.innerHTML = rows.map(r => {
+            const over = r.spent > r.limit;
+            const state = over ? 'over' : (r.pct >= 80 ? 'warn' : '');
+            const fill = over ? 'over-budget' : (r.pct >= 80 ? 'warn' : '');
+            return `
+                <div class="budget-card">
+                    <div class="budget-top">
+                        <span class="budget-name" title="${esc(r.cat)}">${esc(r.cat)}</span>
+                        <span class="budget-badge ${state}">${Math.round(r.pct)}% Spent</span>
+                    </div>
+                    <div class="budget-sub">
+                        <span class="budget-limit">Budget limit: <strong>${fmt(r.limit)}</strong>${r.carry > 0 ? ` <span class="budget-roll">(incl. ${fmt(r.carry)} rollover)</span>` : ''}</span>
+                        <span class="budget-actions">
+                            <button type="button" class="btn-transfer" data-name="${esc(r.cat)}" onclick="openBudgetModal(this.dataset.name)" title="Edit budget" aria-label="Edit budget">✏️</button>
+                            <button type="button" class="btn-danger" data-name="${esc(r.cat)}" onclick="removeBudget(this.dataset.name)" title="Remove budget" aria-label="Remove budget">✕</button>
+                        </span>
+                    </div>
+                    <div class="budget-amounts">
+                        <span>Spent: ${fmt(r.spent)}</span>
+                        <span class="${over ? 'text-danger' : ''}">${over ? 'Over: ' + fmt(r.spent - r.limit) : 'Left: ' + fmt(r.left)}</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill ${fill}" style="width: ${Math.min(100, r.pct).toFixed(1)}%"></div></div>
+                </div>`;
+        }).join('');
+    }
+
+    function openBudgetModal(cat) {
+        if (!categories.length) { showToast('Add an expense category first', true); return; }
+        editingBudgetCat = cat || null;
+        const sel = document.getElementById('bm-cat');
+        const sorted = [...categories].sort();
+        sel.innerHTML = sorted.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        document.getElementById('budget-modal-title').innerText = editingBudgetCat ? 'Edit Budget' : 'New Budget';
+        document.getElementById('bm-note').innerText = 'Budget for ' + currentMonthLabel();
+
+        if (editingBudgetCat) {
+            sel.value = editingBudgetCat;
+            sel.disabled = true;
+        } else {
+            sel.disabled = false;
+            // start on the first category that has no limit yet
+            const free = sorted.find(c => !(getCategoryBudgetForMonth(c, activeMonthKey) > 0));
+            sel.value = free || sorted[0];
+        }
+        onBudgetCatChange();
+        document.getElementById('budget-modal').style.display = 'flex';
+        setTimeout(() => {
+            const el = document.getElementById(editingBudgetCat ? 'bm-limit' : 'bm-cat');
+            el.focus();
+        }, 50);
+    }
+
+    function onBudgetCatChange() {
+        const cat = document.getElementById('bm-cat').value;
+        const cur = getCategoryBudgetForMonth(cat, activeMonthKey);
+        document.getElementById('bm-limit').value = cur > 0 ? Number(cur).toFixed(2) : '';
+    }
+
+    function closeBudgetModal() {
+        const m = document.getElementById('budget-modal');
+        if (m) m.style.display = 'none';
+        editingBudgetCat = null;
+    }
+
+    function saveBudgetFromModal() {
+        const cat = document.getElementById('bm-cat').value;
+        const limit = parseFloat(document.getElementById('bm-limit').value);
+        if (!cat) { showToast('Pick a category', true); return; }
+        if (!(limit > 0)) {
+            showToast('Enter a limit above $0', true);
+            document.getElementById('bm-limit').focus();
+            return;
+        }
+        updateCategoryBudget(cat, limit);
+        closeBudgetModal();
+        renderCategoryManagement();
+    }
+
+    function removeBudget(cat) {
+        if (!confirm(`Remove the budget for "${cat}"?`)) return;
+        updateCategoryBudget(cat, 0);
+        renderCategoryManagement();
+        showToast(`Budget removed for ${cat}`);
+    }
+
+    // ==========================================
+    // NEW TRANSACTION MODAL
+    // ==========================================
+    let txmCatTouched = false;
+
+    function populateTxnModalCategories() {
+        const type = document.getElementById('tm-type').value;
+        const list = type === 'credit' ? creditCategories : categories;
+        document.getElementById('tm-cat').innerHTML =
+            '<option value="">-- None --</option>' + [...list].sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    }
+
+    function onTxnTypeChange() {
+        txmCatTouched = false;
+        populateTxnModalCategories();
+        onTxnDescInput();
+    }
+
+    // Same keyword matching the ledger uses, so the category is suggested while typing
+    function onTxnDescInput() {
+        if (txmCatTouched || document.getElementById('tm-type').value !== 'expense') return;
+        const d = document.getElementById('tm-desc').value.toLowerCase().trim();
+        let hit = '';
+        if (d) {
+            for (const k in autoCategorizationMap) {
+                if (k && d.includes(k) && categories.includes(autoCategorizationMap[k])) { hit = autoCategorizationMap[k]; break; }
+            }
+        }
+        document.getElementById('tm-cat').value = hit;
+    }
+
+    function openTransactionModal() {
+        if (!datasets[activeMonthKey]) ensureYearDatasetsExist(selectedYear);
+        document.getElementById('tm-desc').value = '';
+        document.getElementById('tm-amount').value = '';
+        document.getElementById('tm-type').value = 'expense';
+        const dateEl = document.getElementById('tm-date');
+        dateEl.min = allYears[0] + '-01-01';
+        dateEl.max = allYears[allYears.length - 1] + '-12-31';
+        dateEl.value = toISOFormat(getDefaultDateString(activeMonthKey));
+        txmCatTouched = false;
+        populateTxnModalCategories();
+        document.getElementById('txn-modal').style.display = 'flex';
+        setTimeout(() => document.getElementById('tm-desc').focus(), 50);
+    }
+
+    function closeTransactionModal() {
+        const m = document.getElementById('txn-modal');
+        if (m) m.style.display = 'none';
+        const d = document.getElementById('tm-desc'), a = document.getElementById('tm-amount');
+        if (d) d.value = '';
+        if (a) a.value = '';
+    }
+
+    function saveTransactionFromModal() {
+        const desc = document.getElementById('tm-desc').value.trim();
+        const amount = parseFloat(document.getElementById('tm-amount').value);
+        const type = document.getElementById('tm-type').value;
+        const cat = document.getElementById('tm-cat').value;
+        const iso = document.getElementById('tm-date').value;
+
+        if (!desc) { showToast('Add a description', true); document.getElementById('tm-desc').focus(); return; }
+        if (!(amount > 0)) { showToast('Enter an amount above $0', true); document.getElementById('tm-amount').focus(); return; }
+        const d = parseIso(iso);
+        if (!d) { showToast('Pick a date', true); document.getElementById('tm-date').focus(); return; }
+        const yr = String(d.getFullYear());
+        if (!allYears.includes(yr)) {
+            showToast(`Pick a date between ${allYears[0]} and ${allYears[allYears.length - 1]}`, true);
+            return;
+        }
+
+        // The line goes into the month its date belongs to
+        ensureYearDatasetsExist(yr);
+        const monthName = rawMonthNames[d.getMonth()];
+        const key = monthName + yr;
+        const isExpense = type === 'expense';
+        const tx = {
+            date: toAUFormat(iso),
+            desc,
+            cost: isExpense ? cat : '',
+            creditCat: isExpense ? '' : cat,
+            type: isExpense ? 'Variable' : '',
+            credit: isExpense ? 0 : amount,
+            debit: isExpense ? amount : 0,
+            method: isExpense ? 'Debit' : 'Transfer',
+            paid: 'NO'
+        };
+        datasets[key].data.push(tx);
+        closeTransactionModal();
+
+        // Show everything again so the new line can't be hidden by a filter or search
+        currentFilter = 'all';
+        const searchEl = document.getElementById('search-input');
+        if (searchEl) searchEl.value = '';
+        document.querySelectorAll('.filter-pills .pill').forEach((p, i) => p.classList.toggle('active', i === 0));
+
+        // Jump to that month if the date is in a different one
+        const moved = key !== activeMonthKey;
+        selectedYear = yr;
+        document.getElementById('year-dropdown').value = yr;
+        selectedMonthName = monthName;
+        lastMonthName = monthName;
+        document.getElementById('month-dropdown').value = monthName;
+        activeMonthKey = key;
+
+        sortTransactions();   // puts the line in date order
+        renderApp();
+        saveToSupabase();
+
+        // Scroll to the new line and flash it once
+        const idx = datasets[key].data.indexOf(tx);
+        requestAnimationFrame(() => {
+            const row = document.querySelector(`#txn-tbody tr[data-idx="${idx}"]`);
+            if (!row) return;
+            row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            row.classList.add('row-flash');
+            setTimeout(() => row.classList.remove('row-flash'), 2600);
+        });
+        showToast(moved ? `Transaction added to ${currentMonthLabel()}` : 'Transaction added');
+    }
+
+    function closeAllModals() {
+        closeRecurringModal();
+        closeTransactionModal();
+        closeBudgetModal();
+    }
+
     function toggleDropdown(event) {
         event.stopPropagation();
         document.getElementById('options-dropdown').classList.toggle('show');
@@ -2700,7 +3303,7 @@
             document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
             populateRecurringCategoryDropdown();
 
-            switchMonth(selectedMonthName);
+            showView('dashboard');
             resetIdleTimer();
             showToast("Vault unlocked & synced");
         } catch (e) {
@@ -2790,6 +3393,8 @@
         // Flush any pending edits before the key is wiped
         if (saveTimer || saving) { await saveNow(); }
         clearTimeout(idleTimer);
+        closeAllModals();
+        closeSidebar();
         try { if (supabaseClient) await supabaseClient.auth.signOut(); } catch (_) { /* not signed in */ }
         supabaseClient = null;
         masterKey = '';
@@ -2802,7 +3407,7 @@
         savingsGoals = [];
         subscriptions = [];
         subCandidates = [];
-        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #cmp-body').forEach(el => { el.innerHTML = ''; });
+        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #cmp-body, #budgets-grid').forEach(el => { el.innerHTML = ''; });
         const searchEl = document.getElementById('search-input');
         if (searchEl) searchEl.value = '';
         document.getElementById('main-app').style.display = 'none';
@@ -3023,81 +3628,19 @@
         selectedYear = yr;
         ensureYearDatasetsExist(selectedYear);
         syncRolloverBalances();
-
-        if (selectedMonthName === 'annual-summary') {
-            renderAnnualSummary();
-            showToast(`Switched to ${selectedYear} Annual Summary`);
-        } else if (selectedMonthName === 'multi-year-summary') {
-            renderMultiYearSummary();
-            showToast("Switched to Multi-Year Trend View");
-        } else if (selectedMonthName === 'cashflow-forecast') {
-            renderForecast();
-        } else if (selectedMonthName === 'subscriptions') {
-            renderSubscriptions();
-        } else if (selectedMonthName === 'savings-goals') {
-            renderGoals();
-        } else if (selectedMonthName === 'monthly-trend-view') {
-            renderMonthlyTrendView();
-            showToast("Switched to Monthly Spending Trend View");
-        } else {
-            activeMonthKey = selectedMonthName + selectedYear;
-            sortTransactions();
-            renderApp();
-            showToast(`Switched to ${selectedYear}`);
-        }
+        activeMonthKey = selectedMonthName + selectedYear;
+        sortTransactions();
+        renderApp();
+        showToast(`Switched to ${selectedYear}`);
     }
 
     function switchMonth(val) {
         selectedMonthName = val;
-        if (rawMonthNames.includes(val)) lastMonthName = val;
-        
-        const monthlyView = document.getElementById('monthly-view');
-        const annualView = document.getElementById('annual-view');
-        const multiYearView = document.getElementById('multi-year-view');
-        const monthlyTrendView = document.getElementById('monthly-trend-view');
-        const goalsView = document.getElementById('goals-view');
-        const forecastView = document.getElementById('forecast-view');
-        const subsView = document.getElementById('subs-view');
-
-        monthlyView.style.display = 'none';
-        annualView.style.display = 'none';
-        multiYearView.style.display = 'none';
-        monthlyTrendView.style.display = 'none';
-        goalsView.style.display = 'none';
-        forecastView.style.display = 'none';
-        subsView.style.display = 'none';
-
-        if (val === 'annual-summary') {
-            annualView.style.display = 'block';
-            renderAnnualSummary();
-            showToast(`Switched to ${selectedYear} Annual Summary`);
-        } else if (val === 'multi-year-summary') {
-            multiYearView.style.display = 'block';
-            renderMultiYearSummary();
-            showToast("Switched to Multi-Year Comparison");
-        } else if (val === 'cashflow-forecast') {
-            forecastView.style.display = 'block';
-            renderForecast();
-            showToast('Cash-Flow Forecast');
-        } else if (val === 'subscriptions') {
-            subsView.style.display = 'block';
-            renderSubscriptions();
-            showToast('Subscriptions & Bills');
-        } else if (val === 'savings-goals') {
-            goalsView.style.display = 'block';
-            renderGoals();
-            showToast('Savings Goals');
-        } else if (val === 'monthly-trend-view') {
-            monthlyTrendView.style.display = 'block';
-            renderMonthlyTrendView();
-            showToast(`Switched to Monthly Trend View (${lastMonthName.toUpperCase()})`);
-        } else {
-            activeMonthKey = selectedMonthName + selectedYear;
-            monthlyView.style.display = 'grid';
-            syncRolloverBalances();
-            sortTransactions();
-            renderApp();
-        }
+        lastMonthName = val;
+        ensureYearDatasetsExist(selectedYear);
+        activeMonthKey = selectedMonthName + selectedYear;
+        sortTransactions();
+        renderApp();
     }
 
     function setFilter(filterType, element) {
@@ -3109,18 +3652,22 @@
 
     function renderApp() {
         document.getElementById('app-title-header').innerText = `Financial Movement Dashboard — ${selectedYear}`;
-        
-        if (selectedMonthName === 'annual-summary') { renderAnnualSummary(); return; }
-        if (selectedMonthName === 'multi-year-summary') { renderMultiYearSummary(); return; }
-        if (selectedMonthName === 'monthly-trend-view') { renderMonthlyTrendView(); return; }
-        if (selectedMonthName === 'savings-goals') { renderGoals(); return; }
-        if (selectedMonthName === 'cashflow-forecast') { renderForecast(); return; }
-        if (selectedMonthName === 'subscriptions') { renderSubscriptions(); return; }
-        
+
+        switch (currentView) {
+            case 'annual': renderAnnualSummary(); return;
+            case 'multiyear': renderMultiYearSummary(); return;
+            case 'trend': renderMonthlyTrendView(); return;
+            case 'goals': renderGoals(); return;
+            case 'forecast': renderForecast(); return;
+            case 'subscriptions': renderSubscriptions(); return;
+        }
+
+        // Dashboard, Transactions and Budgets all read from the active month
         syncRolloverBalances();
         renderTransactions();
         renderCategoryManagement();
         calculateMetrics();
+        renderBudgets();
     }
 
     function openRecurringModal() {
@@ -3514,6 +4061,7 @@
             categoryBudgets[catName] = limitValue;
         }
         calculateMetrics();
+        renderBudgets();
         saveToSupabase();
         showToast(`Budget limit updated for ${catName}`);
     }
@@ -3660,6 +4208,7 @@
             let isoDate = toISOFormat(tx.date);
 
             let tr = document.createElement('tr');
+            tr.dataset.idx = index;
             tr.innerHTML = `
                 <td><input type="date" class="col-date" value="${isoDate}" onchange="updateTxDate(${index}, this.value)"></td>
                 <td><input type="text" class="col-desc" value="${esc(tx.desc)}" onchange="updateTxDesc(${index}, this.value)"></td>
@@ -3713,7 +4262,7 @@
                 <td class="col-num text-success">${fmt(totalCreditSum)}</td>
                 <td class="col-num text-danger">${fmt(totalDebitSum)}</td>
                 <td colspan="3" style="text-align: right; padding-right: 8px;">
-                    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addTransaction()">+ Add Transaction</button>
+                    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openTransactionModal()">+ Add Transaction</button>
                 </td>
             </tr>
         `;
@@ -3808,14 +4357,6 @@
             }
         }
         calculateMetrics();
-        saveToSupabase();
-    }
-
-    function addTransaction() {
-        const defaultDate = getDefaultDateString(activeMonthKey);
-        datasets[activeMonthKey].data.push({ date: defaultDate, desc: "", cost: "", creditCat: "", type: "Variable", credit: 0, debit: 0, method: "Debit", paid: "NO" });
-        sortTransactions();
-        renderApp();
         saveToSupabase();
     }
 
