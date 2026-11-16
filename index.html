@@ -9,7 +9,7 @@
     <!-- EXTERNAL DEPENDENCIES: Supabase client & Crypto-JS for secure client-side encryption -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         /* ==========================================
@@ -81,47 +81,6 @@
             transition: background-color 0.2s, color 0.2s;
         }
         .container { width: 100%; max-width: 1700px; }
-
-        /* ==========================================
-           3. AUTHENTICATION & LOGIN OVERLAY STYLES
-           ========================================== */
-        #login-overlay {
-            width: 100%;
-            max-width: 440px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 32px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            margin: auto;
-        }
-        #login-overlay h2 { font-size: 1.5rem; margin-bottom: 20px; color: var(--text-main); }
-
-        .password-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .password-wrapper input {
-            width: 100%;
-            padding-right: 42px;
-        }
-        .toggle-password-btn {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px;
-            transition: color 0.2s;
-        }
-        .toggle-password-btn:hover { color: var(--text-main); }
 
         /* ==========================================
            4. HEADER & NAVIGATION CONTROLS STYLES
@@ -335,7 +294,6 @@
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
-        [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         input:hover, select:hover { border-color: var(--text-muted); }
         input:focus, select:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-glow); background: var(--surface); }
@@ -572,14 +530,6 @@
         input:focus-visible, select:focus-visible { outline: none; }
         body.locked { align-items: center; }
 
-        .login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-        .login-brand .login-logo { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: var(--header-gradient); box-shadow: 0 6px 16px var(--accent-glow); }
-        #login-overlay h2 { margin-bottom: 0; }
-        .login-hint { color: var(--text-muted); font-size: 0.8rem; margin: 0 0 20px; line-height: 1.5; }
-        .login-error { display: none; color: var(--danger); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; font-weight: 500; margin-bottom: 14px; }
-        .login-account { margin-bottom: 16px; }
-        .login-account summary { cursor: pointer; color: var(--text-muted); font-size: 0.78rem; font-weight: 600; margin-bottom: 8px; }
-        .login-account input { margin-bottom: 8px; height: 38px; }
 
         .table-container { overflow-x: auto; }
         .ledger-table { min-width: 1068px; }
@@ -777,7 +727,6 @@
         .modal-card { border-radius: 20px; border: 1px solid var(--border-soft); box-shadow: 0 40px 80px -24px rgba(0, 0, 0, 0.65); animation: modalIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
         #toast { left: 50%; right: auto; bottom: 28px; transform: translate(-50%, 12px); border-radius: 999px; padding: 11px 22px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.5); transition: opacity 0.25s ease, transform 0.25s ease; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
         #toast.show { transform: translate(-50%, 0); }
-        #login-overlay { border-radius: 22px; padding: 36px; border-color: var(--border-soft); box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.7); }
 
         @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
         @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
@@ -848,7 +797,6 @@
            13. REFINEMENTS (added after visual review)
            ========================================== */
         .search-box input { padding-left: 38px; }
-        .password-wrapper input { padding-right: 44px; }
         header .btn-secondary { background: rgba(255, 255, 255, 0.11); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; border-radius: 12px; height: 38px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         header .btn-secondary:hover { background: rgba(255, 255, 255, 0.22); border-color: rgba(255, 255, 255, 0.38); }
         [data-theme="light"] .stat-card::after { opacity: 0.22; }
@@ -1006,36 +954,296 @@
             .sidebar, .sidebar-backdrop, .menu-toggle { display: none !important; }
             .app-shell { display: block; }
         }
+
+        /* ==========================================
+           15. LOGIN SCREEN: KDE Plasma / Breeze style (added)
+           ========================================== */
+        #login-overlay.plasma-lock {
+            position: fixed; inset: 0; z-index: 1500;
+            display: grid; grid-template-rows: auto 1fr auto; justify-items: center;
+            width: auto; max-width: none; margin: 0; padding: 0;
+            border: 0; border-radius: 0; box-shadow: none; overflow: auto;
+            background: #0a1830; color: #eef2f8; color-scheme: dark;
+            transition: opacity 0.32s ease, transform 0.32s ease;
+        }
+        #login-overlay.plasma-lock.leaving { opacity: 0; transform: scale(1.025); pointer-events: none; }
+
+        /* blurred wallpaper */
+        .pl-wallpaper {
+            position: fixed; inset: 0; z-index: 0; overflow: hidden;
+            background:
+                radial-gradient(1100px 700px at 14% -10%, rgba(35, 71, 184, 0.9), transparent 62%),
+                radial-gradient(900px 640px at 100% 14%, rgba(99, 102, 241, 0.55), transparent 60%),
+                radial-gradient(800px 600px at 58% 122%, rgba(61, 174, 233, 0.36), transparent 60%),
+                linear-gradient(160deg, #071225 0%, #0b1d3d 55%, #0a1226 100%);
+        }
+        .pl-wallpaper svg { position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(2px); }
+        .pl-wallpaper::after { content: ""; position: absolute; inset: 0; background: rgba(4, 9, 20, 0.28); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+        .pl-clock, .pl-center, .pl-bar { position: relative; z-index: 1; }
+
+        /* clock + date */
+        .pl-clock { padding-top: clamp(28px, 7vh, 72px); text-align: center; text-shadow: 0 2px 26px rgba(0, 0, 0, 0.4); }
+        #pl-time { font-size: clamp(3.6rem, 9vw, 6.4rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+        #pl-date { margin-top: 10px; font-size: clamp(1rem, 2vw, 1.35rem); font-weight: 500; opacity: 0.92; }
+
+        /* avatar + user + password */
+        .pl-center { align-self: center; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 380px; padding: 18px 22px; }
+        .pl-avatar {
+            width: 124px; height: 124px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3.4rem;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b4fd8 55%, #4f8df5 100%);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5), 0 0 0 9px rgba(255, 255, 255, 0.07);
+        }
+        .pl-user { margin: 18px 0 18px; font-size: 1.4rem; font-weight: 600; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45); }
+
+        .pl-form { display: flex; gap: 8px; width: 100%; }
+        .pl-field { position: relative; flex: 1; min-width: 0; }
+        #login-overlay .pl-field input {
+            width: 100%; height: 42px; padding: 0 46px 0 14px; font-size: 0.95rem; color: #fff;
+            background: rgba(12, 20, 40, 0.55); border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 8px;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: none;
+        }
+        #login-overlay .pl-field input::placeholder { color: rgba(238, 242, 248, 0.6); }
+        #login-overlay .pl-field input:hover { background: rgba(12, 20, 40, 0.65); border-color: rgba(255, 255, 255, 0.34); }
+        #login-overlay .pl-field input:focus { background: rgba(12, 20, 40, 0.72); border-color: #3daee9; box-shadow: 0 0 0 3px rgba(61, 174, 233, 0.35); }
+        #login-overlay input:-webkit-autofill { -webkit-text-fill-color: #fff; transition: background-color 9999s ease-out; }
+
+        .toggle-password-btn {
+            position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 6px;
+            color: rgba(238, 242, 248, 0.75); cursor: pointer; transition: background-color 0.2s, color 0.2s;
+        }
+        .toggle-password-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+        .pl-go {
+            flex: none; width: 42px; height: 42px; border: none; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; color: #fff; background: #3daee9;
+            box-shadow: 0 8px 20px -8px rgba(61, 174, 233, 0.8); transition: background-color 0.2s, transform 0.2s, opacity 0.2s;
+        }
+        .pl-go:hover { background: #55bdf2; }
+        .pl-go:active { transform: scale(0.96); }
+        .pl-go:disabled { opacity: 0.75; cursor: wait; }
+        .pl-go.busy svg { display: none; }
+        .pl-go.busy::after { content: ""; width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; animation: plSpin 0.7s linear infinite; }
+        @keyframes plSpin { to { transform: rotate(360deg); } }
+        .pl-go:focus-visible, .toggle-password-btn:focus-visible, .pl-chip:focus-visible { outline: 2px solid #3daee9; outline-offset: 2px; }
+
+        .pl-form.shake { animation: plShake 0.45s ease; }
+        @keyframes plShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+
+        .login-error { display: none; width: 100%; margin-top: 12px; padding: 8px 12px; text-align: center; font-size: 0.82rem; font-weight: 500; color: #ffc2c2; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.45); border-radius: 8px; }
+        .pl-caps { display: none; margin-top: 10px; font-size: 0.78rem; font-weight: 600; color: #fbbf24; }
+        .pl-caps.show { display: block; }
+        .pl-hint { margin-top: 20px; max-width: 320px; text-align: center; font-size: 0.75rem; line-height: 1.55; opacity: 0.72; }
+
+        /* bottom bar */
+        .pl-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 22px; background: linear-gradient(to top, rgba(4, 9, 20, 0.55), transparent); }
+        .pl-chip {
+            display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 0.8rem; font-weight: 600; color: #eef2f8; cursor: pointer;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background-color 0.2s;
+        }
+        .pl-chip:hover, .pl-chip[aria-expanded="true"] { background: rgba(255, 255, 255, 0.17); }
+        .pl-chip svg, .pl-note svg { width: 16px; height: 16px; flex: none; }
+        .pl-note { display: inline-flex; align-items: center; gap: 7px; font-size: 0.75rem; opacity: 0.75; text-align: right; }
+
+        .pl-account {
+            display: none; position: fixed; left: 22px; bottom: 72px; z-index: 3; width: min(320px, calc(100vw - 44px)); padding: 16px;
+            background: rgba(12, 20, 40, 0.8); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 12px;
+            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        }
+        .pl-account.show { display: block; animation: modalIn 0.2s ease both; }
+        .pl-account h3 { font-size: 0.85rem; font-weight: 700; }
+        .pl-account p { font-size: 0.74rem; opacity: 0.7; margin: 4px 0 4px; line-height: 1.45; }
+        #login-overlay .pl-account input {
+            width: 100%; height: 38px; margin-top: 8px; padding: 0 12px; font-size: 0.88rem; color: #fff;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; box-shadow: none;
+        }
+        #login-overlay .pl-account input::placeholder { color: rgba(238, 242, 248, 0.55); }
+        #login-overlay .pl-account input:focus { background: rgba(255, 255, 255, 0.12); border-color: #3daee9; box-shadow: 0 0 0 3px rgba(61, 174, 233, 0.35); }
+
+        @media (max-width: 560px) {
+            .pl-note span { display: none; }
+            .pl-avatar { width: 104px; height: 104px; font-size: 2.9rem; }
+        }
+        @media (max-height: 620px) {
+            .pl-clock { padding-top: 16px; }
+            .pl-avatar { width: 84px; height: 84px; font-size: 2.3rem; }
+            .pl-user { margin: 12px 0; font-size: 1.15rem; }
+            .pl-hint { display: none; }
+        }
+
+        /* ==========================================
+           16. LOOK & FEEL REVIEW POLISH (added)
+           ========================================== */
+        /* native controls (scrollbars, date picker, dropdown lists) follow the chosen theme */
+        :root:not([data-theme="light"]) { color-scheme: dark; }
+        [data-theme="light"] { color-scheme: light; }
+
+        /* sidebar brand + lock, echoing the login screen */
+        .nav-brand { display: flex; align-items: center; gap: 12px; padding: 6px 8px 14px; margin-bottom: 8px; border-bottom: 1px solid var(--border-soft); }
+        .nav-brand-logo { width: 38px; height: 38px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; background: var(--header-gradient); box-shadow: 0 6px 16px var(--accent-glow); }
+        .nav-brand strong { display: block; font-size: 0.92rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text-main); }
+        .nav-brand small { display: block; margin-top: 1px; font-size: 0.7rem; font-weight: 500; color: var(--text-muted); }
+        .nav-footer { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+        .pl-chip.has-account::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px rgba(52, 211, 153, 0.7); }
+
+        /* ==========================================
+           17. DASHBOARD OVERVIEW + HEADING ICONS (added)
+           Same cards, borders, radius and colours as the rest of the app.
+           ========================================== */
+        .h-ico { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 28px; height: 28px; border-radius: 9px; background: var(--accent-soft); color: var(--accent); }
+        .h-ico svg { width: 15px; height: 15px; }
+        .card-header h2:has(.h-ico)::before, .page-head h2:has(.h-ico)::before { display: none; }
+
+        .section-label { display: flex; align-items: center; gap: 8px; margin: 6px 2px 14px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+        .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border-soft); }
+
+        /* stat cards */
+        .ov-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .ov-stat-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .ov-ico { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; border-radius: 12px; }
+        .ov-ico svg { width: 19px; height: 19px; }
+        .ov-ico-blue { background: var(--accent-soft); color: var(--accent); }
+        .ov-ico-green { background: rgba(16, 185, 129, 0.14); color: var(--success); }
+        .ov-ico-red { background: rgba(239, 68, 68, 0.14); color: var(--danger); }
+        .ov-ico-violet { background: rgba(139, 92, 246, 0.16); color: #8b5cf6; }
+        [data-theme="light"] .ov-ico-violet { color: #7c3aed; }
+        .ov-stats .stat-card-value { margin-top: 10px; }
+        .ov-trend { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; font-weight: 600; color: var(--text-muted); }
+        .ov-trend svg { width: 14px; height: 14px; flex: none; }
+        .ov-trend.good { color: var(--success); }
+        .ov-trend.bad { color: var(--danger); }
+
+        /* cash flow + category donut */
+        .ov-charts { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 20px; margin-bottom: 20px; }
+        .ov-charts > .card { margin-bottom: 0; }
+        .ov-select { height: 34px; min-width: 130px; padding: 4px 30px 4px 12px; font-size: 0.78rem; font-weight: 600; border-radius: 9px; }
+
+        .cf-chart { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 230px auto; column-gap: 12px; row-gap: 8px; margin-top: 6px; }
+        .cf-axis { display: flex; flex-direction: column; justify-content: space-between; margin: -7px 0; text-align: right; font-size: 0.7rem; line-height: 14px; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+        .cf-area { position: relative; }
+        .cf-grid { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+        .cf-grid i { display: block; height: 1px; background: var(--border-soft); }
+        .cf-cols { position: absolute; inset: 0; display: grid; }
+        .cf-col { display: flex; align-items: flex-end; justify-content: center; gap: 5px; height: 100%; padding: 0 12%; cursor: default; }
+        .cf-bar { flex: 1; max-width: 34px; min-height: 2px; border-radius: 6px 6px 0 0; transition: height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.2s; }
+        .cf-bar.inc { background: linear-gradient(180deg, #34d399, #059669); }
+        .cf-bar.exp { background: linear-gradient(180deg, #f87171, #dc2626); }
+        .cf-col:hover .cf-bar { filter: brightness(1.15); }
+        .cf-labels { display: grid; text-align: center; font-size: 0.72rem; color: var(--text-muted); }
+        .cf-legend { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 0.75rem; color: var(--text-muted); }
+        .cf-legend .keys { display: inline-flex; gap: 16px; align-items: center; }
+        .cf-legend .key { display: inline-flex; align-items: center; gap: 7px; }
+        .cf-legend .key i { width: 12px; height: 12px; border-radius: 4px; }
+        .cf-legend .key .inc { background: #10b981; }
+        .cf-legend .key .exp { background: #ef4444; }
+
+        .dn-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 4px; }
+        .dn-ring { position: relative; width: min(210px, 100%); aspect-ratio: 1; border-radius: 50%; background: var(--pill-bg); transition: background 0.4s; }
+        .dn-hole { position: absolute; inset: 24%; border-radius: 50%; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4px; }
+        .dn-hole strong { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--text-main); }
+        .dn-hole span { margin-top: 2px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+        .dn-legend { list-style: none; width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
+        .dn-legend li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 0.76rem; color: var(--text-main); }
+        .dn-legend i { width: 11px; height: 11px; border-radius: 4px; flex: none; }
+        .dn-legend .dn-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dn-legend .dn-pct { color: var(--text-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+        .dn-legend .dn-none { grid-column: 1 / -1; text-align: center; color: var(--text-muted); }
+
+        /* recent transactions */
+        .ov-link { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 700; color: var(--accent); padding: 4px 6px; border-radius: 8px; transition: background-color 0.2s; }
+        .ov-link:hover { background: var(--accent-soft); }
+        .ov-link svg { width: 14px; height: 14px; }
+        .ov-table th:nth-child(1) { width: 38%; }
+        .ov-table th:nth-child(2) { width: 20%; }
+        .ov-table th:nth-child(3) { width: 14%; }
+        .ov-table th:nth-child(4) { width: 14%; }
+        .ov-table th:nth-child(5) { width: 14%; }
+        .ov-desc { display: flex; align-items: center; gap: 12px; min-width: 0; font-weight: 600; }
+        .ov-desc span.t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ov-tx-ico { width: 30px; height: 30px; flex: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+        .ov-tx-ico svg { width: 14px; height: 14px; }
+        .ov-cat { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; background: var(--pill-bg); color: var(--text-muted); }
+        .ov-status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.74rem; font-weight: 600; color: var(--text-muted); }
+        .ov-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+        .ov-status.pending i { background: #f59e0b; }
+        .ov-amt { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+
+        @media (max-width: 1300px) { .ov-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 1200px) { .ov-charts { grid-template-columns: minmax(0, 1fr); } }
+        @media (max-width: 720px) {
+            .ov-table .hide-sm { display: none; }
+            .ov-table th:nth-child(1) { width: 62%; }
+            .ov-table th:nth-child(5) { width: 38%; }
+        }
+        @media (max-width: 520px) { .ov-stats { grid-template-columns: minmax(0, 1fr); } .dn-legend { grid-template-columns: minmax(0, 1fr); } }
+        .section-label svg { width: 14px; height: 14px; }
     </style>
 </head>
 <body class="locked">
 
 <!-- ==========================================
-   9. SECURE LOGIN SCREEN OVERLAY
+   9. SECURE LOGIN SCREEN (KDE Plasma / Breeze style)
    ========================================== -->
-<div id="login-overlay">
-    <div class="login-brand">
-        <div class="login-logo">💲</div>
-        <h2>Secure Vault</h2>
+<div id="login-overlay" class="plasma-lock">
+    <div class="pl-wallpaper" aria-hidden="true">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="plw1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3daee9" stop-opacity="0.30"/><stop offset="1" stop-color="#6366f1" stop-opacity="0.16"/></linearGradient>
+                <linearGradient id="plw2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6366f1" stop-opacity="0.24"/><stop offset="1" stop-color="#3daee9" stop-opacity="0.12"/></linearGradient>
+                <linearGradient id="plw3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4f8df5" stop-opacity="0.20"/><stop offset="1" stop-color="#818cf8" stop-opacity="0.08"/></linearGradient>
+            </defs>
+            <path d="M0,120 C320,260 640,-40 980,120 C1250,250 1450,160 1600,60 L1600,0 L0,0 Z" fill="url(#plw3)"/>
+            <path d="M0,640 C260,520 520,760 820,640 C1100,530 1340,420 1600,520 L1600,900 L0,900 Z" fill="url(#plw1)"/>
+            <path d="M0,730 C300,640 560,850 900,745 C1180,660 1400,600 1600,690 L1600,900 L0,900 Z" fill="url(#plw2)"/>
+        </svg>
     </div>
-    <p class="login-hint">Your data is encrypted in the browser with your passphrase before it is sent to the cloud.</p>
-    
-    <div class="password-wrapper">
-        <input type="password" id="master-pwd" placeholder="Enter secret password..." onkeydown="if(event.key==='Enter') initSession()">
-        <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
-            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+
+    <div class="pl-clock">
+        <div id="pl-time">--:--</div>
+        <div id="pl-date">&nbsp;</div>
+    </div>
+
+    <main class="pl-center">
+        <div class="pl-avatar" aria-hidden="true">💲</div>
+        <div class="pl-user">Secure Vault</div>
+
+        <div class="pl-form" id="pl-form">
+            <div class="pl-field">
+                <input type="password" id="master-pwd" placeholder="Password" aria-label="Master passphrase" autocomplete="current-password" autofocus
+                       onkeydown="capsCheck(event); if(event.key==='Enter') initSession()" onkeyup="capsCheck(event)">
+                <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password" aria-label="Show or hide password">
+                    <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+            </div>
+            <button type="button" id="unlock-btn" class="pl-go" onclick="initSession()" aria-label="Unlock" title="Unlock">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+            </button>
+        </div>
+
+        <div id="pl-caps" class="pl-caps">Caps Lock is on</div>
+        <div id="login-error" class="login-error" role="alert"></div>
+        <p class="pl-hint">Your data is encrypted in the browser with your passphrase before it is sent to the cloud.</p>
+    </main>
+
+    <div id="pl-account" class="pl-account" role="group" aria-label="Cloud account sign-in">
+        <h3>Cloud account</h3>
+        <p>Optional. Signs in with the same password you type above. Only needed if row-level security is on.</p>
+        <input type="text" id="acct-email" placeholder="Account email" autocomplete="username" oninput="syncAccountChip()" onkeydown="if(event.key==='Enter') initSession()">
+    </div>
+
+    <footer class="pl-bar">
+        <button type="button" class="pl-chip" id="pl-account-btn" aria-expanded="false" onclick="toggleAccountPanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+            Cloud account
         </button>
-    </div>
-
-    <div id="login-error" class="login-error" role="alert"></div>
-
-    <details class="login-account">
-        <summary>Cloud account sign-in (optional)</summary>
-        <input type="text" id="acct-email" placeholder="Account email" autocomplete="username">
-        <input type="password" id="acct-pwd" placeholder="Account password" autocomplete="current-password" onkeydown="if(event.key==='Enter') initSession()">
-    </details>
-
-    <button id="unlock-btn" class="btn" style="width: 100%; justify-content: center;" onclick="initSession()">Unlock Dashboard</button>
+        <span class="pl-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <span>AES-256 encrypted in your browser</span>
+        </span>
+    </footer>
 </div>
 
 <!-- ==========================================
@@ -1044,7 +1252,7 @@
 <div id="recurring-modal" class="modal-overlay" onclick="if(event.target===this) closeRecurringModal()">
     <div class="modal-card">
         <div class="card-header" style="margin-bottom: 16px;">
-            <h2>Manage Recurring Templates</h2>
+            <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg></span>Manage Recurring Templates</h2>
             <button class="btn-secondary" onclick="closeRecurringModal()">✕ Close</button>
         </div>
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
@@ -1165,6 +1373,7 @@
        ========================================== -->
     <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <div class="nav-brand"><span class="nav-brand-logo" aria-hidden="true">💲</span><div><strong>Secure Vault</strong><small>Financial Dashboard</small></div></div>
         <nav class="nav">
             <button type="button" class="nav-item active" data-view="dashboard" onclick="showView('dashboard')" aria-current="page">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9v12h14V9"></path><path d="M10 21v-6h4v6"></path></svg>
@@ -1207,6 +1416,12 @@
                 </div></div>
             </div>
         </nav>
+        <div class="nav-footer">
+            <button type="button" class="nav-item" onclick="lockVault()">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span>Lock vault</span>
+            </button>
+        </div>
     </aside>
 
     <div class="app-main">
@@ -1306,7 +1521,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Multi-Year Summary Table</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M3 15h18M9 3v18"></path></svg></span>Multi-Year Summary Table</h2>
             </div>
             <div class="table-container-clean">
                 <table>
@@ -1352,7 +1567,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Cash-Flow Forecast</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.5 8.5-5-5L2 17"></path><path d="M16 7h6v6"></path></svg></span>Cash-Flow Forecast</h2>
                 <div class="seg-pills" id="fc-pills">
                     <div class="pill" data-days="14" onclick="setForecastDays(14)">14 days</div>
                     <div class="pill active" data-days="30" onclick="setForecastDays(30)">30 days</div>
@@ -1371,7 +1586,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Upcoming Money Movements</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg></span>Upcoming Money Movements</h2>
                 <span id="fc-count" class="chip">0 items</span>
             </div>
             <div class="table-container-scrollable" style="max-height: 440px;">
@@ -1418,7 +1633,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Add a Subscription or Recurring Bill</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span>Add a Subscription or Recurring Bill</h2>
             </div>
             <div class="subs-form">
                 <input type="text" id="sub-name" placeholder="Name (e.g. Netflix)" aria-label="Name" onkeydown="if(event.key==='Enter') addSubscription()">
@@ -1438,7 +1653,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Tracked Subscriptions</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg></span>Tracked Subscriptions</h2>
             </div>
             <div class="table-container-clean">
                 <table class="data-table-auto">
@@ -1461,7 +1676,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Detected in Your Ledger</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span>Detected in Your Ledger</h2>
                 <span class="chip">Repeating charges you are not tracking yet</span>
             </div>
             <div id="subs-suggestions" class="suggest-list"></div>
@@ -1491,7 +1706,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Add a Goal</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><path d="M4 22v-7"></path></svg></span>Add a Goal</h2>
                 <span id="goals-status" class="chip">No goals yet</span>
             </div>
             <div class="goal-form">
@@ -1542,7 +1757,7 @@
         <div class="breakdowns-grid">
             <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
-                    <h2>Top 20 Expense Categories</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg></span>Top 20 Expense Categories</h2>
                 </div>
                 <div class="table-container-annual-cats">
                     <table>
@@ -1560,7 +1775,7 @@
 
             <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
-                    <h2>Annual Breakdown by Month</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg></span>Annual Breakdown by Month</h2>
                 </div>
                 <div class="table-container-clean">
                     <table>
@@ -1580,12 +1795,119 @@
     </div>
 
     <!-- DASHBOARD VIEW -->
-    <div id="dashboard-view" class="dashboard-grid view-pane" data-display="grid" style="display: none;">
+    <div id="dashboard-view" class="view-pane" style="display: none;">
+        <div class="page-head">
+            <div class="page-head-title">
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg></span>Dashboard Overview</h2>
+                <span class="chip" id="ov-month">--</span>
+            </div>
+            <button type="button" class="btn" onclick="openTransactionModal()">+ Add Transaction</button>
+        </div>
+
+        <div class="ov-stats">
+            <div class="stat-card">
+                <div class="ov-stat-top">
+                    <span class="stat-card-title">Total Balance</span>
+                    <span class="ov-ico ov-ico-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg></span>
+                </div>
+                <div class="stat-card-value" id="ov-balance">$0.00</div>
+                <div class="ov-trend" id="ov-balance-trend"></div>
+            </div>
+            <div class="stat-card">
+                <div class="ov-stat-top">
+                    <span class="stat-card-title">Monthly Income</span>
+                    <span class="ov-ico ov-ico-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg></span>
+                </div>
+                <div class="stat-card-value" id="ov-income">$0.00</div>
+                <div class="ov-trend" id="ov-income-trend"></div>
+            </div>
+            <div class="stat-card">
+                <div class="ov-stat-top">
+                    <span class="stat-card-title">Monthly Expenses</span>
+                    <span class="ov-ico ov-ico-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg></span>
+                </div>
+                <div class="stat-card-value" id="ov-expenses">$0.00</div>
+                <div class="ov-trend" id="ov-expenses-trend"></div>
+            </div>
+            <div class="stat-card">
+                <div class="ov-stat-top">
+                    <span class="stat-card-title">Projected Balance</span>
+                    <span class="ov-ico ov-ico-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.5 8.5-5-5L2 17"></path><path d="M16 7h6v6"></path></svg></span>
+                </div>
+                <div class="stat-card-value" id="ov-proj">$0.00</div>
+                <div class="ov-trend" id="ov-proj-trend"></div>
+            </div>
+        </div>
+
+        <div class="ov-charts">
+            <div class="card">
+                <div class="card-header">
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg></span>Cash Flow Overview</h2>
+                    <select id="cf-range" class="ov-select" onchange="renderOverview()" aria-label="Cash flow period">
+                        <option value="3">Last 3 Months</option>
+                        <option value="6" selected>Last 6 Months</option>
+                        <option value="12">Last 12 Months</option>
+                    </select>
+                </div>
+                <div class="cf-chart">
+                    <div class="cf-axis" id="cf-axis"></div>
+                    <div class="cf-area">
+                        <div class="cf-grid" id="cf-grid"></div>
+                        <div class="cf-cols" id="cf-cols"></div>
+                    </div>
+                    <div></div>
+                    <div class="cf-labels" id="cf-labels"></div>
+                </div>
+                <div class="cf-legend">
+                    <span class="keys">
+                        <span class="key"><i class="inc"></i>Income</span>
+                        <span class="key"><i class="exp"></i>Expenses</span>
+                    </span>
+                    <span id="cf-net"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg></span>Expenses by Category</h2>
+                </div>
+                <div class="dn-wrap">
+                    <div class="dn-ring" id="dn-ring" role="img" aria-label="Expenses by category">
+                        <div class="dn-hole"><strong id="dn-total">$0.00</strong><span>Total spent</span></div>
+                    </div>
+                    <ul class="dn-legend" id="dn-legend"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg></span>Recent Transactions</h2>
+                <button type="button" class="ov-link" onclick="showView('transactions')">View All <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg></button>
+            </div>
+            <div class="table-container-clean">
+                <table class="ov-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="hide-sm">Category</th>
+                            <th class="hide-sm">Date</th>
+                            <th class="hide-sm">Status</th>
+                            <th class="col-num">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ov-recent-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Monthly Details</div>
+        <div class="dashboard-grid">
         <div>
             <div class="breakdowns-grid">
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
-                        <h2>Cost Breakdown</h2>
+                        <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg></span>Cost Breakdown</h2>
                     </div>
                     <div class="table-container-clean">
                         <table>
@@ -1604,7 +1926,7 @@
 
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-header">
-                        <h2>Credits Breakdown</h2>
+                        <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg></span>Credits Breakdown</h2>
                     </div>
                     <div class="table-container-clean">
                         <table>
@@ -1626,14 +1948,14 @@
             <div class="breakdowns-grid">
 <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
-                    <h2>Spending vs 3-Month Average</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg></span>Spending vs 3-Month Average</h2>
                 </div>
                 <div id="cmp-body"></div>
             </div>
 
             <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
-                    <h2>Payment Methods</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg></span>Payment Methods</h2>
                 </div>
                 <div class="table-container-clean">
                     <table>
@@ -1654,7 +1976,7 @@
         <div>
 <div class="card">
                 <div class="card-header">
-                    <h2>Period Summary (Cleared)</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="m9 16 2 2 4-4"></path></svg></span>Period Summary (Cleared)</h2>
                 </div>
                 <div class="metric-group">
                     <div class="metric-row"><span>Credits Received:</span> <span id="lbl-credits-rcvd" class="text-success">$0.00</span></div>
@@ -1670,7 +1992,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2>Pending & Projected</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg></span>Pending & Projected</h2>
                 </div>
                 <div class="metric-group">
                     <div class="metric-row"><span>Credits to Receive:</span> <span id="lbl-credits-recv">$0.00</span></div>
@@ -1686,7 +2008,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2>Budget Health</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>Budget Health</h2>
                 </div>
                 <div class="metric-group">
                     <div class="metric-row"><span>Budget limits (total):</span> <span id="bh-budget">$0.00</span></div>
@@ -1704,7 +2026,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2>Fixed vs Variable Expenses</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg></span>Fixed vs Variable Expenses</h2>
                 </div>
                 <div class="metric-group">
                     <div class="metric-row"><span>Fixed Total:</span> <span id="lbl-fixed">$0.00</span> <span id="lbl-fixed-pct" style="color:var(--text-muted);">(0.0%)</span></div>
@@ -1715,13 +2037,14 @@
             </div>
 
                     </div>
+        </div>
     </div>
 
     <!-- TRANSACTIONS VIEW -->
     <div id="transactions-view" class="view-pane" style="display: none;">
 <div class="card">
                 <div class="card-header">
-                    <h2>Transactions Ledger</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg></span>Transactions Ledger</h2>
                     <button class="btn" onclick="openTransactionModal()">+ Add Transaction</button>
                 </div>
                 <div class="toolbar">
@@ -1765,7 +2088,7 @@
     <div id="budgets-view" class="view-pane" style="display: none;">
         <div class="page-head">
             <div class="page-head-title">
-                <h2>Budgets</h2>
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>Budgets</h2>
                 <span class="chip" id="budgets-month">--</span>
                 <span class="chip" id="budgets-status">No budgets yet</span>
             </div>
@@ -1775,7 +2098,7 @@
 
 <div class="card" style="margin-bottom: 0;">
                 <div class="card-header">
-                    <h2>Manage Categories</h2>
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><path d="M7 7h.01"></path></svg></span>Manage Categories</h2>
                     <label style="font-size: 0.75rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px;">
                         <input type="checkbox" id="budget-rollover-toggle" onchange="toggleBudgetRollover(this.checked)">
                         🔄 Auto-Rollover Unused Budget
@@ -2055,13 +2378,49 @@
         const el = document.getElementById('login-error');
         el.textContent = msg;
         el.style.display = 'block';
+        // Plasma-style shake on a failed unlock
+        const form = document.getElementById('pl-form');
+        if (form) { form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake'); }
+        const pw = document.getElementById('master-pwd');
+        if (pw) pw.focus();
     }
     function setLoginBusy(busy) {
         const btn = document.getElementById('unlock-btn');
         btn.disabled = busy;
-        btn.textContent = busy ? 'Unlocking…' : 'Unlock Dashboard';
+        btn.classList.toggle('busy', busy);
+        btn.setAttribute('aria-label', busy ? 'Unlocking' : 'Unlock');
         if (busy) document.getElementById('login-error').style.display = 'none';
     }
+    function capsCheck(e) {
+        const on = !!(e.getModifierState && e.getModifierState('CapsLock'));
+        document.getElementById('pl-caps').classList.toggle('show', on);
+    }
+    function toggleAccountPanel() {
+        const open = document.getElementById('pl-account').classList.toggle('show');
+        document.getElementById('pl-account-btn').setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) document.getElementById('acct-email').focus();
+    }
+    function updateLockClock() {
+        const o = document.getElementById('login-overlay');
+        if (!o || o.style.display === 'none') return;
+        const n = new Date();
+        document.getElementById('pl-time').innerText = n.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+        document.getElementById('pl-date').innerText = n.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    updateLockClock();
+    setInterval(updateLockClock, 1000);
+
+    function syncAccountChip() {
+        const chip = document.getElementById('pl-account-btn');
+        if (chip) chip.classList.toggle('has-account', !!document.getElementById('acct-email').value.trim());
+    }
+    (function loadRememberedAccount() {
+        try {
+            const saved = localStorage.getItem('dashboard_acct_email');
+            if (saved) document.getElementById('acct-email').value = saved;
+        } catch (_) { /* storage unavailable */ }
+        syncAccountChip();
+    })();
 
     // ==========================================
     // MONTH NAVIGATION, CSV EXPORT, KEYBOARD
@@ -2107,7 +2466,7 @@
         showToast('CSV exported');
     }
 
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAllModals(); closeSidebar(); } });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAllModals(); closeSidebar(); const ap = document.getElementById('pl-account'); if (ap) ap.classList.remove('show'); } });
 
     // Re-read the vault from the cloud and redraw (used on sync + after a save conflict)
     async function reloadFromCloud() {
@@ -3224,6 +3583,213 @@
         closeBudgetModal();
     }
 
+    // ==========================================
+    // DASHBOARD OVERVIEW (stat cards, cash flow, category donut, recent transactions)
+    // ==========================================
+    const OV_PALETTE = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'];
+    const OV_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const OV_SVG = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+    const OV_ICON = {
+        up: OV_SVG('<path d="m22 7-8.5 8.5-5-5L2 17"></path><path d="M16 7h6v6"></path>'),
+        down: OV_SVG('<path d="m22 17-8.5-8.5-5 5L2 7"></path><path d="M16 17h6v-6"></path>'),
+        flat: OV_SVG('<path d="M5 12h14"></path>'),
+        in: OV_SVG('<path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path>'),
+        out: OV_SVG('<path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path>')
+    };
+
+    function ovParseKey(key) {
+        const m = /^([a-z]+)(\d{4})$/.exec(key || '');
+        if (!m) return null;
+        const idx = rawMonthNames.indexOf(m[1]);
+        return idx < 0 ? null : { idx, year: parseInt(m[2], 10) };
+    }
+
+    // 'september2026' shifted by -1 => 'august2026' (crosses year boundaries)
+    function ovShiftKey(key, delta) {
+        const p = ovParseKey(key);
+        if (!p) return null;
+        const total = p.year * 12 + p.idx + delta;
+        return rawMonthNames[((total % 12) + 12) % 12] + Math.floor(total / 12);
+    }
+
+    function ovMonthTotals(key) {
+        const ds = datasets[key];
+        if (!ds || !Array.isArray(ds.data)) return null;
+        let income = 0, expenses = 0;
+        ds.data.forEach(t => {
+            const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
+            if (c > 0 && !isRolloverTx(t)) income += c;
+            if (d > 0) expenses += d;
+        });
+        return { income, expenses };
+    }
+
+    function ovNiceMax(v) {
+        if (!(v > 0)) return 100;
+        const p = Math.pow(10, Math.floor(Math.log10(v)));
+        const n = v / p;
+        const m = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+        return m * p;
+    }
+
+    function ovPct(cur, prev) { return prev ? ((cur - prev) / Math.abs(prev)) * 100 : null; }
+    function ovFmtPct(p) { return (p >= 0 ? '+' : '') + p.toFixed(1) + '%'; }
+
+    function ovTrend(id, tone, dir, text) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'ov-trend ' + tone;
+        el.innerHTML = OV_ICON[dir] + '<span>' + esc(text) + '</span>';
+    }
+
+    function renderOverview() {
+        if (!document.getElementById('ov-balance')) return;
+        const ds = datasets[activeMonthKey];
+        if (!ds || !Array.isArray(ds.data)) return;
+        const txs = ds.data;
+
+        // same rules as the Period Summary card
+        const num = v => parseFloat(v) || 0;
+        const state = t => String(t.paid || '').toLowerCase();
+        const sum = (list, f) => list.reduce((a, t) => a + f(t), 0);
+        const prevBal = sum(txs.filter(isRolloverTx), t => num(t.credit));
+        const paidCredits = sum(txs.filter(t => !isRolloverTx(t) && state(t) === 'yes' && num(t.credit) > 0), t => num(t.credit));
+        const debitsPaid = sum(txs.filter(t => state(t) === 'yes' && num(t.debit) > 0), t => num(t.debit));
+        const currBal = prevBal + paidCredits - debitsPaid;
+        const creditsRecv = sum(txs.filter(t => !isRolloverTx(t) && state(t) === 'no' && num(t.credit) > 0), t => num(t.credit));
+        const debitsPay = sum(txs.filter(t => state(t) === 'no' && num(t.debit) > 0), t => num(t.debit));
+        const projBal = currBal + creditsRecv - debitsPay;
+
+        const cur = ovMonthTotals(activeMonthKey) || { income: 0, expenses: 0 };
+        const prev = ovMonthTotals(ovShiftKey(activeMonthKey, -1));
+
+        document.getElementById('ov-month').innerText = currentMonthLabel();
+
+        // --- stat cards
+        const balEl = document.getElementById('ov-balance');
+        balEl.innerText = fmt(currBal);
+        balEl.classList.toggle('text-danger', currBal < 0);
+        const bp = ovPct(currBal, prevBal);
+        if (bp === null) ovTrend('ov-balance-trend', 'flat', 'flat', 'No opening balance');
+        else ovTrend('ov-balance-trend', bp >= 0 ? 'good' : 'bad', bp >= 0 ? 'up' : 'down', ovFmtPct(bp) + ' from last month');
+
+        document.getElementById('ov-income').innerText = fmt(cur.income);
+        const ip = prev ? ovPct(cur.income, prev.income) : null;
+        if (ip === null) ovTrend('ov-income-trend', 'flat', 'flat', 'No income last month');
+        else ovTrend('ov-income-trend', ip >= 0 ? 'good' : 'bad', ip >= 0 ? 'up' : 'down', ovFmtPct(ip) + ' vs last month');
+
+        document.getElementById('ov-expenses').innerText = fmt(cur.expenses);
+        const ep = prev ? ovPct(cur.expenses, prev.expenses) : null;
+        if (ep === null) ovTrend('ov-expenses-trend', 'flat', 'flat', 'No spending last month');
+        else ovTrend('ov-expenses-trend', ep > 0 ? 'bad' : 'good', ep >= 0 ? 'up' : 'down', ovFmtPct(ep) + ' vs last month');
+
+        const projEl = document.getElementById('ov-proj');
+        projEl.innerText = fmt(projBal);
+        projEl.classList.toggle('text-danger', projBal < 0);
+        const delta = projBal - currBal;
+        if (Math.abs(delta) < 0.005) ovTrend('ov-proj-trend', 'flat', 'flat', 'Nothing pending');
+        else ovTrend('ov-proj-trend', delta >= 0 ? 'good' : 'bad', delta >= 0 ? 'up' : 'down',
+            (delta >= 0 ? '+' : '-') + fmt(Math.abs(delta)) + ' still to settle');
+
+        // --- cash flow (months ending at the active month)
+        const n = parseInt(document.getElementById('cf-range').value, 10) || 6;
+        const rows = [];
+        for (let i = n - 1; i >= 0; i--) {
+            const key = ovShiftKey(activeMonthKey, -i);
+            const p = ovParseKey(key);
+            const t = ovMonthTotals(key) || { income: 0, expenses: 0 };
+            rows.push({ label: OV_MONTHS[p.idx], year: p.year, income: t.income, expenses: t.expenses });
+        }
+        const crossYear = new Set(rows.map(r => r.year)).size > 1;
+        const max = ovNiceMax(Math.max(0, ...rows.map(r => Math.max(r.income, r.expenses))));
+
+        let axis = '', grid = '';
+        for (let i = 0; i <= 4; i++) {
+            axis += `<span>${Math.round(max * (4 - i) / 4).toLocaleString('en-AU')}</span>`;
+            grid += '<i></i>';
+        }
+        document.getElementById('cf-axis').innerHTML = axis;
+        document.getElementById('cf-grid').innerHTML = grid;
+
+        const cols = document.getElementById('cf-cols');
+        const labels = document.getElementById('cf-labels');
+        cols.style.gridTemplateColumns = labels.style.gridTemplateColumns = `repeat(${rows.length}, minmax(0, 1fr))`;
+        cols.innerHTML = rows.map(r => `
+            <div class="cf-col" title="${esc(r.label + ' ' + r.year)}: Income ${esc(fmt(r.income))} · Expenses ${esc(fmt(r.expenses))}">
+                <div class="cf-bar inc" style="height: ${(r.income / max * 100).toFixed(1)}%"></div>
+                <div class="cf-bar exp" style="height: ${(r.expenses / max * 100).toFixed(1)}%"></div>
+            </div>`).join('');
+        labels.innerHTML = rows.map(r => `<span>${r.label}${crossYear ? " '" + String(r.year).slice(2) : ''}</span>`).join('');
+
+        const net = rows.reduce((a, r) => a + r.income - r.expenses, 0);
+        const netEl = document.getElementById('cf-net');
+        netEl.innerText = `Net over period: ${net >= 0 ? '+' : '-'}${fmt(Math.abs(net))}`;
+        netEl.className = net >= 0 ? 'text-success' : 'text-danger';
+        netEl.style.fontWeight = '700';
+
+        // --- expenses by category (top 5 + other)
+        const catMap = {};
+        let total = 0;
+        txs.forEach(t => {
+            const d = num(t.debit);
+            if (d > 0) { const k = t.cost || 'Uncategorised'; catMap[k] = (catMap[k] || 0) + d; total += d; }
+        });
+        const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+        const parts = sorted.slice(0, 5).map(([name, v]) => ({ name, v }));
+        const rest = sorted.slice(5).reduce((a, e) => a + e[1], 0);
+        if (rest > 0) parts.push({ name: 'Other', v: rest });
+
+        const ring = document.getElementById('dn-ring');
+        const legend = document.getElementById('dn-legend');
+        document.getElementById('dn-total').innerText = fmt(total);
+        if (total > 0) {
+            let acc = 0;
+            const stops = parts.map((p, i) => {
+                const start = acc / total * 100;
+                acc += p.v;
+                return `${OV_PALETTE[i % OV_PALETTE.length]} ${start.toFixed(2)}% ${(acc / total * 100).toFixed(2)}%`;
+            });
+            ring.style.background = `conic-gradient(${stops.join(', ')})`;
+            legend.innerHTML = parts.map((p, i) => `
+                <li title="${esc(p.name)}: ${esc(fmt(p.v))}">
+                    <i style="background: ${OV_PALETTE[i % OV_PALETTE.length]}"></i>
+                    <span class="dn-name">${esc(p.name)}</span>
+                    <span class="dn-pct">${(p.v / total * 100).toFixed(0)}%</span>
+                </li>`).join('');
+        } else {
+            ring.style.background = '';
+            legend.innerHTML = '<li class="dn-none">No expenses recorded this month</li>';
+        }
+
+        // --- recent transactions (latest 7, newest first)
+        const recent = txs.map((t, i) => ({ t, i }))
+            .filter(e => !isRolloverTx(e.t))
+            .sort((a, b) => (parseDateString(b.t.date) - parseDateString(a.t.date)) || (b.i - a.i))
+            .slice(0, 7);
+        const tbody = document.getElementById('ov-recent-tbody');
+        if (!recent.length) {
+            tbody.innerHTML = '<tr class="empty-state"><td colspan="5">No transactions yet this month.</td></tr>';
+        } else {
+            tbody.innerHTML = recent.map(({ t }) => {
+                const netAmt = num(t.credit) - num(t.debit);
+                const isIn = netAmt >= 0;
+                const paid = state(t) === 'yes';
+                const cat = t.cost || t.creditCat || '—';
+                return `
+                    <tr>
+                        <td><div class="ov-desc">
+                            <span class="ov-tx-ico ${isIn ? 'ov-ico-green' : 'ov-ico-red'}">${isIn ? OV_ICON.in : OV_ICON.out}</span>
+                            <span class="t" title="${esc(t.desc)}">${esc(t.desc || '(no description)')}</span>
+                        </div></td>
+                        <td class="hide-sm"><span class="ov-cat">${esc(cat)}</span></td>
+                        <td class="hide-sm" style="color: var(--text-muted);">${esc(t.date)}</td>
+                        <td class="hide-sm"><span class="ov-status ${paid ? '' : 'pending'}"><i></i>${paid ? 'Paid' : 'Pending'}</span></td>
+                        <td class="ov-amt ${isIn ? 'text-success' : 'text-danger'}">${isIn ? '+' : '-'}${fmt(Math.abs(netAmt))}</td>
+                    </tr>`;
+            }).join('');
+        }
+    }
+
     function toggleDropdown(event) {
         event.stopPropagation();
         document.getElementById('options-dropdown').classList.toggle('show');
@@ -3279,17 +3845,24 @@
             if (acctEmail) {
                 const { error: authErr } = await supabaseClient.auth.signInWithPassword({
                     email: acctEmail,
-                    password: document.getElementById('acct-pwd').value
+                    password: document.getElementById('master-pwd').value   // same password as the vault
                 });
-                if (authErr) throw new Error('Account sign-in failed: ' + authErr.message);
+                if (authErr) throw new Error('Account sign-in failed: ' + authErr.message + '. The cloud account password must be the same as your vault password.');
             }
-            document.getElementById('acct-pwd').value = '';
 
             await fetchAndDecryptCloudData();
 
+            try { if (acctEmail) localStorage.setItem('dashboard_acct_email', acctEmail); else localStorage.removeItem('dashboard_acct_email'); } catch (_) { /* storage unavailable */ }
+
             document.body.classList.remove('locked');
-            document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
+            const lockEl = document.getElementById('login-overlay');
+            lockEl.classList.add('leaving');
+            setTimeout(() => {
+                if (!masterKey) return; // locked again in the meantime
+                lockEl.style.display = 'none';
+                lockEl.classList.remove('leaving');
+            }, 330);
 
             selectedYear = getCurrentYearString();
             document.getElementById('year-dropdown').value = selectedYear;
@@ -3354,6 +3927,28 @@
         }
     }
 
+    // Makes sure every month and line has the fields the app expects (older backups / hand-edited data)
+    function normalizeVault() {
+        if (!datasets || typeof datasets !== 'object') datasets = {};
+        Object.keys(datasets).forEach(k => {
+            const ds = datasets[k];
+            if (!ds || typeof ds !== 'object') { delete datasets[k]; return; }
+            if (!Array.isArray(ds.data)) ds.data = [];
+            ds.data = ds.data.filter(t => t && typeof t === 'object');
+            ds.data.forEach(t => {
+                ['date', 'desc', 'cost', 'creditCat', 'type', 'method'].forEach(f => { t[f] = t[f] == null ? '' : String(t[f]); });
+                t.paid = (t.paid == null || t.paid === '') ? 'NO' : String(t.paid);
+                t.credit = parseFloat(t.credit) || 0;
+                t.debit = parseFloat(t.debit) || 0;
+            });
+        });
+        if (!Array.isArray(categories)) categories = [];
+        if (!Array.isArray(creditCategories)) creditCategories = [];
+        if (!Array.isArray(recurringTemplates)) recurringTemplates = [];
+        if (!categoryBudgets || typeof categoryBudgets !== 'object') categoryBudgets = {};
+        if (!autoCategorizationMap || typeof autoCategorizationMap !== 'object') autoCategorizationMap = {};
+    }
+
     async function fetchAndDecryptCloudData() {
         const { data, error } = await supabaseClient
             .from('user_finances')
@@ -3371,7 +3966,7 @@
             if (parsedVault.categories && Array.isArray(parsedVault.categories)) {
                 categories = parsedVault.categories;
                 creditCategories = parsedVault.creditCategories || creditCategories;
-                datasets = parsedVault.datasets;
+                if (parsedVault.datasets && typeof parsedVault.datasets === 'object') datasets = parsedVault.datasets;
                 categoryBudgets = parsedVault.categoryBudgets || {};
                 enableBudgetRollover = parsedVault.enableBudgetRollover || false;
                 recurringTemplates = parsedVault.recurringTemplates || recurringTemplates;
@@ -3382,6 +3977,8 @@
                 datasets = parsedVault;
             }
 
+            normalizeVault();
+
             // Upgrade old CryptoJS vaults to AES-GCM
             if (!stored.startsWith(VAULT_PREFIX) && hasSubtle()) saveToSupabase();
         } else {
@@ -3391,7 +3988,11 @@
 
     async function lockVault() {
         // Flush any pending edits before the key is wiped
-        if (saveTimer || saving) { await saveNow(); }
+        // Flush pending edits AND wait for any upload already in flight, so the last change is never lost
+        for (let i = 0; i < 100 && (saveTimer || saving); i++) {
+            if (saving) await new Promise(r => setTimeout(r, 100));
+            else await saveNow();
+        }
         clearTimeout(idleTimer);
         closeAllModals();
         closeSidebar();
@@ -3399,7 +4000,6 @@
         supabaseClient = null;
         masterKey = '';
         lastSyncedCipher = null;
-        document.getElementById('acct-pwd').value = '';
         document.body.classList.add('locked');
         vaultKey = null;
         vaultSalt = null;
@@ -3411,7 +4011,12 @@
         const searchEl = document.getElementById('search-input');
         if (searchEl) searchEl.value = '';
         document.getElementById('main-app').style.display = 'none';
-        document.getElementById('login-overlay').style.display = 'block';
+        document.getElementById('login-overlay').classList.remove('leaving');
+        document.getElementById('login-overlay').style.display = '';
+        document.getElementById('pl-account').classList.remove('show');
+        document.getElementById('pl-caps').classList.remove('show');
+        updateLockClock();
+        setTimeout(() => document.getElementById('master-pwd').focus(), 60);
         document.getElementById('master-pwd').value = '';
         document.getElementById('master-pwd').type = 'password';
         document.getElementById('eye-icon').innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
@@ -3433,6 +4038,7 @@
         if (!supabaseClient || !masterKey) return;
         if (saving) { saveToSupabase(); return; } // run again once the current upload finishes
         saving = true;
+        const client = supabaseClient; // keep using this one even if the vault gets locked mid-save
 
         try {
             const vaultPayload = {
@@ -3448,7 +4054,7 @@
             };
             const encryptedString = await encryptVault(vaultPayload);
 
-            const { data, error: fetchError } = await supabaseClient
+            const { data, error: fetchError } = await client
                 .from('user_finances')
                 .select('id, encrypted_data')
                 .order('created_at', { ascending: false })
@@ -3471,9 +4077,9 @@
 
             let result;
             if (data && data.length > 0) {
-                result = await supabaseClient.from('user_finances').update({ encrypted_data: encryptedString }).eq('id', data[0].id);
+                result = await client.from('user_finances').update({ encrypted_data: encryptedString }).eq('id', data[0].id);
             } else {
-                result = await supabaseClient.from('user_finances').insert([{ encrypted_data: encryptedString }]);
+                result = await client.from('user_finances').insert([{ encrypted_data: encryptedString }]);
             }
             if (result.error) throw result.error;
             lastSyncedCipher = encryptedString;
@@ -3683,7 +4289,7 @@
     function populateRecurringCategoryDropdown() {
         const select = document.getElementById('rec-cat');
         if (!select) return;
-        select.innerHTML = '<option value="">-- Expense Cat --</option>' + categories.sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        select.innerHTML = '<option value="">-- Expense Cat --</option>' + [...categories].sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
     }
 
     function addRecurringTemplate() {
@@ -3732,25 +4338,31 @@
         let monthNum = rawMonthNames.indexOf(selectedMonthName) + 1;
         let monthNumStr = String(monthNum).padStart(2, '0');
 
+        let added = 0, skipped = 0;
         recurringTemplates.forEach(t => {
+            const amt = parseFloat(t.amount) || 0;
+            const already = txs.some(x => String(x.desc || '').trim().toLowerCase() === String(t.desc || '').trim().toLowerCase()
+                && Math.abs((parseFloat(x.debit) || 0) - amt) < 0.005);
+            if (already) { skipped++; return; }
             txs.push({
                 date: `01/${monthNumStr}/${selectedYear}`,
                 desc: t.desc,
-                cost: t.category,
+                cost: t.category || '',
                 creditCat: "",
                 type: "Fixed",
                 credit: 0,
-                debit: t.amount,
+                debit: amt,
                 method: "Debit",
                 paid: "NO"
             });
+            added++;
         });
 
         sortTransactions();
         renderApp();
         saveToSupabase();
         closeRecurringModal();
-        showToast("Recurring templates applied to active month!");
+        showToast(added ? `Added ${added} recurring item${added === 1 ? '' : 's'}${skipped ? ` (${skipped} already in this month)` : ''}` : 'All recurring items are already in this month');
     }
 
     function renderMonthlyTrendView() {
@@ -3991,6 +4603,13 @@
         });
     }
 
+    // Budget keys are "Category" or "Category_<month><year>"; this matches exactly those and nothing else
+    function isBudgetKeyFor(bKey, name) {
+        if (bKey === name) return true;
+        if (!bKey.startsWith(name + '_')) return false;
+        return /^(january|february|march|april|may|june|july|august|september|october|november|december)\d{4}$/.test(bKey.slice(name.length + 1));
+    }
+
     function toggleBudgetRollover(checked) {
         enableBudgetRollover = checked;
         calculateMetrics();
@@ -4029,8 +4648,8 @@
         tbody.innerHTML = '';
         
         let combinedList = [];
-        categories.sort().forEach(c => combinedList.push({ name: c, type: 'Expense' }));
-        creditCategories.sort().forEach(c => combinedList.push({ name: c, type: 'Credit' }));
+        [...categories].sort().forEach(c => combinedList.push({ name: c, type: 'Expense' }));
+        [...creditCategories].sort().forEach(c => combinedList.push({ name: c, type: 'Credit' }));
 
         combinedList.forEach((item) => {
             let isExpense = item.type === 'Expense';
@@ -4098,7 +4717,7 @@
         const trimmed = newName.trim();
         
         if (type === 'Expense') {
-            if (categories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+            if (categories.some(c => c !== oldName && c.toLowerCase() === trimmed.toLowerCase())) {
                 alert('An expense category with this name already exists.');
                 return;
             }
@@ -4108,13 +4727,14 @@
             // keep learned auto-tags and recurring templates pointing at the renamed category
             Object.keys(autoCategorizationMap).forEach(k => { if (autoCategorizationMap[k] === oldName) autoCategorizationMap[k] = trimmed; });
             recurringTemplates.forEach(t => { if (t.category === oldName) t.category = trimmed; });
+            subscriptions.forEach(s => { if (s.category === oldName) s.category = trimmed; });
 
             Object.keys(categoryBudgets).forEach(bKey => {
                 if (bKey === oldName) {
                     categoryBudgets[trimmed] = categoryBudgets[oldName];
                     delete categoryBudgets[oldName];
-                } else if (bKey.startsWith(oldName + "_")) {
-                    let newBKey = bKey.replace(oldName + "_", trimmed + "_");
+                } else if (isBudgetKeyFor(bKey, oldName)) {
+                    let newBKey = trimmed + bKey.slice(oldName.length);
                     categoryBudgets[newBKey] = categoryBudgets[bKey];
                     delete categoryBudgets[bKey];
                 }
@@ -4128,7 +4748,7 @@
                 }
             });
         } else {
-            if (creditCategories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+            if (creditCategories.some(c => c !== oldName && c.toLowerCase() === trimmed.toLowerCase())) {
                 alert('A credit category with this name already exists.');
                 return;
             }
@@ -4155,7 +4775,7 @@
         if (type === 'Expense') {
             categories = categories.filter(c => c !== catName);
             Object.keys(categoryBudgets).forEach(bKey => {
-                if (bKey === catName || bKey.startsWith(catName + "_")) delete categoryBudgets[bKey];
+                if (isBudgetKeyFor(bKey, catName)) delete categoryBudgets[bKey];
             });
             Object.keys(datasets).forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
@@ -4188,6 +4808,8 @@
 
         let totalCreditSum = 0;
         let totalDebitSum = 0;
+        const sortedCats = [...categories].sort();
+        const sortedCredits = [...creditCategories].sort();
 
         transactions.forEach((tx, index) => {
             let cVal = parseFloat(tx.credit) || 0;
@@ -4195,7 +4817,7 @@
             totalCreditSum += cVal;
             totalDebitSum += dVal;
 
-            if (searchTerm && !tx.desc.toLowerCase().includes(searchTerm) && !tx.cost.toLowerCase().includes(searchTerm) && !tx.date.includes(searchTerm)) {
+            if (searchTerm && !String(tx.desc || '').toLowerCase().includes(searchTerm) && !String(tx.cost || '').toLowerCase().includes(searchTerm) && !String(tx.date || '').includes(searchTerm)) {
                 return;
             }
             if (currentFilter === 'cleared' && tx.paid.toLowerCase() !== 'yes') return;
@@ -4210,32 +4832,32 @@
             let tr = document.createElement('tr');
             tr.dataset.idx = index;
             tr.innerHTML = `
-                <td><input type="date" class="col-date" value="${isoDate}" onchange="updateTxDate(${index}, this.value)"></td>
-                <td><input type="text" class="col-desc" value="${esc(tx.desc)}" onchange="updateTxDesc(${index}, this.value)"></td>
+                <td><input type="date" class="col-date" aria-label="Date" value="${isoDate}" onchange="updateTxDate(${index}, this.value)"></td>
+                <td><input type="text" class="col-desc" aria-label="Description" value="${esc(tx.desc)}" onchange="updateTxDesc(${index}, this.value)"></td>
                 <td>
-                    <select class="col-cat" id="cost-select-${index}" onchange="updateTx(${index}, 'cost', this.value)">
+                    <select class="col-cat" aria-label="Expense category" id="cost-select-${index}" onchange="updateTx(${index}, 'cost', this.value)">
                         <option value="">-- None --</option>
-                        ${categories.sort().map(c => `<option value="${esc(c)}" ${tx.cost === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+                        ${sortedCats.map(c => `<option value="${esc(c)}" ${tx.cost === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
                     </select>
                 </td>
                 <td>
-                    <select class="col-cat" onchange="updateTx(${index}, 'creditCat', this.value)">
+                    <select class="col-cat" aria-label="Credit category" onchange="updateTx(${index}, 'creditCat', this.value)">
                         <option value="">-- None --</option>
-                        ${creditCategories.sort().map(c => `<option value="${esc(c)}" ${tx.creditCat === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+                        ${sortedCredits.map(c => `<option value="${esc(c)}" ${tx.creditCat === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
                     </select>
                 </td>
                 <td>
-                    <select class="col-type" onchange="updateTx(${index}, 'type', this.value)">
+                    <select class="col-type" aria-label="Type" onchange="updateTx(${index}, 'type', this.value)">
                         <option value="">--</option>
                         <option value="Fixed" ${tx.type === 'Fixed' ? 'selected' : ''}>Fixed</option>
                         <option value="Variable" ${tx.type === 'Variable' ? 'selected' : ''}>Variable</option>
                     </select>
                 </td>
-                <td><input type="number" step="0.01" class="col-num" value="${tx.credit !== '' && tx.credit !== undefined ? Number(tx.credit).toFixed(2) : ''}" onchange="updateTx(${index}, 'credit', parseFloat(this.value)||0)"></td>
-                <td><input type="number" step="0.01" class="col-num" value="${tx.debit !== '' && tx.debit !== undefined && tx.debit > 0 ? Number(tx.debit).toFixed(2) : ''}" onchange="updateTx(${index}, 'debit', parseFloat(this.value)||0)"></td>
-                <td><input type="text" class="col-method" value="${esc(tx.method)}" onchange="updateTx(${index}, 'method', this.value)"></td>
+                <td><input type="number" step="0.01" class="col-num" aria-label="Credit amount" value="${Number(tx.credit) ? Number(tx.credit).toFixed(2) : ''}" onchange="updateTx(${index}, 'credit', parseFloat(this.value)||0)"></td>
+                <td><input type="number" step="0.01" class="col-num" aria-label="Debit amount" value="${tx.debit !== '' && tx.debit !== undefined && tx.debit > 0 ? Number(tx.debit).toFixed(2) : ''}" onchange="updateTx(${index}, 'debit', parseFloat(this.value)||0)"></td>
+                <td><input type="text" class="col-method" aria-label="Payment method" value="${esc(tx.method)}" onchange="updateTx(${index}, 'method', this.value)"></td>
                 <td>
-                    <select class="col-paid ${paidClass}" id="paid-select-${index}" onchange="handlePaidChange(${index}, this.value)">
+                    <select class="col-paid ${paidClass}" aria-label="Paid status" id="paid-select-${index}" onchange="handlePaidChange(${index}, this.value)">
                         <option value="Yes" ${isYes ? 'selected' : ''}>Yes</option>
                         <option value="NO" ${!isYes ? 'selected' : ''}>NO</option>
                     </select>
@@ -4255,7 +4877,17 @@
             tbody.innerHTML = '<tr class="empty-state"><td colspan="10">No transactions found for this view.</td></tr>';
         }
 
+        renderLedgerFooter();
+    }
+
+    function renderLedgerFooter() {
         const tfoot = document.getElementById('txn-tfoot');
+        if (!tfoot || !datasets[activeMonthKey]) return;
+        let totalCreditSum = 0, totalDebitSum = 0;
+        datasets[activeMonthKey].data.forEach(t => {
+            totalCreditSum += parseFloat(t.credit) || 0;
+            totalDebitSum += parseFloat(t.debit) || 0;
+        });
         tfoot.innerHTML = `
             <tr>
                 <td colspan="5" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
@@ -4357,6 +4989,7 @@
             }
         }
         calculateMetrics();
+        renderLedgerFooter();
         saveToSupabase();
     }
 
@@ -4379,49 +5012,57 @@
 
     function exportJSON() {
         const vaultPayload = { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vaultPayload, null, 2));
+        const blob = new Blob([JSON.stringify(vaultPayload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
         const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `finance_backup_${selectedYear}.json`);
+        downloadAnchor.href = url;
+        downloadAnchor.download = `finance_backup_${selectedYear}.json`;
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
         showToast("Backup downloaded successfully");
     }
 
     function importJSON(event) {
-        const file = event.target.files[0];
+        const input = event.target;
+        const file = input.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const imported = JSON.parse(e.target.result);
-                if (imported && typeof imported === 'object') {
-                    if (imported.categories && imported.datasets) {
-                        categories = imported.categories;
-                        creditCategories = imported.creditCategories || creditCategories;
-                        datasets = imported.datasets;
-                        categoryBudgets = imported.categoryBudgets || {};
-                        enableBudgetRollover = imported.enableBudgetRollover || false;
-                        recurringTemplates = imported.recurringTemplates || recurringTemplates;
-                        autoCategorizationMap = imported.autoCategorizationMap || autoCategorizationMap;
-                        savingsGoals = Array.isArray(imported.savingsGoals) ? imported.savingsGoals : savingsGoals;
-                        subscriptions = Array.isArray(imported.subscriptions) ? imported.subscriptions : subscriptions;
-                    } else {
-                        datasets = imported;
-                    }
-                    ensureYearDatasetsExist(selectedYear);
-                    document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
-                    sortTransactions();
-                    saveToSupabase();
-                    renderApp();
-                    showToast("Successfully restored from backup & synced!");
+                if (!imported || typeof imported !== 'object') throw new Error('not an object');
+                const looksLikeMonths = o => o && typeof o === 'object' && Object.values(o).some(v => v && Array.isArray(v.data));
+                const incomingDatasets = imported.categories && imported.datasets ? imported.datasets : imported;
+                if (!looksLikeMonths(incomingDatasets)) throw new Error('no month data found');
+
+                if (imported.categories && imported.datasets) {
+                    categories = imported.categories;
+                    creditCategories = imported.creditCategories || creditCategories;
+                    datasets = imported.datasets;
+                    categoryBudgets = imported.categoryBudgets || {};
+                    enableBudgetRollover = imported.enableBudgetRollover || false;
+                    recurringTemplates = imported.recurringTemplates || recurringTemplates;
+                    autoCategorizationMap = imported.autoCategorizationMap || autoCategorizationMap;
+                    savingsGoals = Array.isArray(imported.savingsGoals) ? imported.savingsGoals : savingsGoals;
+                    subscriptions = Array.isArray(imported.subscriptions) ? imported.subscriptions : subscriptions;
+                } else {
+                    datasets = imported;
                 }
+                normalizeVault();
+                ensureYearDatasetsExist(selectedYear);
+                document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
+                sortTransactions();
+                saveToSupabase();
+                renderApp();
+                showToast("Successfully restored from backup & synced!");
             } catch (err) {
                 alert("Invalid backup file format.");
             }
         };
         reader.readAsText(file);
+        input.value = ''; // lets you pick the same file again later
     }
 
     function calculateMetrics() {
@@ -4598,6 +5239,8 @@
             `;
             methodsTbody.appendChild(tr);
         });
+
+        renderOverview();
     }
 </script>
 </body>
