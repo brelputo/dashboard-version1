@@ -1180,6 +1180,22 @@
         }
         @media (max-width: 520px) { .ov-stats { grid-template-columns: minmax(0, 1fr); } .dn-legend { grid-template-columns: minmax(0, 1fr); } }
         .section-label svg { width: 14px; height: 14px; }
+
+        /* Period Summary on the Transactions page + inside the New Transaction dialog */
+        .ps-inline { padding-bottom: 18px; }
+        .ps-inline .card-header { margin-bottom: 14px; }
+        .ps-inline .metric-group { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+        .ps-inline .metric-row { flex: 1 1 210px; min-width: 0; padding: 12px 16px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--table-th-bg); }
+        .ps-inline .highlight-box { flex: 1 1 210px; min-width: 0; margin-top: 0; padding: 0; }
+        .ps-inline .highlight-box .metric-row { border: none; background: transparent; }
+        .tm-summary { margin: 4px 0 6px; padding: 12px 14px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--table-th-bg); }
+        .tm-sum-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+        .tm-sum-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+        .tm-sum-grid small { display: block; font-size: 0.68rem; font-weight: 500; color: var(--text-muted); }
+        .tm-sum-grid b { display: block; margin-top: 2px; font-size: 0.92rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .tm-sum-grid > div:last-child b { color: var(--accent); }
+        .tm-sum-note { margin-top: 10px; font-size: 0.7rem; color: var(--text-muted); }
+        @media (max-width: 480px) { .tm-sum-grid { grid-template-columns: 1fr; gap: 6px; } }
     </style>
 </head>
 <body class="locked">
@@ -1324,8 +1340,18 @@
             </div>
             <div class="form-field">
                 <label for="tm-date">Date</label>
-                <input type="date" id="tm-date" onkeydown="if(event.key==='Enter') saveTransactionFromModal()">
+                <input type="date" id="tm-date" onchange="updateTxnModalSummary()" oninput="updateTxnModalSummary()" onkeydown="if(event.key==='Enter') saveTransactionFromModal()">
             </div>
+        </div>
+
+        <div class="tm-summary">
+            <div class="tm-sum-head"><span>Period Summary (Cleared)</span><span id="tm-sum-month">--</span></div>
+            <div class="tm-sum-grid">
+                <div><small>Credits Received</small><b id="tm-sum-cr" class="text-success">$0.00</b></div>
+                <div><small>Debits Paid</small><b id="tm-sum-db" class="text-danger">$0.00</b></div>
+                <div><small>Current Balance</small><b id="tm-sum-bal">$0.00</b></div>
+            </div>
+            <p class="tm-sum-note">New lines start as Pending, so they count once you mark them Paid in the ledger.</p>
         </div>
 
         <div class="modal-actions">
@@ -2042,6 +2068,23 @@
 
     <!-- TRANSACTIONS VIEW -->
     <div id="transactions-view" class="view-pane" style="display: none;">
+        <div class="card ps-inline">
+            <div class="card-header">
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="m9 16 2 2 4-4"></path></svg></span>Period Summary (Cleared)</h2>
+                <span class="chip" id="tx-ps-month">--</span>
+            </div>
+            <div class="metric-group">
+                <div class="metric-row"><span>Credits Received:</span> <span id="tx-credits-rcvd" class="text-success">$0.00</span></div>
+                <div class="metric-row"><span>Debits Paid:</span> <span id="tx-debits-paid" class="text-danger">$0.00</span></div>
+                <div class="highlight-box">
+                    <div class="metric-row">
+                        <span>Current Balance:</span>
+                        <span id="tx-curr-bal">$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 <div class="card">
                 <div class="card-header">
                     <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg></span>Transactions Ledger</h2>
@@ -3498,6 +3541,7 @@
         dateEl.value = toISOFormat(getDefaultDateString(activeMonthKey));
         txmCatTouched = false;
         populateTxnModalCategories();
+        updateTxnModalSummary();
         document.getElementById('txn-modal').style.display = 'flex';
         setTimeout(() => document.getElementById('tm-desc').focus(), 50);
     }
@@ -3788,6 +3832,44 @@
                     </tr>`;
             }).join('');
         }
+    }
+
+    // Period Summary (Cleared) for any month: same rules as the Dashboard card
+    function periodSummaryFor(monthKey) {
+        const ds = datasets[monthKey];
+        const txs = ds && Array.isArray(ds.data) ? ds.data : [];
+        const num = v => parseFloat(v) || 0;
+        const state = t => String(t.paid || '').toLowerCase();
+        const prevBal = txs.filter(isRolloverTx).reduce((a, t) => a + num(t.credit), 0);
+        const paidCredits = txs.filter(t => !isRolloverTx(t) && state(t) === 'yes' && num(t.credit) > 0).reduce((a, t) => a + num(t.credit), 0);
+        const debitsPaid = txs.filter(t => state(t) === 'yes' && num(t.debit) > 0).reduce((a, t) => a + num(t.debit), 0);
+        const creditsRcvd = prevBal + paidCredits;
+        return { creditsRcvd, debitsPaid, currBal: creditsRcvd - debitsPaid };
+    }
+
+    function renderTxSummary() {
+        const el = document.getElementById('tx-curr-bal');
+        if (!el) return;
+        const s = periodSummaryFor(activeMonthKey);
+        document.getElementById('tx-credits-rcvd').innerText = fmt(s.creditsRcvd);
+        document.getElementById('tx-debits-paid').innerText = fmt(s.debitsPaid);
+        el.innerText = fmt(s.currBal);
+        el.classList.toggle('text-danger', s.currBal < 0);
+        document.getElementById('tx-ps-month').innerText = currentMonthLabel();
+    }
+
+    // Live copy inside the New Transaction dialog, for the month of the chosen date
+    function updateTxnModalSummary() {
+        const d = parseIso(document.getElementById('tm-date').value);
+        const key = d ? rawMonthNames[d.getMonth()] + d.getFullYear() : activeMonthKey;
+        const s = periodSummaryFor(key);
+        const p = ovParseKey(key);
+        document.getElementById('tm-sum-month').innerText = p ? rawMonthNames[p.idx].charAt(0).toUpperCase() + rawMonthNames[p.idx].slice(1) + ' ' + p.year : '';
+        document.getElementById('tm-sum-cr').innerText = fmt(s.creditsRcvd);
+        document.getElementById('tm-sum-db').innerText = fmt(s.debitsPaid);
+        const bal = document.getElementById('tm-sum-bal');
+        bal.innerText = fmt(s.currBal);
+        bal.classList.toggle('text-danger', s.currBal < 0);
     }
 
     function toggleDropdown(event) {
@@ -5241,6 +5323,7 @@
         });
 
         renderOverview();
+        renderTxSummary();
     }
 </script>
 </body>
