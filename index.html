@@ -1196,6 +1196,117 @@
         .tm-sum-grid > div:last-child b { color: var(--accent); }
         .tm-sum-note { margin-top: 10px; font-size: 0.7rem; color: var(--text-muted); }
         @media (max-width: 480px) { .tm-sum-grid { grid-template-columns: 1fr; gap: 6px; } }
+
+        /* ==========================================
+           18. QUICK ACTIONS, UNDO, UPCOMING, GOALS, SEARCH, REPORT (added)
+           ========================================== */
+        /* toast with an Undo / action button */
+        #toast.has-action { pointer-events: auto; padding-right: 12px; }
+        .toast-action { margin-left: 14px; padding: 5px 14px; border: 1px solid rgba(255, 255, 255, 0.55); border-radius: 999px; background: rgba(255, 255, 255, 0.18); color: #fff; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: background-color 0.2s; }
+        .toast-action:hover { background: rgba(255, 255, 255, 0.34); }
+
+        /* floating add button (every page) */
+        .fab {
+            position: fixed; right: 24px; bottom: 24px; z-index: 80; width: 56px; height: 56px; border: none; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff;
+            background: var(--accent-grad); box-shadow: 0 16px 34px -10px var(--accent-glow), 0 2px 0 rgba(255, 255, 255, 0.22) inset;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .fab svg { width: 26px; height: 26px; }
+        .fab:hover { transform: translateY(-2px) scale(1.04); }
+        .fab:active { transform: scale(0.96); }
+        .fab:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 3px; }
+        @media (max-width: 700px) { .fab { right: 16px; bottom: 80px; width: 52px; height: 52px; } }
+
+        /* ledger: one-click paid + toolbar extras */
+        .col-action { width: 150px; }
+        .btn-paid { background-color: rgba(148, 163, 184, 0.14); color: var(--text-muted); padding: 5px 8px; font-size: 0.8rem; border-radius: 8px; font-weight: 700; border: 1px solid var(--border-soft); cursor: pointer; transition: all 0.2s; }
+        .btn-paid:hover { background-color: rgba(16, 185, 129, 0.25); color: #34d399; border-color: rgba(16, 185, 129, 0.45); }
+        .btn-paid.is-paid { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4); }
+        .all-months { display: inline-flex; align-items: center; gap: 7px; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+        .all-months input { width: 16px; height: 16px; accent-color: var(--accent); }
+        .toolbar-actions { display: inline-flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .global-results { margin: 0 0 14px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--table-th-bg); overflow: hidden; }
+        .gr-head { padding: 10px 14px; font-size: 0.78rem; color: var(--text-muted); border-bottom: 1px solid var(--border-soft); }
+        .gr-head strong { color: var(--text-main); }
+        .gr-list { max-height: 300px; overflow-y: auto; }
+        .gr-row { width: 100%; display: grid; grid-template-columns: 90px minmax(0, 1fr) 150px 110px; gap: 12px; align-items: center; padding: 9px 14px; background: transparent; border: none; border-bottom: 1px solid var(--border-soft); color: var(--text-main); font-size: 0.8rem; text-align: left; cursor: pointer; transition: background-color 0.15s; }
+        .gr-row:last-child { border-bottom: none; }
+        .gr-row:hover { background: var(--accent-soft); }
+        .gr-row > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .gr-date { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .gr-month { color: var(--text-muted); font-size: 0.72rem; }
+        .gr-amt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+        @media (max-width: 720px) { .gr-row { grid-template-columns: 80px minmax(0, 1fr) 100px; } .gr-row .gr-cat { display: none; } }
+
+        /* new transaction dialog: add another */
+        .tm-again { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+        .tm-again input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+        /* recurring dialog extras */
+        .rec-auto { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; padding: 12px 14px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--table-th-bg); font-size: 0.8rem; color: var(--text-muted); cursor: pointer; line-height: 1.45; }
+        .rec-auto input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+        .rec-auto strong { color: var(--text-main); }
+
+        /* dashboard: budget alert strip, year to date, upcoming, goals */
+        .ov-alerts { display: none; align-items: center; flex-wrap: wrap; gap: 8px 10px; margin-bottom: 16px; padding: 10px 14px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); }
+        .ov-alert-title { display: inline-flex; align-items: center; gap: 7px; margin-right: 4px; font-size: 0.78rem; font-weight: 700; color: #f59e0b; }
+        .ov-alert-title svg { width: 16px; height: 16px; }
+        .ov-alert-chip { padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.14); color: var(--text-main); font-size: 0.74rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .ov-alert-chip:hover { background: rgba(245, 158, 11, 0.28); }
+        .ov-alert-chip.over { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.14); color: var(--danger); }
+        .ov-alert-more { font-size: 0.74rem; color: var(--text-muted); }
+
+        .ov-ytd-card { margin-bottom: 20px; }
+        .ov-ytd { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+        .ov-ytd-item { padding: 12px 16px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--table-th-bg); min-width: 0; }
+        .ov-ytd-item .lbl { display: block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+        .ov-ytd-item b { display: block; margin-top: 4px; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--text-main); }
+        .ov-ytd-item small { display: block; margin-top: 2px; font-size: 0.72rem; color: var(--text-muted); }
+
+        .ov-bottom { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 20px; margin-bottom: 20px; align-items: start; }
+        .ov-bottom > .card, .ov-side > .card { margin-bottom: 0; }
+        .ov-side { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        .ov-up-row { display: grid; grid-template-columns: 62px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border-soft); font-size: 0.8rem; }
+        .ov-up-row:last-child { border-bottom: none; }
+        .ov-up-date { font-weight: 700; color: var(--text-muted); font-size: 0.74rem; }
+        .ov-up-date.late { color: var(--danger); }
+        .ov-up-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+        .ov-up-amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .ov-up-foot { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 0.74rem; color: var(--text-muted); }
+        .ov-empty { padding: 14px 4px; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+        .ov-goal { padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+        .ov-goal:last-child { border-bottom: none; }
+        .ov-goal-top { display: flex; justify-content: space-between; gap: 10px; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; }
+        .ov-goal-top span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ov-goal-top span:last-child { color: var(--accent); font-variant-numeric: tabular-nums; }
+        .ov-goal small { display: block; margin-bottom: 7px; font-size: 0.72rem; color: var(--text-muted); }
+        .ov-goal .progress-bar-bg { height: 8px; }
+        button.ov-status { background: none; border: none; padding: 3px 6px; margin: -3px -6px; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background-color 0.2s; }
+        button.ov-status:hover { background: var(--pill-bg); }
+
+        @media (max-width: 1200px) { .ov-bottom { grid-template-columns: minmax(0, 1fr); } }
+        @media (max-width: 900px) { .ov-ytd { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 480px) { .ov-ytd { grid-template-columns: minmax(0, 1fr); } }
+
+        /* printable monthly report */
+        #print-report { display: none; }
+        @media print {
+            body.printing-report { display: block; background: #fff; color: #000; padding: 0; }
+            body.printing-report > *:not(#print-report) { display: none !important; }
+            body.printing-report #print-report { display: block; color: #000; font-size: 11pt; }
+            #print-report * { color: #000 !important; background: transparent !important; box-shadow: none !important; }
+            #print-report h1 { font-size: 20pt; margin-bottom: 4px; }
+            #print-report h2 { font-size: 13pt; margin: 18px 0 6px; padding-bottom: 4px; border-bottom: 2px solid #000; }
+            #print-report .meta { font-size: 9pt; margin-bottom: 14px; color: #444 !important; }
+            #print-report table { width: 100%; border-collapse: collapse; table-layout: auto; font-size: 9.5pt; }
+            #print-report th, #print-report td { padding: 4px 6px; border-bottom: 1px solid #bbb; text-align: left; }
+            #print-report th { border-bottom: 2px solid #000; font-weight: 700; }
+            #print-report td.n, #print-report th.n { text-align: right; font-variant-numeric: tabular-nums; }
+            #print-report tr { break-inside: avoid; }
+            #print-report .sum td:first-child { width: 60%; }
+            #print-report .foot { margin-top: 18px; font-size: 8pt; color: #555 !important; }
+        }
     </style>
 </head>
 <body class="locked">
@@ -1275,12 +1386,13 @@
             Configure monthly fixed bills or salary entries here. Click <strong>"⚡ Apply to Current Month"</strong> to instantly inject them into your active month's ledger.
         </p>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 16px;">
+        <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 1fr 74px auto; gap: 8px; margin-bottom: 16px;">
             <input type="text" id="rec-desc" placeholder="Description (e.g. Rent)">
             <select id="rec-cat">
                 <option value="">-- Expense Cat --</option>
             </select>
             <input type="number" step="0.01" id="rec-amount" placeholder="Amount ($)">
+            <input type="number" id="rec-day" min="1" max="31" placeholder="Day" aria-label="Day of the month it is due">
             <button class="btn" onclick="addRecurringTemplate()">+ Add</button>
         </div>
 
@@ -1290,6 +1402,7 @@
                     <tr>
                         <th>Description</th>
                         <th>Category</th>
+                        <th style="width: 60px; text-align: center;">Day</th>
                         <th class="col-num">Amount ($)</th>
                         <th style="width: 70px; text-align: center;">Action</th>
                     </tr>
@@ -1297,6 +1410,10 @@
                 <tbody id="recurring-tbody"></tbody>
             </table>
         </div>
+
+        <label class="rec-auto"><input type="checkbox" id="rec-auto" onchange="toggleAutoRecurring(this.checked)">
+            <span><strong>Auto-add each month</strong><br>When you unlock the app, bills whose day has arrived are added to the current month as Pending. A line you delete is not added again.</span>
+        </label>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
             <button class="btn" onclick="applyRecurringToActiveMonth()">⚡ Apply Templates to Active Month</button>
@@ -1355,6 +1472,7 @@
         </div>
 
         <div class="modal-actions">
+            <label class="tm-again"><input type="checkbox" id="tm-again"> Add another</label>
             <button type="button" class="btn-secondary" onclick="closeTransactionModal()">Cancel</button>
             <button type="button" class="btn" onclick="saveTransactionFromModal()">Save Transaction</button>
         </div>
@@ -1460,10 +1578,14 @@
                 <div id="options-dropdown" class="dropdown-content">
                     <button onclick="openRecurringModal()">🔄 Recurring Templates</button>
                     <button onclick="sortTransactionsByDateManual()">📅 Sort by Date</button>
+                    <button onclick="copyFromPreviousMonth('fixed')">📋 Copy Last Month's Fixed Lines</button>
+                    <button onclick="copyFromPreviousMonth('all')">📋 Copy All of Last Month</button>
                     <button onclick="exportJSON()">💾 Backup JSON</button>
+                    <button onclick="exportEncryptedBackup()">🔐 Encrypted Backup</button>
                     <button onclick="exportCSV()">📄 Export Month (CSV)</button>
+                    <button onclick="printReport()">🖨️ Print / Save Report (PDF)</button>
                     <label style="cursor: pointer;">
-                        📂 Import JSON <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importJSON(event)">
+                        📂 Import JSON <input type="file" id="import-file" style="display: none;" accept=".json,.enc,.txt" onchange="importJSON(event)">
                     </label>
                     <button onclick="resetMonthData()">🔄 Reset Month</button>
                 </div>
@@ -1830,6 +1952,8 @@
             <button type="button" class="btn" onclick="openTransactionModal()">+ Add Transaction</button>
         </div>
 
+        <div class="ov-alerts" id="ov-alerts"></div>
+
         <div class="ov-stats">
             <div class="stat-card">
                 <div class="ov-stat-top">
@@ -1862,6 +1986,19 @@
                 </div>
                 <div class="stat-card-value" id="ov-proj">$0.00</div>
                 <div class="ov-trend" id="ov-proj-trend"></div>
+            </div>
+        </div>
+
+        <div class="card ov-ytd-card">
+            <div class="card-header">
+                <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.5 8.5-5-5L2 17"></path><path d="M16 7h6v6"></path></svg></span>Year to Date</h2>
+                <span class="chip" id="ytd-year">--</span>
+            </div>
+            <div class="ov-ytd">
+                <div class="ov-ytd-item"><span class="lbl">Income</span><b id="ytd-income">$0.00</b></div>
+                <div class="ov-ytd-item"><span class="lbl">Expenses</span><b id="ytd-expenses">$0.00</b></div>
+                <div class="ov-ytd-item"><span class="lbl">Net Saved</span><b id="ytd-net">$0.00</b></div>
+                <div class="ov-ytd-item"><span class="lbl">Savings Rate</span><b id="ytd-rate">--</b><small id="ytd-rate-sub"></small></div>
             </div>
         </div>
 
@@ -1906,6 +2043,7 @@
             </div>
         </div>
 
+        <div class="ov-bottom">
         <div class="card">
             <div class="card-header">
                 <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg></span>Recent Transactions</h2>
@@ -1925,6 +2063,24 @@
                     <tbody id="ov-recent-tbody"></tbody>
                 </table>
             </div>
+        </div>
+        <div class="ov-side">
+            <div class="card">
+                <div class="card-header">
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="M8 14h.01M12 14h.01M16 14h.01"></path></svg></span>Next 7 Days</h2>
+                    <button type="button" class="ov-link" onclick="showView('forecast')">Forecast</button>
+                </div>
+                <div id="ov-upcoming"></div>
+                <div class="ov-up-foot" id="ov-upcoming-foot"></div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2><span class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><path d="M4 22v-7"></path></svg></span>Savings Goals</h2>
+                    <button type="button" class="ov-link" onclick="showView('goals')">View All</button>
+                </div>
+                <div id="ov-goals"></div>
+            </div>
+        </div>
         </div>
 
         <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Monthly Details</div>
@@ -2095,6 +2251,7 @@
                         <span class="search-icon">🔍</span>
                         <input type="text" id="search-input" placeholder="Search description or category..." oninput="renderTransactions()">
                     </div>
+                    <label class="all-months" title="Search every month, not just this one"><input type="checkbox" id="search-all" onchange="renderTransactions()"> All months</label>
                     <div class="filter-pills">
                         <div class="pill active" onclick="setFilter('all', this)">All</div>
                         <div class="pill" onclick="setFilter('cleared', this)">Cleared</div>
@@ -2102,7 +2259,11 @@
                         <div class="pill" onclick="setFilter('credits', this)">Credits</div>
                         <div class="pill" onclick="setFilter('debits', this)">Debits</div>
                     </div>
+                    <div class="toolbar-actions">
+                        <button type="button" class="btn-secondary" onclick="markDueAsPaid()" title="Mark every pending line dated today or earlier as paid">✓ Mark due as paid</button>
+                    </div>
                 </div>
+                <div id="global-results" class="global-results" style="display: none;"></div>
                 <div class="table-container">
                     <table class="ledger-table">
                         <thead>
@@ -2173,9 +2334,11 @@
 
     </div><!-- /.app-main -->
     </div><!-- /.app-shell -->
+    <button type="button" id="fab-add" class="fab" onclick="openTransactionModal()" aria-label="Add transaction (N)" title="Add transaction (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
 </div>
 
 <div id="toast">Synced with Supabase securely</div>
+<div id="print-report"></div>
 
 <script>
     const SUPABASE_URL = "https://utozececqvxippnerfrl.supabase.co";
@@ -3588,7 +3751,8 @@
             paid: 'NO'
         };
         datasets[key].data.push(tx);
-        closeTransactionModal();
+        const again = !!(document.getElementById('tm-again') || {}).checked;
+        if (!again) closeTransactionModal();
 
         // Show everything again so the new line can't be hidden by a filter or search
         currentFilter = 'all';
@@ -3618,7 +3782,12 @@
             row.classList.add('row-flash');
             setTimeout(() => row.classList.remove('row-flash'), 2600);
         });
-        showToast(moved ? `Transaction added to ${currentMonthLabel()}` : 'Transaction added');
+        if (again) {
+            resetTxnModalForAnother();
+            showToast(moved ? `Added to ${currentMonthLabel()} · ready for the next one` : 'Added · ready for the next one');
+        } else {
+            showToast(moved ? `Transaction added to ${currentMonthLabel()}` : 'Transaction added');
+        }
     }
 
     function closeAllModals() {
@@ -3819,6 +3988,7 @@
                 const isIn = netAmt >= 0;
                 const paid = state(t) === 'yes';
                 const cat = t.cost || t.creditCat || '—';
+                const idx = txs.indexOf(t);
                 return `
                     <tr>
                         <td><div class="ov-desc">
@@ -3827,11 +3997,13 @@
                         </div></td>
                         <td class="hide-sm"><span class="ov-cat">${esc(cat)}</span></td>
                         <td class="hide-sm" style="color: var(--text-muted);">${esc(t.date)}</td>
-                        <td class="hide-sm"><span class="ov-status ${paid ? '' : 'pending'}"><i></i>${paid ? 'Paid' : 'Pending'}</span></td>
+                        <td class="hide-sm"><button type="button" class="ov-status ${paid ? '' : 'pending'}" onclick="togglePaid(${idx})" title="${paid ? 'Click to mark as pending' : 'Click to mark as paid'}"><i></i>${paid ? 'Paid' : 'Pending'}</button></td>
                         <td class="ov-amt ${isIn ? 'text-success' : 'text-danger'}">${isIn ? '+' : '-'}${fmt(Math.abs(netAmt))}</td>
                     </tr>`;
             }).join('');
         }
+
+        renderOverviewExtras(txs);
     }
 
     // Period Summary (Cleared) for any month: same rules as the Dashboard card
@@ -3872,6 +4044,454 @@
         bal.classList.toggle('text-danger', s.currBal < 0);
     }
 
+    // ==========================================
+    // QUICK ACTIONS: PAID TOGGLE, MARK DUE, SEARCH ALL MONTHS, COPY LAST MONTH
+    // ==========================================
+    let autoApplyRecurring = false;   // saved in the vault
+    let recurringApplied = {};        // saved in the vault: which templates were already auto-added per month
+    let globalHits = [];
+
+    function monthLabelOfKey(key) {
+        const p = ovParseKey(key);
+        return p ? rawMonthNames[p.idx].charAt(0).toUpperCase() + rawMonthNames[p.idx].slice(1) + ' ' + p.year : '';
+    }
+
+    function toastHasAction() {
+        const t = document.getElementById('toast');
+        return !!t && String(t.className).includes('has-action');
+    }
+
+    function buildVaultPayload() {
+        return { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions, autoApplyRecurring, recurringApplied };
+    }
+
+    function togglePaid(index) {
+        const ds = datasets[activeMonthKey];
+        const tx = ds && ds.data[index];
+        if (!tx) return;
+        const wasPaid = String(tx.paid || '').toLowerCase() === 'yes';
+        tx.paid = wasPaid ? 'NO' : 'Yes';
+        renderApp();
+        saveToSupabase();
+        showToast(wasPaid ? 'Marked as Pending' : 'Marked as Paid');
+    }
+
+    // Every pending line dated today or earlier becomes Paid (with Undo)
+    function markDueAsPaid() {
+        const key = activeMonthKey;
+        const ds = datasets[key];
+        if (!ds) return;
+        const today = startOfToday();
+        const changed = ds.data.filter(t => {
+            if (isRolloverTx(t) || String(t.paid || '').toLowerCase() !== 'no') return false;
+            const d = parseTxDate(t.date);
+            return d && d <= today;
+        });
+        if (!changed.length) { showToast('Nothing pending up to today'); return; }
+        changed.forEach(t => { t.paid = 'Yes'; });
+        renderApp();
+        saveToSupabase();
+        showToast(`Marked ${changed.length} line${changed.length === 1 ? '' : 's'} as paid`, false, {
+            label: 'Undo',
+            fn: () => {
+                changed.forEach(t => { t.paid = 'NO'; });
+                renderApp();
+                saveToSupabase();
+                showToast('Undone');
+            }
+        });
+    }
+
+    function flashLedgerRow(idx) {
+        requestAnimationFrame(() => {
+            const row = document.querySelector(`#txn-tbody tr[data-idx="${idx}"]`);
+            if (!row) return;
+            row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            row.classList.add('row-flash');
+            setTimeout(() => row.classList.remove('row-flash'), 2600);
+        });
+    }
+
+    function goToMonth(key) {
+        const p = ovParseKey(key);
+        if (!p || !allYears.includes(String(p.year))) return false;
+        selectedYear = String(p.year);
+        document.getElementById('year-dropdown').value = selectedYear;
+        ensureYearDatasetsExist(selectedYear);
+        selectedMonthName = rawMonthNames[p.idx];
+        lastMonthName = selectedMonthName;
+        document.getElementById('month-dropdown').value = selectedMonthName;
+        activeMonthKey = key;
+        sortTransactions();
+        return true;
+    }
+
+    // "All months" search: lists matches from every month, click one to open it
+    function renderGlobalSearch() {
+        const box = document.getElementById('global-results');
+        if (!box) return;
+        const all = document.getElementById('search-all');
+        const term = String((document.getElementById('search-input') || {}).value || '').trim().toLowerCase();
+        if (!(all && all.checked) || !term) { box.style.display = 'none'; box.innerHTML = ''; globalHits = []; return; }
+
+        const hits = [];
+        Object.keys(datasets).forEach(k => {
+            const ds = datasets[k];
+            if (!ds || !Array.isArray(ds.data)) return;
+            ds.data.forEach(t => {
+                if (isRolloverTx(t)) return;
+                const hay = [t.desc, t.cost, t.creditCat, t.date, t.method, t.debit, t.credit].join(' ').toLowerCase();
+                if (hay.includes(term)) hits.push({ k, t });
+            });
+        });
+        hits.sort((a, b) => parseDateString(b.t.date) - parseDateString(a.t.date));
+        globalHits = hits.slice(0, 100);
+
+        box.style.display = 'block';
+        if (!hits.length) {
+            box.innerHTML = '<div class="gr-head">No matches in any month.</div>';
+            return;
+        }
+        box.innerHTML = `<div class="gr-head"><strong>${hits.length} match${hits.length === 1 ? '' : 'es'}</strong> across all months${hits.length > 100 ? ' · showing the latest 100' : ''}. Click one to open it.</div>
+            <div class="gr-list">${globalHits.map((h, n) => {
+                const net = (parseFloat(h.t.credit) || 0) - (parseFloat(h.t.debit) || 0);
+                return `<button type="button" class="gr-row" onclick="jumpToHit(${n})" title="Open ${esc(monthLabelOfKey(h.k))}">
+                    <span class="gr-date">${esc(h.t.date)}</span>
+                    <span>${esc(h.t.desc || '(no description)')}</span>
+                    <span class="gr-cat gr-month">${esc(h.t.cost || h.t.creditCat || '—')}</span>
+                    <span class="gr-amt ${net >= 0 ? 'text-success' : 'text-danger'}">${net >= 0 ? '+' : '-'}${fmt(Math.abs(net))}</span>
+                </button>`;
+            }).join('')}</div>`;
+    }
+
+    function jumpToHit(n) {
+        const h = globalHits[n];
+        if (!h || !goToMonth(h.k)) return;
+        const si = document.getElementById('search-input');
+        if (si) si.value = '';
+        const sa = document.getElementById('search-all');
+        if (sa) sa.checked = false;
+        currentFilter = 'all';
+        document.querySelectorAll('.filter-pills .pill').forEach((p, i) => p.classList.toggle('active', i === 0));
+        renderApp();
+        flashLedgerRow(datasets[h.k].data.indexOf(h.t));
+    }
+
+    // Copy the previous month's lines into the active month as Pending ("fixed" = only Fixed lines)
+    function copyFromPreviousMonth(mode) {
+        const key = activeMonthKey;
+        const prevKey = ovShiftKey(key, -1);
+        const src = datasets[prevKey];
+        const here = datasets[key];
+        const p = ovParseKey(key);
+        if (!src || !Array.isArray(src.data) || !here || !p) { showToast('No data in the previous month', true); return; }
+
+        const lines = src.data.filter(t => !isRolloverTx(t) && (mode === 'all' || t.type === 'Fixed'));
+        if (!lines.length) { showToast(mode === 'all' ? 'Nothing to copy from the previous month' : 'No Fixed lines in the previous month', true); return; }
+
+        const daysInMonth = new Date(p.year, p.idx + 1, 0).getDate();
+        const same = (a, b) => String(a.desc || '').trim().toLowerCase() === String(b.desc || '').trim().toLowerCase()
+            && Math.abs((parseFloat(a.debit) || 0) - (parseFloat(b.debit) || 0)) < 0.005
+            && Math.abs((parseFloat(a.credit) || 0) - (parseFloat(b.credit) || 0)) < 0.005;
+        const addedTx = [];
+        let skipped = 0;
+        lines.forEach(t => {
+            if (here.data.some(x => same(x, t))) { skipped++; return; }
+            const copy = JSON.parse(JSON.stringify(t));
+            const old = parseTxDate(t.date);
+            const day = Math.min(old ? old.getDate() : 1, daysInMonth);
+            copy.date = `${String(day).padStart(2, '0')}/${String(p.idx + 1).padStart(2, '0')}/${p.year}`;
+            copy.paid = 'NO';
+            here.data.push(copy);
+            addedTx.push(copy);
+        });
+        if (!addedTx.length) { showToast('Those lines are already in this month'); return; }
+
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+        showToast(`Copied ${addedTx.length} line${addedTx.length === 1 ? '' : 's'} from ${monthLabelOfKey(prevKey)}${skipped ? ` (${skipped} already here)` : ''}`, false, {
+            label: 'Undo',
+            fn: () => {
+                if (datasets[key]) datasets[key].data = datasets[key].data.filter(x => !addedTx.includes(x));
+                renderApp();
+                saveToSupabase();
+                showToast('Undone');
+            }
+        });
+    }
+
+    // ==========================================
+    // RECURRING BILLS: AUTO-ADD WHEN DUE
+    // ==========================================
+    function autoApplyRecurringDue() {
+        if (!autoApplyRecurring || !recurringTemplates.length) return 0;
+        const today = startOfToday();
+        const yr = String(today.getFullYear());
+        if (!allYears.includes(yr)) return 0;
+        ensureYearDatasetsExist(yr);
+        const key = monthKeyOfDate(today);
+        const ds = datasets[key];
+        if (!ds) return 0;
+
+        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+        const done = recurringApplied[key] || (recurringApplied[key] = []);
+        let added = 0, touched = false;
+        recurringTemplates.forEach(t => {
+            const day = Math.min(Math.max(parseInt(t.day, 10) || 1, 1), daysInMonth);
+            if (day > today.getDate()) return;                       // not due yet
+            const amt = parseFloat(t.amount) || 0;
+            const sig = `${String(t.desc || '').trim().toLowerCase()}|${amt.toFixed(2)}|${day}`;
+            if (done.includes(sig)) return;                          // already handled (even if you later deleted the line)
+            done.push(sig);
+            touched = true;
+            const exists = ds.data.some(x => String(x.desc || '').trim().toLowerCase() === String(t.desc || '').trim().toLowerCase()
+                && Math.abs((parseFloat(x.debit) || 0) - amt) < 0.005);
+            if (exists) return;
+            ds.data.push({
+                date: `${String(day).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${yr}`,
+                desc: t.desc, cost: t.category || '', creditCat: '', type: 'Fixed', credit: 0, debit: amt, method: 'Debit', paid: 'NO'
+            });
+            added++;
+        });
+        if (added) ds.data.sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+        if (touched) saveToSupabase();
+        return added;
+    }
+
+    function toggleAutoRecurring(checked) {
+        autoApplyRecurring = !!checked;
+        saveToSupabase();
+        if (autoApplyRecurring) {
+            const n = autoApplyRecurringDue();
+            if (n) { renderApp(); showToast(`Auto-add is on · added ${n} bill${n === 1 ? '' : 's'} due`); return; }
+        }
+        showToast(autoApplyRecurring ? 'Recurring bills will be added when due' : 'Auto-add turned off');
+    }
+
+    // ==========================================
+    // BACKUPS: REMINDER + ENCRYPTED FILE
+    // ==========================================
+    function markBackupDone() {
+        try { localStorage.setItem('dashboard_last_backup', String(Date.now())); } catch (_) { /* storage unavailable */ }
+    }
+
+    async function exportEncryptedBackup() {
+        if (!masterKey) { showToast('Unlock the vault first', true); return; }
+        try {
+            const cipher = await encryptVault(buildVaultPayload());
+            const blob = new Blob([cipher], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `finance_backup_encrypted_${isoDate(new Date())}.enc`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            markBackupDone();
+            showToast('Encrypted backup downloaded');
+        } catch (e) {
+            showToast('Backup failed: ' + (e.message || e), true);
+        }
+    }
+
+    function checkBackupReminder() {
+        let last = 0, snooze = 0;
+        try {
+            last = parseInt(localStorage.getItem('dashboard_last_backup') || '0', 10) || 0;
+            snooze = parseInt(localStorage.getItem('dashboard_backup_snooze') || '0', 10) || 0;
+        } catch (_) { /* storage unavailable */ }
+        if (Date.now() < snooze) return;
+        const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+        if (days !== null && days < 30) return;
+        try { localStorage.setItem('dashboard_backup_snooze', String(Date.now() + 7 * 86400000)); } catch (_) { /* storage unavailable */ }
+        showToast(days === null ? 'You have not made a backup yet' : `Your last backup was ${days} days ago`, false, { label: 'Back up now', fn: exportEncryptedBackup });
+    }
+
+    // ==========================================
+    // PRINTABLE MONTHLY REPORT (print or "Save as PDF")
+    // ==========================================
+    function buildReportHtml(key) {
+        key = key || activeMonthKey;
+        const ds = datasets[key];
+        const txs = ds && Array.isArray(ds.data) ? ds.data : [];
+        const num = v => parseFloat(v) || 0;
+        const st = t => String(t.paid || '').toLowerCase();
+        const s = periodSummaryFor(key);
+        const pendCr = txs.filter(t => !isRolloverTx(t) && st(t) === 'no' && num(t.credit) > 0).reduce((a, t) => a + num(t.credit), 0);
+        const pendDb = txs.filter(t => st(t) === 'no' && num(t.debit) > 0).reduce((a, t) => a + num(t.debit), 0);
+        const proj = s.currBal + pendCr - pendDb;
+        const income = txs.filter(t => !isRolloverTx(t)).reduce((a, t) => a + num(t.credit), 0);
+        const spend = txs.reduce((a, t) => a + num(t.debit), 0);
+        const rate = income > 0 ? ((income - spend) / income * 100).toFixed(1) + '%' : '—';
+
+        const catMap = {};
+        txs.forEach(t => { const d = num(t.debit); if (d > 0) { const c = t.cost || 'Uncategorised'; catMap[c] = (catMap[c] || 0) + d; } });
+        const catRows = Object.entries(catMap).sort((a, b) => b[1] - a[1]).map(([c, v]) => {
+            const base = c === 'Uncategorised' ? 0 : getCategoryBudgetForMonth(c, key);
+            const lim = base > 0 ? base + getCategoryRolloverCarryover(c, key) : 0;
+            return `<tr><td>${esc(c)}</td><td class="n">${fmt(v)}</td><td class="n">${lim > 0 ? fmt(lim) : '—'}</td><td class="n">${lim > 0 ? Math.round(v / lim * 100) + '%' : '—'}</td></tr>`;
+        }).join('') || '<tr><td colspan="4">No expenses recorded.</td></tr>';
+
+        const lines = [...txs].sort((a, b) => parseDateString(a.date) - parseDateString(b.date)).map(t =>
+            `<tr><td>${esc(t.date)}</td><td>${esc(t.desc)}</td><td>${esc(t.cost || t.creditCat || '')}</td><td class="n">${num(t.credit) ? fmt(t.credit) : ''}</td><td class="n">${num(t.debit) ? fmt(t.debit) : ''}</td><td>${st(t) === 'yes' ? 'Paid' : 'Pending'}</td></tr>`
+        ).join('');
+
+        const row = (label, val) => `<tr><td>${label}</td><td class="n">${val}</td></tr>`;
+        return `
+            <h1>Financial Report — ${esc(monthLabelOfKey(key))}</h1>
+            <div class="meta">Generated ${esc(new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }))}</div>
+            <h2>Period Summary</h2>
+            <table class="sum"><tbody>
+                ${row('Credits received (incl. opening balance)', fmt(s.creditsRcvd))}
+                ${row('Debits paid', fmt(s.debitsPaid))}
+                ${row('<strong>Current balance</strong>', '<strong>' + fmt(s.currBal) + '</strong>')}
+                ${row('Pending credits', fmt(pendCr))}
+                ${row('Pending debits', fmt(pendDb))}
+                ${row('<strong>Projected balance</strong>', '<strong>' + fmt(proj) + '</strong>')}
+                ${row('Savings rate', rate)}
+            </tbody></table>
+            <h2>Spending by Category</h2>
+            <table><thead><tr><th>Category</th><th class="n">Spent</th><th class="n">Budget</th><th class="n">Used</th></tr></thead><tbody>${catRows}</tbody></table>
+            <h2>Transactions</h2>
+            <table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="n">Credit</th><th class="n">Debit</th><th>Status</th></tr></thead><tbody>${lines}</tbody></table>
+            <div class="foot">This report contains personal financial information. Store or share it carefully.</div>`;
+    }
+
+    function printReport() {
+        const el = document.getElementById('print-report');
+        if (!el) return;
+        const oldTitle = document.title;
+        el.innerHTML = buildReportHtml(activeMonthKey);
+        document.title = 'Financial Report - ' + monthLabelOfKey(activeMonthKey);
+        document.body.classList.add('printing-report');
+        const cleanup = () => {
+            document.body.classList.remove('printing-report');
+            el.innerHTML = '';
+            document.title = oldTitle;
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+        setTimeout(() => window.print(), 80);
+    }
+
+    // ==========================================
+    // DASHBOARD EXTRAS: BUDGET ALERTS, YEAR TO DATE, NEXT 7 DAYS, GOALS
+    // ==========================================
+    function ovBudgetAlerts(txs) {
+        const spent = {};
+        txs.forEach(t => { const d = parseFloat(t.debit) || 0; if (t.cost && d > 0) spent[t.cost] = (spent[t.cost] || 0) + d; });
+        const out = [];
+        categories.forEach(cat => {
+            const base = getCategoryBudgetForMonth(cat, activeMonthKey);
+            if (!(base > 0)) return;
+            const limit = base + getCategoryRolloverCarryover(cat, activeMonthKey);
+            const s = spent[cat] || 0;
+            const pct = limit > 0 ? (s / limit) * 100 : 0;
+            if (pct >= 80) out.push({ cat, spent: s, limit, pct, over: s > limit });
+        });
+        return out.sort((a, b) => b.pct - a.pct);
+    }
+
+    function renderBudgetStrip(txs) {
+        const el = document.getElementById('ov-alerts');
+        if (!el) return;
+        const a = ovBudgetAlerts(txs);
+        if (!a.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+        el.style.display = 'flex';
+        const warn = OV_SVG('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path>');
+        el.innerHTML = `<span class="ov-alert-title">${warn}Budget alerts</span>` +
+            a.slice(0, 4).map(x => `<button type="button" class="ov-alert-chip ${x.over ? 'over' : ''}" onclick="showView('budgets')" title="${esc(x.cat)}: ${esc(fmt(x.spent))} of ${esc(fmt(x.limit))}">${esc(x.cat)} · ${x.over ? 'over by ' + esc(fmt(x.spent - x.limit)) : Math.round(x.pct) + '%'}</button>`).join('') +
+            (a.length > 4 ? `<span class="ov-alert-more">+${a.length - 4} more</span>` : '');
+    }
+
+    function renderYtd() {
+        if (!document.getElementById('ytd-income')) return;
+        let income = 0, spend = 0;
+        getMonthKeysOrderForYear(selectedYear).forEach(k => {
+            const t = ovMonthTotals(k);
+            if (t) { income += t.income; spend += t.expenses; }
+        });
+        const net = income - spend;
+        document.getElementById('ytd-year').innerText = selectedYear;
+        document.getElementById('ytd-income').innerText = fmt(income);
+        document.getElementById('ytd-expenses').innerText = fmt(spend);
+        const netEl = document.getElementById('ytd-net');
+        netEl.innerText = (net >= 0 ? '+' : '-') + fmt(Math.abs(net));
+        netEl.className = net >= 0 ? 'text-success' : 'text-danger';
+        const rateEl = document.getElementById('ytd-rate');
+        rateEl.innerText = income > 0 ? (net / income * 100).toFixed(1) + '%' : '--';
+        rateEl.className = income > 0 ? (net >= 0 ? 'text-success' : 'text-danger') : '';
+        const cur = ovMonthTotals(activeMonthKey);
+        document.getElementById('ytd-rate-sub').innerText = cur && cur.income > 0
+            ? `This month: ${((cur.income - cur.expenses) / cur.income * 100).toFixed(1)}%` : 'This month: --';
+    }
+
+    function renderUpcoming7() {
+        const list = document.getElementById('ov-upcoming');
+        const foot = document.getElementById('ov-upcoming-foot');
+        if (!list) return;
+        const f = buildForecast(7);
+        if (!f) { list.innerHTML = '<div class="ov-empty">Forecast is not available for this year.</div>'; foot.innerHTML = ''; return; }
+        const shown = f.events.slice(0, 6);
+        list.innerHTML = shown.length ? shown.map(e => `
+            <div class="ov-up-row">
+                <span class="ov-up-date ${e.overdue ? 'late' : ''}">${e.overdue ? 'Overdue' : esc(fmtDay(e.date))}</span>
+                <span class="ov-up-desc" title="${esc(e.desc)}">${esc(e.desc)}</span>
+                <span class="ov-up-amt ${e.amount < 0 ? 'text-danger' : 'text-success'}">${esc(signedMoney(e.amount))}</span>
+            </div>`).join('') : '<div class="ov-empty">Nothing due in the next 7 days 🎉</div>';
+        foot.innerHTML = (f.events.length > shown.length ? `<span>+${f.events.length - shown.length} more</span>` : '') +
+            `<span>Out ${esc(fmt(Math.abs(f.totalOut)))} · In ${esc(fmt(f.totalIn))}</span><span>Balance in 7 days: <strong class="${f.endBalance < 0 ? 'text-danger' : ''}">${esc(fmt(f.endBalance))}</strong></span>`;
+    }
+
+    function renderGoalsCard() {
+        const list = document.getElementById('ov-goals');
+        if (!list) return;
+        if (!savingsGoals.length) {
+            list.innerHTML = '<div class="ov-empty">No goals yet. <button type="button" class="ov-link" onclick="showView(\'goals\')">Add one</button></div>';
+            return;
+        }
+        list.innerHTML = savingsGoals.slice(0, 3).map(g => {
+            const target = Number(g.target) || 0, saved = Number(g.saved) || 0;
+            const pct = target > 0 ? Math.min(100, saved / target * 100) : 0;
+            return `<div class="ov-goal">
+                <div class="ov-goal-top"><span title="${esc(g.name)}">${esc(g.name)}</span><span>${pct.toFixed(0)}%</span></div>
+                <small>${esc(fmt(saved))} of ${esc(fmt(target))}${g.deadline ? ' · by ' + esc(toAUFormat(g.deadline)) : ''}</small>
+                <div class="progress-bar-bg"><div class="progress-bar-fill ${pct >= 100 ? 'success-fill' : ''}" style="width: ${pct}%"></div></div>
+            </div>`;
+        }).join('') + (savingsGoals.length > 3 ? `<div class="ov-empty" style="padding-bottom:0;">+${savingsGoals.length - 3} more goal${savingsGoals.length - 3 === 1 ? '' : 's'}</div>` : '');
+    }
+
+    function renderOverviewExtras(txs) {
+        renderBudgetStrip(txs);
+        renderYtd();
+        renderUpcoming7();
+        renderGoalsCard();
+    }
+
+    // N = new transaction (when you are not typing in a field)
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'n' && e.key !== 'N') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const t = e.target;
+        const tag = t && t.tagName ? t.tagName.toLowerCase() : '';
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || (t && t.isContentEditable)) return;
+        if (!masterKey) return;
+        if (['txn-modal', 'budget-modal', 'recurring-modal'].some(id => { const m = document.getElementById(id); return m && m.style.display === 'flex'; })) return;
+        e.preventDefault();
+        openTransactionModal();
+    });
+
+    function resetTxnModalForAnother() {
+        document.getElementById('tm-desc').value = '';
+        document.getElementById('tm-amount').value = '';
+        document.getElementById('tm-cat').value = '';
+        txmCatTouched = false;
+        updateTxnModalSummary();
+        setTimeout(() => document.getElementById('tm-desc').focus(), 30);
+    }
+
     function toggleDropdown(event) {
         event.stopPropagation();
         document.getElementById('options-dropdown').classList.toggle('show');
@@ -3889,13 +4509,21 @@
     }
 
     let toastTimer = null;
-    function showToast(message, isError = false) {
+    function showToast(message, isError = false, action = null) {
         const toast = document.getElementById('toast');
-        toast.innerText = message;
+        toast.textContent = message;
+        if (action) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'toast-action';
+            btn.textContent = action.label;
+            btn.onclick = () => { clearTimeout(toastTimer); toast.className = ''; action.fn(); };
+            toast.appendChild(btn);
+        }
         toast.style.background = isError ? 'var(--danger)' : '#10b981';
-        toast.className = 'show';
+        toast.className = 'show' + (action ? ' has-action' : '');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { toast.className = ''; }, isError ? 4500 : 2000);
+        toastTimer = setTimeout(() => { toast.className = ''; }, action ? 8000 : (isError ? 4500 : 2000));
     }
 
     function togglePasswordVisibility() {
@@ -3958,9 +4586,11 @@
             document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
             populateRecurringCategoryDropdown();
 
+            const autoAdded = autoApplyRecurringDue();
             showView('dashboard');
             resetIdleTimer();
-            showToast("Vault unlocked & synced");
+            showToast(autoAdded ? `Vault unlocked · added ${autoAdded} recurring bill${autoAdded === 1 ? '' : 's'} due` : "Vault unlocked & synced");
+            setTimeout(() => { if (masterKey) checkBackupReminder(); }, 3500);
         } catch (e) {
             supabaseClient = null;
             masterKey = '';
@@ -4027,6 +4657,8 @@
         if (!Array.isArray(categories)) categories = [];
         if (!Array.isArray(creditCategories)) creditCategories = [];
         if (!Array.isArray(recurringTemplates)) recurringTemplates = [];
+        recurringTemplates = recurringTemplates.filter(t => t && typeof t === 'object');
+        if (!recurringApplied || typeof recurringApplied !== 'object' || Array.isArray(recurringApplied)) recurringApplied = {};
         if (!categoryBudgets || typeof categoryBudgets !== 'object') categoryBudgets = {};
         if (!autoCategorizationMap || typeof autoCategorizationMap !== 'object') autoCategorizationMap = {};
     }
@@ -4055,6 +4687,8 @@
                 autoCategorizationMap = parsedVault.autoCategorizationMap || autoCategorizationMap;
                 savingsGoals = Array.isArray(parsedVault.savingsGoals) ? parsedVault.savingsGoals : [];
                 subscriptions = Array.isArray(parsedVault.subscriptions) ? parsedVault.subscriptions : [];
+                autoApplyRecurring = !!parsedVault.autoApplyRecurring;
+                recurringApplied = (parsedVault.recurringApplied && typeof parsedVault.recurringApplied === 'object') ? parsedVault.recurringApplied : {};
             } else {
                 datasets = parsedVault;
             }
@@ -4086,10 +4720,12 @@
         vaultKey = null;
         vaultSalt = null;
         datasets = {};
+        autoApplyRecurring = false;
+        recurringApplied = {};
         savingsGoals = [];
         subscriptions = [];
         subCandidates = [];
-        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #cmp-body, #budgets-grid').forEach(el => { el.innerHTML = ''; });
+        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #cmp-body, #budgets-grid, #global-results, #ov-upcoming, #ov-goals, #ov-alerts, #print-report').forEach(el => { el.innerHTML = ''; });
         const searchEl = document.getElementById('search-input');
         if (searchEl) searchEl.value = '';
         document.getElementById('main-app').style.display = 'none';
@@ -4132,7 +4768,9 @@
                 recurringTemplates,
                 autoCategorizationMap,
                 savingsGoals,
-                subscriptions
+                subscriptions,
+                autoApplyRecurring,
+                recurringApplied
             };
             const encryptedString = await encryptVault(vaultPayload);
 
@@ -4166,7 +4804,7 @@
             if (result.error) throw result.error;
             lastSyncedCipher = encryptedString;
 
-            showToast("Encrypted & saved to cloud");
+            if (!toastHasAction()) showToast("Encrypted & saved to cloud");
         } catch (e) {
             console.error('Cloud save failed:', e);
             showToast('⚠️ Cloud save failed: ' + (e.message || e), true);
@@ -4360,6 +4998,7 @@
 
     function openRecurringModal() {
         document.getElementById('recurring-modal').style.display = 'flex';
+        document.getElementById('rec-auto').checked = autoApplyRecurring;
         populateRecurringCategoryDropdown();
         renderRecurringTable();
     }
@@ -4384,9 +5023,11 @@
             return;
         }
 
-        recurringTemplates.push({ desc, category: cat, amount });
+        const day = Math.min(31, Math.max(1, parseInt(document.getElementById('rec-day').value, 10) || 1));
+        recurringTemplates.push({ desc, category: cat, amount, day });
         document.getElementById('rec-desc').value = '';
         document.getElementById('rec-amount').value = '';
+        document.getElementById('rec-day').value = '';
         renderRecurringTable();
         saveToSupabase();
         showToast("Recurring template added!");
@@ -4407,6 +5048,7 @@
             tr.innerHTML = `
                 <td>${esc(t.desc)}</td>
                 <td>${esc(t.category || '--')}</td>
+                <td style="text-align: center;">${esc(String(t.day || 1))}</td>
                 <td class="col-num">${fmt(t.amount)}</td>
                 <td style="text-align: center;"><button class="btn-danger" onclick="deleteRecurringTemplate(${index})">✕</button></td>
             `;
@@ -4427,7 +5069,7 @@
                 && Math.abs((parseFloat(x.debit) || 0) - amt) < 0.005);
             if (already) { skipped++; return; }
             txs.push({
-                date: `01/${monthNumStr}/${selectedYear}`,
+                date: `${String(Math.min(Math.max(parseInt(t.day, 10) || 1, 1), new Date(parseInt(selectedYear, 10), monthNum, 0).getDate())).padStart(2, '0')}/${monthNumStr}/${selectedYear}`,
                 desc: t.desc,
                 cost: t.category || '',
                 creditCat: "",
@@ -4886,7 +5528,8 @@
 
         let transactions = datasets[activeMonthKey].data;
         const searchInput = document.getElementById('search-input');
-        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const searchAllBox = document.getElementById('search-all');
+        const searchTerm = (searchAllBox && searchAllBox.checked) ? '' : (searchInput ? searchInput.value.toLowerCase() : '');
 
         let totalCreditSum = 0;
         let totalDebitSum = 0;
@@ -4946,6 +5589,7 @@
                 </td>
                 <td class="col-action">
                     <div class="btn-action-row">
+                        ${isRolloverTx(tx) ? '' : `<button class="btn-paid ${isYes ? 'is-paid' : ''}" onclick="togglePaid(${index})" title="${isYes ? 'Mark as pending' : 'Mark as paid'}" aria-label="${isYes ? 'Mark as pending' : 'Mark as paid'}">✓</button>`}
                         <button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Transfer transaction">➡️</button>
                         <button class="btn-copy" onclick="duplicateTransaction(${index})" title="Copy line">📋</button>
                         <button class="btn-danger" onclick="deleteTx(${index})" title="Delete">✕</button>
@@ -4960,6 +5604,7 @@
         }
 
         renderLedgerFooter();
+        renderGlobalSearch();
     }
 
     function renderLedgerFooter() {
@@ -5076,24 +5721,46 @@
     }
 
     function deleteTx(index) {
-        datasets[activeMonthKey].data.splice(index, 1);
+        const key = activeMonthKey;
+        const ds = datasets[key];
+        const tx = ds && ds.data[index];
+        if (!tx) return;
+        ds.data.splice(index, 1);
         renderApp();
         saveToSupabase();
+        showToast(`Deleted "${tx.desc || 'line'}"`, false, {
+            label: 'Undo',
+            fn: () => {
+                if (!datasets[key]) return;
+                datasets[key].data.splice(Math.min(index, datasets[key].data.length), 0, tx);
+                renderApp();
+                saveToSupabase();
+                showToast('Restored');
+            }
+        });
     }
 
     function resetMonthData() {
-        if (confirm(`Reset all changes for ${selectedMonthName.toUpperCase()} ${selectedYear}?`)) {
-            let defaults = createDefaultDatasetForYear(selectedYear);
-            datasets[activeMonthKey] = JSON.parse(JSON.stringify(defaults[activeMonthKey]));
-            sortTransactions();
-            renderApp();
-            saveToSupabase();
-            showToast("Month reset to default");
-        }
+        if (!confirm(`Reset all changes for ${selectedMonthName.toUpperCase()} ${selectedYear}?`)) return;
+        const key = activeMonthKey;
+        const backup = JSON.parse(JSON.stringify(datasets[key] || { title: monthLabelOfKey(key), data: [] }));
+        const monthNum = String(rawMonthNames.indexOf(selectedMonthName) + 1).padStart(2, '0');
+        // a reset month starts empty (just its opening-balance line), never with the built-in sample lines
+        datasets[key] = {
+            title: monthLabelOfKey(key),
+            data: [{ date: `01/${monthNum}/${selectedYear}`, desc: selectedMonthName === 'january' ? 'Starting Balance' : 'Previous Period Balance', cost: '', creditCat: 'Starting Balance', type: '', credit: 0, debit: 0, method: 'Previous Balance', paid: 'YES' }]
+        };
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+        showToast('Month reset', false, {
+            label: 'Undo',
+            fn: () => { datasets[key] = backup; renderApp(); saveToSupabase(); showToast('Month restored'); }
+        });
     }
 
     function exportJSON() {
-        const vaultPayload = { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions };
+        const vaultPayload = buildVaultPayload();
         const blob = new Blob([JSON.stringify(vaultPayload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const downloadAnchor = document.createElement('a');
@@ -5103,6 +5770,7 @@
         downloadAnchor.click();
         downloadAnchor.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1500);
+        markBackupDone();
         showToast("Backup downloaded successfully");
     }
 
@@ -5111,9 +5779,17 @@
         const file = input.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             try {
-                const imported = JSON.parse(e.target.result);
+                const raw = String(e.target.result || '').trim();
+                let imported;
+                try {
+                    imported = JSON.parse(raw);
+                } catch (_) {
+                    // not plain JSON: maybe an encrypted backup made with this password
+                    try { imported = await decryptVault(raw); }
+                    catch (err) { throw new Error('encrypted: ' + err.message); }
+                }
                 if (!imported || typeof imported !== 'object') throw new Error('not an object');
                 const looksLikeMonths = o => o && typeof o === 'object' && Object.values(o).some(v => v && Array.isArray(v.data));
                 const incomingDatasets = imported.categories && imported.datasets ? imported.datasets : imported;
@@ -5129,6 +5805,8 @@
                     autoCategorizationMap = imported.autoCategorizationMap || autoCategorizationMap;
                     savingsGoals = Array.isArray(imported.savingsGoals) ? imported.savingsGoals : savingsGoals;
                     subscriptions = Array.isArray(imported.subscriptions) ? imported.subscriptions : subscriptions;
+                    autoApplyRecurring = !!imported.autoApplyRecurring;
+                    recurringApplied = (imported.recurringApplied && typeof imported.recurringApplied === 'object') ? imported.recurringApplied : {};
                 } else {
                     datasets = imported;
                 }
@@ -5140,7 +5818,9 @@
                 renderApp();
                 showToast("Successfully restored from backup & synced!");
             } catch (err) {
-                alert("Invalid backup file format.");
+                alert(/^encrypted:/.test(String(err && err.message))
+                    ? 'This encrypted backup could not be opened. It has to be opened with the same password it was created with.'
+                    : 'Invalid backup file format.');
             }
         };
         reader.readAsText(file);
