@@ -1417,6 +1417,78 @@ html.fx-off .dropdown-content { background: var(--surface) !important; }
 .sec-check { display: flex; gap: 8px; align-items: center; font-size: 0.82rem; margin-top: 10px; }
 .sec-check input { width: auto; height: auto; }
 </style>
+
+<style>
+/* ===== MONTH VS LAST MONTH ===== */
+#monthly-trend-view { --mv-now: #2a78d6; --mv-prev: #eb6834; }
+:root:not([data-theme="light"]) #monthly-trend-view { --mv-now: #3987e5; --mv-prev: #d95926; }
+.mv-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.mv-title { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+.mv-sub { font-size: 0.84rem; color: var(--text-muted); margin-top: 2px; }
+.mv-hero { display: flex; align-items: center; gap: 14px; padding: 16px 20px; margin-bottom: 16px; }
+.mv-hero-ic { width: 44px; height: 44px; flex: none; border-radius: 14px; display: grid; place-items: center; font-size: 1.3rem; }
+.mv-hero-ic.up { background: rgba(239,68,68,0.16); color: var(--danger); }
+.mv-hero-ic.down { background: rgba(16,185,129,0.16); color: var(--success); }
+.mv-hero-ic.flat { background: var(--accent-soft); color: var(--accent); }
+.mv-hero-text { font-size: 1.02rem; line-height: 1.5; font-weight: 500; }
+.mv-hero-text strong { font-weight: 700; }
+.mv-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.mv-kpi { padding: 18px 20px; margin-bottom: 0 !important; display: flex; flex-direction: column; gap: 8px; }
+.mv-kpi-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); }
+.mv-kpi-val { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.mv-kpi-delta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.82rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mv-kpi-prev { font-size: 0.78rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.mv-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.74rem; font-weight: 700; white-space: nowrap; }
+.mv-pill.bad { background: rgba(239,68,68,0.14); color: var(--danger); }
+.mv-pill.good { background: rgba(16,185,129,0.14); color: var(--success); }
+.mv-pill.flat { background: var(--pill-bg); color: var(--text-muted); }
+.mv-pill.new { background: rgba(99,102,241,0.16); color: #818cf8; }
+.mv-amt.bad { color: var(--danger); } .mv-amt.good { color: var(--success); } .mv-amt.flat { color: var(--text-muted); }
+.mv-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.mv-grid > .card { margin-bottom: 0; min-width: 0; }
+.mv-chart-wrap { position: relative; width: 100%; min-height: 280px; }
+.mv-chart-wrap svg { display: block; width: 100%; height: auto; overflow: visible; }
+.mv-grid-line { stroke: var(--border); stroke-width: 1; opacity: 0.6; }
+.mv-axis { fill: var(--text-muted); font-size: 11px; font-weight: 500; }
+.mv-line-now { fill: none; stroke: var(--mv-now); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.mv-line-prev { fill: none; stroke: var(--mv-prev); stroke-width: 2; stroke-dasharray: 5 4; stroke-linejoin: round; opacity: 0.95; }
+.mv-area-now { fill: var(--mv-now); opacity: 0.1; }
+.mv-dot { stroke: var(--surface-card); stroke-width: 2; }
+.mv-cross { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; }
+.mv-hover-dot { opacity: 0; }
+.mv-tip { position: absolute; top: 4px; left: 0; z-index: 5; min-width: 176px; pointer-events: none; background: var(--surface-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; box-shadow: 0 18px 40px -16px rgba(0,0,0,0.6); font-size: 0.78rem; opacity: 0; transition: opacity 0.12s; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.mv-tip.show { opacity: 1; }
+.mv-tip .t-title { font-weight: 700; margin-bottom: 6px; }
+.mv-tip .t-row { display: flex; justify-content: space-between; gap: 14px; padding: 2px 0; }
+.mv-tip .t-key { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); }
+.mv-tip .t-sw { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+.mv-tip .t-val { font-weight: 700; font-variant-numeric: tabular-nums; }
+.mv-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); }
+.mv-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.mv-legend i { width: 18px; height: 0; border-top: 3px solid; display: inline-block; border-radius: 2px; }
+.mv-legend i.prev { border-top: 2px dashed; }
+.mv-cats { display: flex; flex-direction: column; gap: 16px; }
+.mv-cat-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.mv-cat-name { font-weight: 600; font-size: 0.86rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-cat-right { display: inline-flex; align-items: center; gap: 8px; flex: none; font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mv-bars { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; }
+.mv-bar-row { display: grid; grid-template-columns: minmax(0, 1fr) 76px; align-items: center; gap: 10px; }
+.mv-track { height: 7px; border-radius: 7px; background: var(--border); opacity: 1; overflow: hidden; }
+.mv-fill { height: 100%; border-radius: 7px; min-width: 2px; }
+.mv-fill.now { background: var(--mv-now); } .mv-fill.prev { background: var(--mv-prev); }
+.mv-bar-val { text-align: right; font-size: 0.76rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.mv-bar-val.now { color: var(--text-main); font-weight: 600; }
+.mv-insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 16px; }
+.mv-ins { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--table-th-bg); min-width: 0; }
+.mv-ins-ic { width: 34px; height: 34px; flex: none; border-radius: 10px; display: grid; place-items: center; font-size: 1rem; }
+.mv-ins-ic.bad { background: rgba(239,68,68,0.14); color: var(--danger); } .mv-ins-ic.good { background: rgba(16,185,129,0.14); color: var(--success); } .mv-ins-ic.flat { background: var(--accent-soft); color: var(--accent); }
+.mv-ins small { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.mv-ins strong { display: block; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-ins span.s { font-size: 0.78rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.mv-note { margin-top: 14px; font-size: 0.74rem; color: var(--text-muted); line-height: 1.5; }
+@media (max-width: 1200px) { .mv-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .mv-kpis { grid-template-columns: minmax(0, 1fr); } .mv-hero-text { font-size: 0.94rem; } }
+</style>
 </head>
 <body class="locked">
 
@@ -1944,7 +2016,7 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
                 <div class="nav-sub-list"><div class="nav-sub-inner">
                     <button type="button" class="nav-sub" data-view="annual" onclick="showView('annual')">Annual Summary</button>
                     <button type="button" class="nav-sub" data-view="multiyear" onclick="showView('multiyear')">Multi-Year Comparison</button>
-                    <button type="button" class="nav-sub" data-view="trend" onclick="showView('trend')">Monthly Spending Trend</button>
+                    <button type="button" class="nav-sub" data-view="trend" onclick="showView('trend')">Month vs Last Month</button>
                 </div></div>
             </div>
             <button type="button" class="nav-item" data-view="budgets" onclick="showView('budgets')">
@@ -2049,16 +2121,17 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
 
     <!-- MONTHLY TREND VIEW -->
     <div id="monthly-trend-view" class="view-pane" style="display: none;">
-        <div class="chart-container">
-            <div class="chart-header">
-                <h3 id="trend-chart-title">Cumulative Spending Trend</h3>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Day-by-day accumulated spend for the last selected month</span>
+        <div class="mv-head">
+            <div>
+                <h2 class="mv-title" id="mv-title">Month vs Last Month</h2>
+                <div class="mv-sub" id="mv-sub">&nbsp;</div>
             </div>
-            <div id="trend-bar-chart" class="trend-chart-grid"></div>
-            <div class="chart-legend">
-                <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div> Cumulative Spend ($)</div>
+            <div class="seg-pills" id="mv-mode" role="group" aria-label="Comparison basis" style="display: none;">
+                <button type="button" class="pill active" data-mode="same" onclick="setMvMode('same')">Same point of month</button>
+                <button type="button" class="pill" data-mode="full" onclick="setMvMode('full')">Full previous month</button>
             </div>
         </div>
+        <div id="mv-body"></div>
     </div>
 
     <!-- MULTI-YEAR VIEW -->
@@ -5645,7 +5718,7 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
         savingsGoals = [];
         subscriptions = [];
         subCandidates = [];
-        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #cmp-body, #budgets-grid, #ov-due, #tx-due, #global-results, #ov-upcoming, #ov-goals, #ov-alerts, #print-report').forEach(el => { el.innerHTML = ''; });
+        document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #mv-body, #cmp-body, #budgets-grid, #ov-due, #tx-due, #global-results, #ov-upcoming, #ov-goals, #ov-alerts, #print-report').forEach(el => { el.innerHTML = ''; });
         document.getElementById('search-input').value = '';
         document.getElementById('main-app').style.display = 'none';
         document.getElementById('login-overlay').classList.remove('leaving');
@@ -5958,53 +6031,259 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
         showToast(added ? `Added ${added} recurring item${added === 1 ? '' : 's'}${skipped ? ` (${skipped} already in this month)` : ''}` : 'All recurring items are already in this month');
     }
 
-    function renderMonthlyTrendView() {
-        const trendKey = lastMonthName + selectedYear;
-        if (!datasets[trendKey]) ensureYearDatasetsExist(selectedYear);
-        let txs = datasets[trendKey].data || [];
-        document.getElementById('trend-chart-title').innerText = `Cumulative Spending Trend (${lastMonthName.toUpperCase()} ${selectedYear})`;
-        let monthNum = rawMonthNames.indexOf(lastMonthName) + 1;
-        let daysInMonth = new Date(parseInt(selectedYear), monthNum, 0).getDate();
-        let dailySpends = new Array(daysInMonth + 1).fill(0);
-        txs.forEach(t => {
-            let dVal = parseFloat(t.debit) || 0;
-            let dateStr = t.date || '';
-            let parts = dateStr.split('/');
-            if (dVal > 0 && parts.length === 3) {
-                let txDay = parseInt(parts[0], 10);
-                let txMonth = parseInt(parts[1], 10);
-                let txYear = parts[2];
-                if (txMonth === monthNum && txYear === selectedYear && txDay >= 1 && txDay <= daysInMonth) {
-                    dailySpends[txDay] += dVal;
-                }
-            }
+    let mvMode = 'same';
+    function setMvMode(m) { mvMode = m; renderMonthlyTrendView(); }
+
+    // per-day totals for one month (index 1..days). kind: 'debit' | 'credit'. Rollover lines are skipped.
+    function mvDaily(key, kind, days) {
+        const arr = new Array(days + 1).fill(0);
+        const ds = datasets[key];
+        if (!ds || !Array.isArray(ds.data)) return arr;
+        ds.data.forEach(t => {
+            if (isRolloverTx(t)) return;
+            const v = parseFloat(t[kind]) || 0;
+            if (v <= 0) return;
+            const day = parseInt(String(t.date).slice(0, 2), 10);
+            if (day >= 1 && day <= days) arr[day] += v;
         });
-        let cumulative = 0;
-        let cumulativeSpends = [];
-        let maxSpend = 100;
-        for (let d = 1; d <= daysInMonth; d++) {
-            cumulative += dailySpends[d];
-            cumulativeSpends.push(cumulative);
-            maxSpend = Math.max(maxSpend, cumulative);
-        }
-        const chartEl = document.getElementById('trend-bar-chart');
-        chartEl.style.gridTemplateColumns = `repeat(${daysInMonth}, 1fr)`;
-        chartEl.innerHTML = '';
-        cumulativeSpends.forEach((amt, idx) => {
-            let heightPct = Math.round((amt / maxSpend) * 100);
-            let col = document.createElement('div');
-            col.className = 'bar-column';
-            col.innerHTML = `
-                <div class="bar-tooltip">
-                    <strong>Day ${idx + 1} ${lastMonthName}</strong><br>
-                    Cumulative Spend: ${fmt(amt)}
-                </div>
-                <div class="bar-bar bar-trend" style="height: ${heightPct}%;"></div>
-                <div class="bar-label">${idx + 1}</div>
-            `;
-            chartEl.appendChild(col);
-        });
+        return arr;
     }
+    const mvSum = (arr, upTo) => { let t = 0; for (let d = 1; d <= Math.min(upTo, arr.length - 1); d++) t += arr[d]; return t; };
+    function mvPct(cur, prev) { return prev > 0 ? ((cur - prev) / prev) * 100 : null; }
+    // tone: for spending, up is bad; for income / saved, up is good
+    function mvTone(diff, upIsGood) { if (Math.abs(diff) < 0.005) return 'flat'; return (diff > 0) === upIsGood ? 'good' : 'bad'; }
+    function mvPill(diff, pct, tone) {
+        if (Math.abs(diff) < 0.005) return '<span class="mv-pill flat">● No change</span>';
+        const arrow = diff > 0 ? '▲' : '▼';
+        return `<span class="mv-pill ${tone}">${arrow} ${pct === null ? 'New' : Math.abs(pct).toFixed(1) + '%'}</span>`;
+    }
+
+    function renderMonthlyTrendView() {
+        const box = document.getElementById('mv-body');
+        if (!box) return;
+        const key = activeMonthKey;
+        const mName = rawMonthNames.find(m => key.startsWith(m));
+        if (!mName) { box.innerHTML = ''; return; }
+        const yr = parseInt(key.slice(mName.length), 10), mIdx = rawMonthNames.indexOf(mName);
+        const prevDate = new Date(yr, mIdx - 1, 1);
+        const prevKey = monthKeyOfDate(prevDate);
+        const curLabel = SHORT_MONTHS[mIdx] + ' ' + yr, prevLabel = SHORT_MONTHS[prevDate.getMonth()] + ' ' + prevDate.getFullYear();
+        const curFull = new Date(yr, mIdx, 1).toLocaleString('en-AU', { month: 'long' });
+        const prevFull = prevDate.toLocaleString('en-AU', { month: 'long' });
+        const dimCur = new Date(yr, mIdx + 1, 0).getDate(), dimPrev = new Date(yr, mIdx, 0).getDate();
+        const today = startOfToday();
+        const monthStart = new Date(yr, mIdx, 1), thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('mv-title').textContent = `${curFull} vs ${prevFull}`;
+        const modeBox = document.getElementById('mv-mode');
+
+        if (monthStart > thisMonthStart) {
+            modeBox.style.display = 'none';
+            document.getElementById('mv-sub').textContent = '';
+            box.innerHTML = '<div class="card"><div class="empty-note">Comparisons are available for the current and past months.</div></div>';
+            return;
+        }
+        const isCurrent = monthStart.getTime() === thisMonthStart.getTime();
+        const todayDay = isCurrent ? today.getDate() : dimCur;
+        modeBox.style.display = isCurrent ? '' : 'none';
+        modeBox.querySelectorAll(".pill").forEach(b => b.classList.toggle('active', b.dataset.mode === mvMode));
+        const samePoint = isCurrent && mvMode === 'same';
+        const cutPrev = samePoint ? Math.min(todayDay, dimPrev) : dimPrev;       // how much of last month is compared
+        const cutCur = todayDay;
+
+        const spCur = mvDaily(key, 'debit', dimCur), spPrev = mvDaily(prevKey, 'debit', dimPrev);
+        const inCur = mvDaily(key, 'credit', dimCur), inPrev = mvDaily(prevKey, 'credit', dimPrev);
+        const prevHas = mvSum(spPrev, dimPrev) > 0 || mvSum(inPrev, dimPrev) > 0;
+        document.getElementById('mv-sub').textContent = samePoint
+            ? `${curLabel} up to day ${todayDay}, against ${prevLabel} up to day ${cutPrev}`
+            : (isCurrent ? `${curLabel} so far, against all of ${prevLabel}` : `${curLabel} against ${prevLabel}`);
+        if (!prevHas) {
+            box.innerHTML = `<div class="card"><div class="empty-note">There is no spending or income recorded for ${esc(prevLabel)} yet, so there is nothing to compare with.</div></div>`;
+            return;
+        }
+
+        const S = { cur: mvSum(spCur, cutCur), prev: mvSum(spPrev, cutPrev) };
+        const I = { cur: mvSum(inCur, cutCur), prev: mvSum(inPrev, cutPrev) };
+        const N = { cur: I.cur - S.cur, prev: I.prev - S.prev };
+        const sd = S.cur - S.prev, id = I.cur - I.prev, nd = N.cur - N.prev;
+        const sTone = mvTone(sd, false), iTone = mvTone(id, true), nTone = mvTone(nd, true);
+        const sPct = mvPct(S.cur, S.prev), iPct = mvPct(I.cur, I.prev), nPct = N.prev !== 0 ? (nd / Math.abs(N.prev)) * 100 : null;
+
+        // headline sentence
+        const when = samePoint ? 'at this point' : (isCurrent ? 'so far' : '');
+        let heroCls = 'flat', heroIc = '＝', heroTxt;
+        if (Math.abs(sd) < 0.005) heroTxt = `You have spent <strong>the same amount</strong> as in ${esc(prevFull)}${when ? ' ' + when : ''}.`;
+        else {
+            heroCls = sd > 0 ? 'up' : 'down'; heroIc = sd > 0 ? '▲' : '▼';
+            heroTxt = `You have spent <strong>${fmt(Math.abs(sd))} ${sd > 0 ? 'more' : 'less'}</strong>${sPct === null ? '' : ` (${Math.abs(sPct).toFixed(1)}%)`} than in ${esc(prevFull)}${when ? ' ' + when : ''}. ${sd > 0 ? 'Spending is up.' : 'Nice, spending is down.'}`;
+        }
+
+        // categories
+        const catCur = {}, catPrev = {};
+        const addCat = (key2, cut, out) => {
+            const ds = datasets[key2];
+            ((ds && ds.data) || []).forEach(t => {
+                if (isRolloverTx(t)) return;
+                const v = parseFloat(t.debit) || 0;
+                if (v <= 0) return;
+                const day = parseInt(String(t.date).slice(0, 2), 10);
+                if (cut && day > cut) return;
+                const c = t.cost || 'Uncategorised';
+                out[c] = (out[c] || 0) + v;
+            });
+        };
+        addCat(key, cutCur, catCur); addCat(prevKey, cutPrev, catPrev);
+        const rows = [...new Set([...Object.keys(catCur), ...Object.keys(catPrev)])]
+            .map(c => ({ c, cur: catCur[c] || 0, prev: catPrev[c] || 0 }))
+            .map(r => ({ ...r, diff: r.cur - r.prev }))
+            .sort((a, b) => Math.max(b.cur, b.prev) - Math.max(a.cur, a.prev));
+        const shown = rows.slice(0, 8);
+        const maxCat = Math.max(1, ...shown.map(r => Math.max(r.cur, r.prev)));
+        const inc = rows.filter(r => r.diff > 0.005).sort((a, b) => b.diff - a.diff)[0];
+        const dec = rows.filter(r => r.diff < -0.005).sort((a, b) => a.diff - b.diff)[0];
+        const daysC = Math.max(1, cutCur), daysP = Math.max(1, cutPrev);
+        const avgC = S.cur / daysC, avgP = S.prev / daysP, ad = avgC - avgP;
+
+        const kpi = (label, icon, o, d, pct, tone, valCls) => `
+            <div class="card mv-kpi">
+                <div class="mv-kpi-top"><span>${label}</span><span aria-hidden="true">${icon}</span></div>
+                <div class="mv-kpi-val ${valCls || ''}">${o.cur < 0 ? '−' : ''}${fmt(Math.abs(o.cur))}</div>
+                <div class="mv-kpi-delta">${mvPill(d, pct, tone)}<span class="mv-amt ${tone}">${Math.abs(d) < 0.005 ? '' : (d > 0 ? '+' : '−') + fmt(Math.abs(d))}</span></div>
+                <div class="mv-kpi-prev">${esc(prevFull)}: ${o.prev < 0 ? '−' : ''}${fmt(Math.abs(o.prev))}</div>
+            </div>`;
+
+        const catHtml = shown.length ? shown.map(r => {
+            const isNew = r.prev === 0, gone = r.cur === 0;
+            const tone = Math.abs(r.diff) < 0.005 ? 'flat' : (r.diff > 0 ? 'bad' : 'good');
+            const pill = Math.abs(r.diff) < 0.005 ? '<span class="mv-pill flat">No change</span>'
+                : isNew ? '<span class="mv-pill new">New</span>'
+                : `<span class="mv-pill ${tone}">${r.diff > 0 ? '▲' : '▼'} ${gone ? '100' : Math.abs((r.diff / r.prev) * 100).toFixed(0)}%</span>`;
+            return `
+                <div class="mv-cat">
+                    <div class="mv-cat-top"><span class="mv-cat-name" title="${esc(r.c)}">${esc(r.c)}</span>
+                        <span class="mv-cat-right"><span class="mv-amt ${tone}">${Math.abs(r.diff) < 0.005 ? '' : (r.diff > 0 ? '+' : '−') + fmt(Math.abs(r.diff))}</span>${pill}</span></div>
+                    <div class="mv-bars">
+                        <div class="mv-bar-row"><div class="mv-track"><div class="mv-fill now" style="width:${((r.cur / maxCat) * 100).toFixed(1)}%"></div></div><span class="mv-bar-val now">${fmt(r.cur)}</span></div>
+                        <div class="mv-bar-row"><div class="mv-track"><div class="mv-fill prev" style="width:${((r.prev / maxCat) * 100).toFixed(1)}%"></div></div><span class="mv-bar-val">${fmt(r.prev)}</span></div>
+                    </div>
+                </div>`;
+        }).join('') : '<div class="empty-note">No spending in either month yet.</div>';
+
+        const ins = (tone, icon, label, main, sub) => `<div class="mv-ins"><span class="mv-ins-ic ${tone}" aria-hidden="true">${icon}</span><div style="min-width:0"><small>${label}</small><strong title="${esc(main)}">${esc(main)}</strong><span class="s">${sub}</span></div></div>`;
+        const insights =
+            (inc ? ins('bad', '▲', 'Biggest increase', inc.c, `${signedMoney(inc.diff)}${inc.prev > 0 ? ' (' + ((inc.diff / inc.prev) * 100).toFixed(0) + '%)' : ' · new this month'}`) : ins('flat', '＝', 'Biggest increase', 'None', 'No category went up')) +
+            (dec ? ins('good', '▼', 'Biggest saving', dec.c, `${signedMoney(dec.diff)}${dec.cur > 0 ? ' (' + ((dec.diff / dec.prev) * 100).toFixed(0) + '%)' : ' · none this month'}`) : ins('flat', '＝', 'Biggest saving', 'None', 'No category went down')) +
+            ins(mvTone(ad, false), ad > 0 ? '▲' : ad < 0 ? '▼' : '＝', 'Average per day', fmt(avgC), `${esc(prevFull)}: ${fmt(avgP)} · ${signedMoney(ad)} a day`);
+
+        box.innerHTML = `
+            <div class="card mv-hero"><span class="mv-hero-ic ${heroCls}" aria-hidden="true">${heroIc}</span><div class="mv-hero-text">${heroTxt}</div></div>
+            <div class="mv-kpis">
+                ${kpi('Spending', '💸', S, sd, sPct, sTone)}
+                ${kpi('Income', '💰', I, id, iPct, iTone)}
+                ${kpi('Left over', '🏦', N, nd, nPct, nTone, N.cur < 0 ? 'text-danger' : '')}
+            </div>
+            <div class="mv-grid">
+                <div class="card">
+                    <div class="card-header"><h2>Spending day by day</h2><span style="font-size:0.76rem;color:var(--text-muted)">Running total</span></div>
+                    <div class="mv-chart-wrap"><div id="mv-chart"></div><div class="mv-tip" id="mv-tip" role="status"></div></div>
+                    <div class="mv-legend"><span><i style="border-color:var(--mv-now)"></i>${esc(curLabel)}</span><span><i class="prev" style="border-color:var(--mv-prev)"></i>${esc(prevLabel)}</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2>By category</h2><span style="font-size:0.76rem;color:var(--text-muted)">${esc(curFull)} ▪ ${esc(prevFull)}</span></div>
+                    <div class="mv-legend" style="margin:0 0 14px"><span><i style="border-color:var(--mv-now)"></i>${esc(curLabel)}</span><span><i style="border-color:var(--mv-prev)"></i>${esc(prevLabel)}</span></div>
+                    <div class="mv-cats">${catHtml}</div>
+                    ${rows.length > shown.length ? `<div class="mv-note">Showing the ${shown.length} biggest categories of ${rows.length}.</div>` : ''}
+                </div>
+            </div>
+            <div class="mv-insights">${insights}</div>
+            <div class="mv-note">${samePoint ? `Both months are compared up to day ${cutPrev} so a part-way month is not judged against a full one. Switch to “Full previous month” to see the whole of ${esc(prevFull)}.` : `Spending excludes the carried-over balance line. Green means better for you (less spending, more income), red means worse.`}</div>`;
+
+        // cumulative chart
+        const cumNow = [0], cumPrev = [0];
+        for (let d = 1; d <= dimCur; d++) cumNow[d] = cumNow[d - 1] + spCur[d];
+        for (let d = 1; d <= dimPrev; d++) cumPrev[d] = cumPrev[d - 1] + spPrev[d];
+        mvChartState = { cumNow, cumPrev, dimCur, dimPrev, todayDay: cutCur, isCurrent, curLabel, prevLabel };
+        mvDrawChart();
+    }
+
+    let mvChartState = null, mvLastWidth = 0;
+    function mvNiceStep(maxVal, ticks) {
+        const rough = maxVal / ticks, mag = Math.pow(10, Math.floor(Math.log10(rough))), n = rough / mag;
+        return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * mag;
+    }
+    function mvDrawChart() {
+        const st = mvChartState, host = document.getElementById('mv-chart');
+        if (!st || !host) return;
+        mvLastWidth = host.clientWidth;
+        const W = Math.max(280, Math.round(host.clientWidth || 560)), H = 280, pl = 54, pr = 14, pt = 12, pb = 28;
+        const iw = W - pl - pr, ih = H - pt - pb;
+        const nowEnd = st.isCurrent ? Math.min(st.todayDay, st.dimCur) : st.dimCur;
+        const days = Math.max(st.dimCur, st.dimPrev);
+        const maxVal = Math.max(100, st.cumNow[nowEnd], st.cumPrev[st.dimPrev]);
+        const step = mvNiceStep(maxVal, 4), tickN = Math.ceil(maxVal / step), top = tickN * step;
+        const x = d => pl + ((d - 1) / Math.max(1, days - 1)) * iw;
+        const y = v => pt + (1 - v / top) * ih;
+        const compact = top >= 10000;
+        let grid = '', xl = '';
+        for (let t = 0; t <= tickN; t++) {
+            const v = t * step, yy = y(v);
+            grid += `<line class="mv-grid-line" x1="${pl}" x2="${W - pr}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}"/><text class="mv-axis" x="${pl - 8}" y="${(yy + 4).toFixed(1)}" text-anchor="end">${compact ? fmtCompact.format(v) : '$' + Math.round(v).toLocaleString('en-AU')}</text>`;
+        }
+        const every = W < 480 ? 7 : 5;
+        for (let d = 1; d <= days; d++) if (d === 1 || d % every === 0 || (d === days && days % every >= 3)) xl += `<text class="mv-axis" x="${x(d).toFixed(1)}" y="${H - 8}" text-anchor="middle">${d}</text>`;
+        const path = (arr, end) => { let p = ''; for (let d = 1; d <= end; d++) p += (d === 1 ? 'M' : 'L') + x(d).toFixed(1) + ',' + y(arr[d]).toFixed(1); return p; };
+        const nowPath = path(st.cumNow, nowEnd), prevPath = path(st.cumPrev, st.dimPrev);
+        const area = nowPath + `L${x(nowEnd).toFixed(1)},${y(0).toFixed(1)}L${x(1).toFixed(1)},${y(0).toFixed(1)}Z`;
+        const endDot = (d, v, c) => `<circle class="mv-dot" cx="${x(d).toFixed(1)}" cy="${y(v).toFixed(1)}" r="5" fill="${c}"/>`;
+        host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Running total of spending by day: ${esc(st.curLabel)} ends at ${esc(fmt(st.cumNow[nowEnd]))}, ${esc(st.prevLabel)} ends at ${esc(fmt(st.cumPrev[st.dimPrev]))}">
+            ${grid}${xl}
+            <path class="mv-area-now" d="${area}"/>
+            <path class="mv-line-prev" d="${prevPath}"/>
+            <path class="mv-line-now" d="${nowPath}"/>
+            ${endDot(st.dimPrev, st.cumPrev[st.dimPrev], 'var(--mv-prev)')}${endDot(nowEnd, st.cumNow[nowEnd], 'var(--mv-now)')}
+            <line class="mv-cross" id="mv-cross" y1="${pt}" y2="${H - pb}"/>
+            <circle class="mv-dot mv-hover-dot" id="mv-hd-now" r="5" fill="var(--mv-now)"/><circle class="mv-dot mv-hover-dot" id="mv-hd-prev" r="5" fill="var(--mv-prev)"/>
+            <rect x="${pl}" y="${pt}" width="${iw}" height="${ih + pb}" fill="transparent" id="mv-hit"/>
+        </svg>`;
+        const svg = host.querySelector('svg'), tip = document.getElementById('mv-tip'), wrap = host.parentElement;
+        const cross = svg.querySelector('#mv-cross'), hdN = svg.querySelector('#mv-hd-now'), hdP = svg.querySelector('#mv-hd-prev');
+        const hide = () => { tip.classList.remove('show'); cross.style.opacity = 0; hdN.style.opacity = 0; hdP.style.opacity = 0; };
+        const row = (color, dash, name, val) => {
+            const r = document.createElement('div'); r.className = 't-row';
+            const k = document.createElement('span'); k.className = 't-key';
+            const sw = document.createElement('i'); sw.className = 't-sw'; sw.style.background = color; if (dash) sw.style.opacity = 0.8;
+            k.appendChild(sw); k.appendChild(document.createTextNode(name));
+            const v = document.createElement('span'); v.className = 't-val'; v.textContent = val;
+            r.appendChild(k); r.appendChild(v); return r;
+        };
+        svg.addEventListener('pointermove', e => {
+            const rect = svg.getBoundingClientRect();
+            const px = (e.clientX - rect.left) * (W / rect.width);
+            const d = Math.min(days, Math.max(1, Math.round(((px - pl) / iw) * (days - 1) + 1)));
+            const hasNow = d <= nowEnd, hasPrev = d <= st.dimPrev;
+            const vn = hasNow ? st.cumNow[d] : null, vp = hasPrev ? st.cumPrev[d] : null;
+            tip.textContent = '';
+            const t = document.createElement('div'); t.className = 't-title'; t.textContent = 'Day ' + d; tip.appendChild(t);
+            tip.appendChild(row('var(--mv-now)', false, st.curLabel, vn === null ? '—' : fmt(vn)));
+            tip.appendChild(row('var(--mv-prev)', true, st.prevLabel, vp === null ? '—' : fmt(vp)));
+            if (vn !== null && vp !== null) { const df = vn - vp; tip.appendChild(row('var(--text-muted)', false, 'Difference', (Math.abs(df) < 0.005 ? '' : df > 0 ? '+' : '−') + fmt(Math.abs(df)))); }
+            tip.classList.add('show');
+            const tw = tip.offsetWidth, xx = x(d) * (rect.width / W);
+            tip.style.left = Math.min(Math.max(xx - tw / 2, 0), Math.max(0, wrap.clientWidth - tw)) + 'px';
+            cross.setAttribute('x1', x(d)); cross.setAttribute('x2', x(d)); cross.style.opacity = 0.7;
+            if (hasNow) { hdN.setAttribute('cx', x(d)); hdN.setAttribute('cy', y(vn)); hdN.style.opacity = 1; } else hdN.style.opacity = 0;
+            if (hasPrev) { hdP.setAttribute('cx', x(d)); hdP.setAttribute('cy', y(vp)); hdP.style.opacity = 1; } else hdP.style.opacity = 0;
+        });
+        svg.addEventListener('pointerleave', hide);
+    }
+    (function mvInitResize() {
+        let raf = 0;
+        window.addEventListener('resize', () => {
+            if (currentView !== 'trend') return;
+            const h = document.getElementById('mv-chart');
+            if (!h || !h.clientWidth || Math.abs(h.clientWidth - mvLastWidth) < 3) return;
+            cancelAnimationFrame(raf); raf = requestAnimationFrame(mvDrawChart);
+        });
+    })();
 
     function renderMultiYearSummary() {
         let multiYearData = [];
