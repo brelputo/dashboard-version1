@@ -1392,6 +1392,31 @@ header { position: relative; z-index: 60; }
 .dropdown-content button:hover, .dropdown-content label:hover { background-color: rgba(10, 132, 255, 0.16); }
 html.fx-off .dropdown-content { background: var(--surface) !important; }
 </style>
+
+<style>
+/* ===== LOGIN: account sign-in required, reset flow, Security dialog ===== */
+.pl-stack { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.pl-stack .pl-form { gap: 8px; }
+.pl-stack.shake { animation: plShake 0.45s ease; }
+.pl-panel[hidden], #login-panel[hidden] { display: none; }
+.pl-panel { width: 100%; }
+.pl-panel-note { font-size: 0.82rem; line-height: 1.5; text-align: center; opacity: 0.8; margin: 0 4px 12px; }
+.pl-linkbtn { display: block; margin: 12px auto 0; background: none; border: none; color: #eef2f8; opacity: 0.75; font-size: 0.8rem; font-weight: 500; cursor: pointer; padding: 6px; }
+.pl-linkbtn:hover { opacity: 1; text-decoration: underline; }
+.pl-wide { height: 46px; border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 0.92rem; cursor: pointer; background: linear-gradient(135deg, #3daee9, #4f8df5); box-shadow: 0 10px 24px -10px rgba(61,174,233,0.8); }
+.pl-wide:hover { filter: brightness(1.1); }
+.pl-wide:disabled { opacity: 0.65; cursor: wait; }
+.login-info { background: rgba(61,174,233,0.18) !important; border-color: rgba(125,211,252,0.45) !important; color: #e0f4ff !important; }
+.sec-section { margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
+.sec-section:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+.sec-section h4 { font-size: 0.95rem; margin-bottom: 4px; }
+.sec-msg { display: none; margin: 8px 0 0; padding: 8px 12px; border-radius: 10px; font-size: 0.8rem; line-height: 1.45; }
+.sec-msg.err { display: block; background: rgba(239,68,68,0.16); border: 1px solid rgba(239,68,68,0.45); color: #fca5a5; }
+.sec-msg.ok { display: block; background: rgba(16,185,129,0.16); border: 1px solid rgba(16,185,129,0.45); color: #6ee7b7; }
+[data-theme="light"] .sec-msg.err { color: #991b1b; } [data-theme="light"] .sec-msg.ok { color: #065f46; }
+.sec-check { display: flex; gap: 8px; align-items: center; font-size: 0.82rem; margin-top: 10px; }
+.sec-check input { width: auto; height: auto; }
+</style>
 </head>
 <body class="locked">
 
@@ -1708,33 +1733,42 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
                 <div class="pl-avatar" aria-hidden="true">💲</div>
             </div>
             <div class="pl-user pl-anim d5">Secure Vault</div>
-            <div class="pl-form pl-anim d6" id="pl-form">
-                <div class="pl-field">
-                    <input type="password" id="master-pwd" placeholder="Password" aria-label="Master passphrase" autocomplete="current-password" autofocus
-                           onkeydown="capsCheck(event); if(event.key==='Enter') initSession()" onkeyup="capsCheck(event)">
-                    <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password" aria-label="Show or hide password">
-                        <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    </button>
+            <div id="login-panel" class="pl-anim d6">
+                <div class="pl-stack" id="pl-form">
+                    <div class="pl-field"><input type="email" id="acct-email" placeholder="Account email" aria-label="Account email" autocomplete="username" style="padding-right:16px" onkeydown="if(event.key==='Enter') initSession()"></div>
+                    <div class="pl-field"><input type="password" id="acct-pwd" placeholder="Account password" aria-label="Account password" autocomplete="current-password" onkeydown="capsCheck(event); if(event.key==='Enter') initSession()" onkeyup="capsCheck(event)"><button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('acct-pwd')" title="Show/Hide" aria-label="Show or hide Account password" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div>
+                    <div class="pl-form">
+                        <div class="pl-field"><input type="password" id="master-pwd" placeholder="Vault passphrase" aria-label="Vault passphrase" autocomplete="off" onkeydown="capsCheck(event); if(event.key==='Enter') initSession()" onkeyup="capsCheck(event)"><button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('master-pwd')" title="Show/Hide" aria-label="Show or hide Vault passphrase" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div>
+                        <button type="button" id="unlock-btn" class="pl-go" onclick="initSession()" aria-label="Unlock" title="Unlock">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+                        </button>
+                    </div>
                 </div>
-                <button type="button" id="unlock-btn" class="pl-go" onclick="initSession()" aria-label="Unlock" title="Unlock">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
-                </button>
+                <button type="button" class="pl-linkbtn" onclick="showLoginPanel('forgot')">Forgot your account password?</button>
+            </div>
+            <div id="forgot-panel" class="pl-panel" hidden>
+                <p class="pl-panel-note">Enter your account email and we will send you a link to choose a new password.</p>
+                <div class="pl-stack">
+                    <div class="pl-field"><input type="email" id="reset-email" placeholder="Account email" aria-label="Account email" autocomplete="email" style="padding-right:16px" onkeydown="if(event.key==='Enter') sendResetLink()"></div>
+                    <button type="button" id="reset-btn" class="pl-wide" onclick="sendResetLink()">Send reset link</button>
+                </div>
+                <button type="button" class="pl-linkbtn" onclick="showLoginPanel('login')">← Back to sign in</button>
+            </div>
+            <div id="recovery-panel" class="pl-panel" hidden>
+                <p class="pl-panel-note">Choose a new account password (8+ characters). Your vault passphrase does not change.</p>
+                <div class="pl-stack">
+                    <div class="pl-field"><input type="password" id="new-pwd" placeholder="New password" aria-label="New password" autocomplete="new-password"><button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('new-pwd')" title="Show/Hide" aria-label="Show or hide New password" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div>
+                    <div class="pl-field"><input type="password" id="new-pwd2" placeholder="Repeat new password" aria-label="Repeat new password" autocomplete="new-password" onkeydown="if(event.key==='Enter') submitNewPassword()"></div>
+                    <button type="button" id="recovery-btn" class="pl-wide" onclick="submitNewPassword()">Save new password</button>
+                </div>
             </div>
             <div id="pl-caps" class="pl-caps">Caps Lock is on</div>
             <div id="login-error" class="login-error" role="alert"></div>
-            <p class="pl-hint">Your data is encrypted in the browser with your passphrase before it is sent to the cloud.</p>
+            <div id="login-info" class="login-error login-info" role="status"></div>
+            <p class="pl-hint">The account password opens the cloud. The vault passphrase decrypts your data in this browser and never leaves it.</p>
         </div>
     </main>
-    <div id="pl-account" class="pl-account" role="group" aria-label="Cloud account sign-in">
-        <h3>Cloud account</h3>
-        <p>Optional. Signs in with the same password you type above. Only needed if row-level security is on.</p>
-        <input type="text" id="acct-email" placeholder="Account email" autocomplete="username" oninput="syncAccountChip()" onkeydown="if(event.key==='Enter') initSession()">
-    </div>
     <footer class="pl-bar">
-        <button type="button" class="pl-chip" id="pl-account-btn" aria-expanded="false" onclick="toggleAccountPanel()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
-            Cloud account
-        </button>
         <span class="pl-note">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
             <span>AES-256 encrypted in your browser</span>
@@ -1855,6 +1889,35 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
     </div>
 </div>
 
+<!-- SECURITY MODAL: change vault passphrase / account password -->
+<div id="security-modal" class="modal-overlay" onclick="if(event.target===this) closeSecurityModal()">
+    <div class="modal-card modal-sm" role="dialog" aria-modal="true" aria-labelledby="security-modal-title">
+        <div class="modal-head">
+            <h3 id="security-modal-title">Security</h3>
+            <button type="button" class="modal-close" onclick="closeSecurityModal()" aria-label="Close">✕</button>
+        </div>
+        <div class="sec-section">
+            <h4>Change vault passphrase</h4>
+            <p class="modal-note">Re-encrypts all your data with a new passphrase. Write the new one down: if it is lost, nobody can recover your data.</p>
+            <div class="form-field"><label for="sp-old">Current passphrase</label><input type="password" id="sp-old" autocomplete="off"></div>
+            <div class="form-field"><label for="sp-new">New passphrase (10+ characters)</label><input type="password" id="sp-new" autocomplete="new-password"></div>
+            <div class="form-field"><label for="sp-new2">Repeat new passphrase</label><input type="password" id="sp-new2" autocomplete="new-password" onkeydown="if(event.key==='Enter') changeVaultPassphrase()"></div>
+            <label class="sec-check"><input type="checkbox" id="sp-backup" checked> Download a backup file first (recommended)</label>
+            <div id="sp-msg" class="sec-msg" role="status"></div>
+            <div class="modal-actions"><button type="button" class="btn" id="sp-btn" onclick="changeVaultPassphrase()">Change passphrase</button></div>
+        </div>
+        <div class="sec-section">
+            <h4>Change account password</h4>
+            <p class="modal-note">The password you use to sign in to the cloud account. Your vault passphrase is not affected.</p>
+            <div class="form-field"><label for="ap-old">Current account password</label><input type="password" id="ap-old" autocomplete="current-password"></div>
+            <div class="form-field"><label for="ap-new">New account password (8+ characters)</label><input type="password" id="ap-new" autocomplete="new-password"></div>
+            <div class="form-field"><label for="ap-new2">Repeat new account password</label><input type="password" id="ap-new2" autocomplete="new-password" onkeydown="if(event.key==='Enter') changeAccountPassword()"></div>
+            <div id="ap-msg" class="sec-msg" role="status"></div>
+            <div class="modal-actions"><button type="button" class="btn" id="ap-btn" onclick="changeAccountPassword()">Change account password</button></div>
+        </div>
+    </div>
+</div>
+
 <!-- MAIN APP -->
 <div class="container" id="main-app" style="display: none;">
     <div class="app-shell">
@@ -1928,6 +1991,7 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
                     <label style="cursor: pointer;">
                         📂 Import JSON <input type="file" id="import-file" style="display: none;" accept=".json,.enc,.txt" onchange="closeOptionsDropdown(); importJSON(event)">
                     </label>
+                    <button onclick="closeOptionsDropdown(); openSecurityModal()">🔑 Security (passwords)</button>
                     <button onclick="closeOptionsDropdown(); resetMonthData()">🔄 Reset Month</button>
                 </div>
             </div>
@@ -2883,8 +2947,7 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
         el.style.display = 'block';
         const form = document.getElementById('pl-form');
         if (form) { form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake'); }
-        const pw = document.getElementById('master-pwd');
-        if (pw) pw.focus();
+        const inf = document.getElementById('login-info'); if (inf) inf.style.display = 'none';
     }
     function setLoginBusy(busy) {
         const btn = document.getElementById('unlock-btn');
@@ -2897,12 +2960,6 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
         const on = !!(e.getModifierState && e.getModifierState('CapsLock'));
         document.getElementById('pl-caps').classList.toggle('show', on);
     }
-    function toggleAccountPanel() {
-        const open = document.getElementById('pl-account').classList.toggle('show');
-        document.getElementById('pl-account-btn').setAttribute('aria-expanded', open ? 'true' : 'false');
-        if (open) document.getElementById('acct-email').focus();
-    }
-
     function updateLockClock() {
         const o = document.getElementById('login-overlay');
         if (!o || o.style.display === 'none') return;
@@ -2919,17 +2976,176 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
     updateLockClock();
     setInterval(updateLockClock, 1000);
 
-    function syncAccountChip() {
-        const chip = document.getElementById('pl-account-btn');
-        if (chip) chip.classList.toggle('has-account', !!document.getElementById('acct-email').value.trim());
-    }
     (function loadRememberedAccount() {
         try {
             const saved = localStorage.getItem('dashboard_acct_email');
             if (saved) document.getElementById('acct-email').value = saved;
         } catch (_) { }
-        syncAccountChip();
     })();
+
+
+    // ==========================================
+    // ACCOUNT: sign-in client, password reset, Security dialog
+    // ==========================================
+    let authClient = null;
+    let activeAcctEmail = '';
+
+    function showLoginPanel(name) {
+        const map = { login: 'login-panel', forgot: 'forgot-panel', recovery: 'recovery-panel' };
+        Object.keys(map).forEach(k => { document.getElementById(map[k]).hidden = (k !== name); });
+        ['login-error', 'login-info'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        if (name === 'forgot') {
+            document.getElementById('reset-email').value = document.getElementById('acct-email').value.trim();
+            document.getElementById('reset-email').focus();
+        } else if (name === 'recovery') {
+            document.getElementById('new-pwd').focus();
+        }
+    }
+    function setLoginInfo(msg, isError) {
+        const info = document.getElementById('login-info'), err = document.getElementById('login-error');
+        const el = isError ? err : info;
+        (isError ? info : err).style.display = 'none';
+        el.textContent = msg; el.style.display = 'block';
+    }
+
+    async function sendResetLink() {
+        const email = document.getElementById('reset-email').value.trim();
+        const btn = document.getElementById('reset-btn');
+        if (!email) { setLoginInfo('Enter your account email.', true); return; }
+        if (location.protocol === 'file:') {
+            setLoginInfo('This page is opened as a file on your computer, so a reset link cannot come back to it. Open the dashboard from its web address, or reset the password in your Supabase dashboard (Authentication, then Users).', true);
+            return;
+        }
+        if (!authClient) { setLoginInfo('The cloud library did not load. Reload the page and try again.', true); return; }
+        btn.disabled = true;
+        try {
+            const { error } = await authClient.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+            if (error) throw error;
+            setLoginInfo('If an account exists for that email, a reset link is on its way. Open it in this same browser.', false);
+        } catch (e) {
+            setLoginInfo(/rate|seconds|too many/i.test(e.message || '') ? 'Too many requests. Wait a minute and try again.' : (e.message || 'Could not send the reset email.'), true);
+        } finally { btn.disabled = false; }
+    }
+
+    async function submitNewPassword() {
+        const p1 = document.getElementById('new-pwd').value, p2 = document.getElementById('new-pwd2').value;
+        const btn = document.getElementById('recovery-btn');
+        if (p1.length < 8) { setLoginInfo('Use at least 8 characters.', true); return; }
+        if (p1 !== p2) { setLoginInfo('The two passwords do not match.', true); return; }
+        btn.disabled = true;
+        try {
+            const { error } = await authClient.auth.updateUser({ password: p1 });
+            if (error) throw error;
+            try { await authClient.auth.signOut({ scope: 'local' }); } catch (_) { }
+            try { history.replaceState(null, '', location.pathname); } catch (_) { }
+            document.getElementById('new-pwd').value = ''; document.getElementById('new-pwd2').value = '';
+            showLoginPanel('login');
+            setLoginInfo('Password updated. Sign in with your new password.', false);
+        } catch (e) {
+            setLoginInfo(e.message || 'Could not update the password. Open the reset link again.', true);
+        } finally { btn.disabled = false; }
+    }
+
+    (function initAuthClient() {
+        if (window.supabase && window.supabase.createClient) {
+            // The sign-in lives in memory only: closing the tab always means signing in again.
+            authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: true, detectSessionInUrl: true } });
+            authClient.auth.onAuthStateChange((event) => { if (event === 'PASSWORD_RECOVERY') showLoginPanel('recovery'); });
+        }
+        const em = document.getElementById('acct-email');
+        setTimeout(() => (em.value ? document.getElementById('acct-pwd') : em).focus(), 50);
+    })();
+
+    // ----- Security dialog -----
+    function secMsg(id, text, ok) {
+        const el = document.getElementById(id);
+        el.className = 'sec-msg ' + (text ? (ok ? 'ok' : 'err') : '');
+        el.textContent = text || '';
+    }
+    function openSecurityModal() {
+        ['sp-old', 'sp-new', 'sp-new2', 'ap-old', 'ap-new', 'ap-new2'].forEach(id => { document.getElementById(id).value = ''; });
+        secMsg('sp-msg', ''); secMsg('ap-msg', '');
+        document.getElementById('security-modal').style.display = 'flex';
+        document.getElementById('sp-old').focus();
+    }
+    function closeSecurityModal() {
+        const m = document.getElementById('security-modal');
+        if (m) m.style.display = 'none';
+        ['sp-old', 'sp-new', 'sp-new2', 'ap-old', 'ap-new', 'ap-new2'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+    }
+
+    let changingPass = false;
+    async function changeVaultPassphrase() {
+        if (changingPass) return;
+        const oldP = document.getElementById('sp-old').value.trim();
+        const newP = document.getElementById('sp-new').value.trim();
+        const newP2 = document.getElementById('sp-new2').value.trim();
+        if (!supabaseClient || !masterKey) { secMsg('sp-msg', 'Your session ended. Sign in again.'); return; }
+        if (oldP !== masterKey) { secMsg('sp-msg', 'The current passphrase is not correct.'); return; }
+        if (newP.length < 10) { secMsg('sp-msg', 'Use at least 10 characters for the new passphrase.'); return; }
+        if (newP === oldP) { secMsg('sp-msg', 'The new passphrase must be different.'); return; }
+        if (newP !== newP2) { secMsg('sp-msg', 'The two new passphrases do not match.'); return; }
+        changingPass = true;
+        const btn = document.getElementById('sp-btn');
+        btn.disabled = true;
+        const prev = { masterKey, vaultKey, vaultSalt };
+        try {
+            secMsg('sp-msg', 'Working... do not close this page.', true);
+            // finish any pending save with the OLD passphrase first, so nothing is lost
+            for (let i = 0; i < 100 && (saveTimer || saving); i++) {
+                if (saving) await new Promise(r => setTimeout(r, 100)); else await saveNow();
+            }
+            if (document.getElementById('sp-backup').checked) exportJSON();
+
+            const client = supabaseClient;
+            const { data, error: fetchErr } = await client.from('user_finances').select('id, encrypted_data').order('created_at', { ascending: false }).limit(1);
+            if (fetchErr) throw fetchErr;
+            if (data && data.length && lastSyncedCipher !== null && data[0].encrypted_data !== lastSyncedCipher) {
+                throw new Error('This vault was changed on another device. Use Sync to load the latest version, then try again.');
+            }
+            masterKey = newP; vaultKey = null; vaultSalt = null;          // new key + new random salt
+            const encrypted = await encryptVault(buildVaultPayload());
+            const check = await decryptVault(encrypted);                   // prove the new passphrase opens it before saving
+            if (!check || !(check.datasets || check)) throw new Error('Verification failed.');
+            let res;
+            if (data && data.length) res = await client.from('user_finances').update({ encrypted_data: encrypted }).eq('id', data[0].id);
+            else res = await client.from('user_finances').insert([{ encrypted_data: encrypted }]);
+            if (res.error) throw res.error;
+            lastSyncedCipher = encrypted;
+            secMsg('sp-msg', 'Done. Your vault now uses the new passphrase. Use it the next time you sign in.', true);
+            ['sp-old', 'sp-new', 'sp-new2'].forEach(id => { document.getElementById(id).value = ''; });
+            showToast('Vault passphrase changed');
+        } catch (e) {
+            masterKey = prev.masterKey; vaultKey = prev.vaultKey; vaultSalt = prev.vaultSalt;   // nothing changed in the cloud
+            secMsg('sp-msg', 'Not changed: ' + (e.message || e) + ' Your old passphrase still works.');
+        } finally {
+            btn.disabled = false;
+            changingPass = false;
+        }
+    }
+
+    async function changeAccountPassword() {
+        const oldP = document.getElementById('ap-old').value;
+        const p1 = document.getElementById('ap-new').value, p2 = document.getElementById('ap-new2').value;
+        if (!authClient || !activeAcctEmail) { secMsg('ap-msg', 'Your session ended. Sign in again.'); return; }
+        if (!oldP) { secMsg('ap-msg', 'Enter your current account password.'); return; }
+        if (p1.length < 8) { secMsg('ap-msg', 'Use at least 8 characters for the new password.'); return; }
+        if (p1 === oldP) { secMsg('ap-msg', 'The new password must be different.'); return; }
+        if (p1 !== p2) { secMsg('ap-msg', 'The two new passwords do not match.'); return; }
+        const btn = document.getElementById('ap-btn');
+        btn.disabled = true;
+        try {
+            const { error: reErr } = await authClient.auth.signInWithPassword({ email: activeAcctEmail, password: oldP });
+            if (reErr) throw new Error('The current account password is not correct.');
+            const { error } = await authClient.auth.updateUser({ password: p1 });
+            if (error) throw error;
+            ['ap-old', 'ap-new', 'ap-new2'].forEach(id => { document.getElementById(id).value = ''; });
+            secMsg('ap-msg', 'Account password changed. Use it the next time you sign in.', true);
+            showToast('Account password changed');
+        } catch (e) {
+            secMsg('ap-msg', e.message || String(e));
+        } finally { btn.disabled = false; }
+    }
 
     function changeMonth(delta) {
         let idx = rawMonthNames.indexOf(selectedMonthName);
@@ -4131,7 +4347,7 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
         }
     }
 
-    function closeAllModals() { closeRecurringModal(); closeTransactionModal(); closeBudgetModal(); }
+    function closeAllModals() { closeRecurringModal(); closeTransactionModal(); closeBudgetModal(); closeSecurityModal(); }
 
     const OV_PALETTE = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'];
     const OV_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -5227,15 +5443,15 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
         toastTimer = setTimeout(() => { toast.className = ''; }, action ? 8000 : (isError ? 4500 : 2000));
     }
 
-    function togglePasswordVisibility() {
-        const pwdInput = document.getElementById('master-pwd');
-        const eyeIcon = document.getElementById('eye-icon');
+    function togglePasswordVisibility(inputId) {
+        const pwdInput = document.getElementById(inputId || 'master-pwd');
+        const eyeIcon = pwdInput.parentElement.querySelector('svg');
         if (pwdInput.type === 'password') {
             pwdInput.type = 'text';
-            eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            if (eyeIcon) eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
         } else {
             pwdInput.type = 'password';
-            eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            if (eyeIcon) eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
         }
     }
 
@@ -5243,26 +5459,27 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
 
     async function initSession() {
         if (unlocking) return;
-        masterKey = document.getElementById('master-pwd').value.trim();
-        if (!masterKey) {
-            showLoginError('Please enter your master passphrase.');
-            return;
-        }
+        const acctEmail = document.getElementById('acct-email').value.trim();
+        const acctPwd = document.getElementById('acct-pwd').value;
+        const passphrase = document.getElementById('master-pwd').value.trim();
+        if (!acctEmail || !acctPwd) { showLoginError('Enter your account email and account password.'); return; }
+        if (!passphrase) { showLoginError('Enter your vault passphrase.'); return; }
+        if (!authClient) { showLoginError('The cloud library did not load. Check your internet connection and reload the page.'); return; }
+        masterKey = passphrase;
         unlocking = true;
+        let signedIn = false;
         const goBtn = document.getElementById('unlock-btn');
         try {
             setLoginBusy(true);
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            const acctEmail = document.getElementById('acct-email').value.trim();
-            if (acctEmail) {
-                const { error: authErr } = await supabaseClient.auth.signInWithPassword({
-                    email: acctEmail,
-                    password: document.getElementById('master-pwd').value
-                });
-                if (authErr) throw new Error('Account sign-in failed: ' + authErr.message + '. The cloud account password must be the same as your vault password.');
-            }
+            const { error: authErr } = await authClient.auth.signInWithPassword({ email: acctEmail, password: acctPwd });
+            if (authErr) throw new Error(/invalid login/i.test(authErr.message) ? 'Wrong account email or password.' : authErr.message);
+            signedIn = true;
+            supabaseClient = authClient;
+            activeAcctEmail = acctEmail;
             await fetchAndDecryptCloudData();
-            try { if (acctEmail) localStorage.setItem('dashboard_acct_email', acctEmail); else localStorage.removeItem('dashboard_acct_email'); } catch (_) { }
+            try { localStorage.setItem('dashboard_acct_email', acctEmail); } catch (_) { }
+            document.getElementById('acct-pwd').value = '';
+            document.getElementById('master-pwd').value = '';
             goBtn.classList.remove('busy');
             goBtn.classList.add('success');
             document.body.classList.remove('locked');
@@ -5302,12 +5519,13 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
                 else checkBackupReminder();
             }, 3500);
         } catch (e) {
+            try { if (signedIn) await authClient.auth.signOut({ scope: 'local' }); } catch (_) { }
             supabaseClient = null;
             masterKey = '';
             vaultKey = null;
             vaultSalt = null;
             goBtn.classList.remove('success');
-            showLoginError('Could not unlock: ' + e.message);
+            showLoginError(signedIn ? 'Could not unlock: ' + e.message : e.message);
         } finally {
             setLoginBusy(false);
             unlocking = false;
@@ -5410,12 +5628,14 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
         clearTimeout(idleTimer);
         closeAllModals();
         closeSidebar();
-        try { if (supabaseClient) await supabaseClient.auth.signOut(); } catch (_) { }
+        try { if (supabaseClient) await supabaseClient.auth.signOut({ scope: 'local' }); } catch (_) { }
         supabaseClient = null;
         masterKey = '';
         lastSyncedCipher = null;
         setSyncStatus('');
         document.body.classList.add('locked');
+        activeAcctEmail = '';
+        try { showLoginPanel('login'); } catch (_) { }
         vaultKey = null;
         vaultSalt = null;
         datasets = {};
@@ -5436,10 +5656,13 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
             el.style.animation = '';
         });
         updateLockClock();
-        setTimeout(() => document.getElementById('master-pwd').focus(), 60);
-        document.getElementById('master-pwd').value = '';
-        document.getElementById('master-pwd').type = 'password';
-        document.getElementById('eye-icon').innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+        ['acct-pwd', 'master-pwd'].forEach(id => {
+            const inp = document.getElementById(id);
+            inp.value = '';
+            if (inp.type !== 'password') togglePasswordVisibility(id);   // hide it again and reset the eye icon
+        });
+        const em = document.getElementById('acct-email');
+        setTimeout(() => (em.value ? document.getElementById('acct-pwd') : em).focus(), 60);
     }
 
     let saveTimer = null;
