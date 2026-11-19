@@ -8,7 +8,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💲</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -61,7 +61,7 @@
             --pill-hover: #cbd5e1;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Sans', sans-serif; }
         body { 
             background-color: var(--bg-main); 
             color: var(--text-main); 
@@ -1372,6 +1372,26 @@
         @media (max-width: 480px) { .tm-sum-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 
     </style>
+
+<style>
+/* ===== OPTIONS MENU FIX (glass kept everywhere else) =====
+   Why it broke: the header is a glass layer, which makes it its own stacking level, so the cards below it
+   (also glass) were painted ON TOP of the menu and swallowed the clicks. A glass layer inside another glass
+   layer also cannot blur what is behind it, so the menu text mixed with the cards underneath.
+   Fix: lift the header above the page content and give the menu a frosted, nearly solid glass panel. */
+header { position: relative; z-index: 60; }
+.dropdown { z-index: 70; }
+.dropdown-content {
+    z-index: 80; min-width: 260px; max-height: min(70vh, 560px); overflow-y: auto !important;
+    background: rgba(18, 25, 46, 0.94) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 30px 70px -16px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.12) inset !important;
+}
+[data-theme="light"] .dropdown-content { background: rgba(255, 255, 255, 0.95) !important; border-color: rgba(15, 23, 42, 0.14) !important; box-shadow: 0 30px 70px -20px rgba(20, 40, 90, 0.45) !important; }
+.dropdown-content button, .dropdown-content label { white-space: nowrap; }
+.dropdown-content button:hover, .dropdown-content label:hover { background-color: rgba(10, 132, 255, 0.16); }
+html.fx-off .dropdown-content { background: var(--surface) !important; }
+</style>
 </head>
 <body class="locked">
 
@@ -1566,7 +1586,7 @@
     </style>
 <style>
 /* ===== macOS LIQUID GLASS MASTERY LAYER ===== */
-* { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif !important; }
+* { font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important; }
 :root { --radius: 20px; }
 :root:not([data-theme="light"]) { --accent: #0a84ff; --accent-hover: #0874e0; --accent-2: #5e5ce6; --accent-grad: linear-gradient(135deg, #0a84ff, #5e5ce6); --accent-glow: rgba(10,132,255,0.4); --accent-soft: rgba(10,132,255,0.16); --surface: rgba(28,34,55,0.5); --surface-card: rgba(36,44,70,0.5); --table-th-bg: rgba(20,26,46,0.42); --table-tfoot-bg: rgba(18,24,44,0.5); --input-bg: rgba(14,19,36,0.45); --pill-bg: rgba(38,46,74,0.5); --pill-hover: rgba(52,62,96,0.6); --border-soft: rgba(170,190,230,0.18); --shadow-card: 0 1px 0 rgba(255,255,255,0.1) inset, 0 -1px 0 rgba(0,0,0,0.2) inset, 0 24px 60px -18px rgba(0,0,0,0.75), 0 8px 24px -12px rgba(10,132,255,0.18); }
 [data-theme="light"] { --surface: rgba(255,255,255,0.62); --surface-card: rgba(255,255,255,0.66); --table-th-bg: rgba(245,248,253,0.55); --table-tfoot-bg: rgba(240,244,252,0.6); --input-bg: rgba(252,253,255,0.55); --pill-bg: rgba(238,242,250,0.6); --pill-hover: rgba(224,230,242,0.7); --shadow-card: 0 1px 0 rgba(255,255,255,0.9) inset, 0 20px 50px -18px rgba(20,40,90,0.35), 0 8px 22px -12px rgba(10,132,255,0.2); }
