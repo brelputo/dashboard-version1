@@ -50,6 +50,7 @@
     let forecastDays = 30;
     let subCandidates = [];
     let currentFilter = 'all';
+    let ledgerCat = ''; // exact expense category chosen by clicking a row in Cost Breakdown ('' = show all)
     let budgetSort = 'risk';
 
     function createDefaultDatasetForYear(yr) {

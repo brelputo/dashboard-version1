@@ -1753,3 +1753,9 @@ html.fx-off[data-theme="light"] { --surface: #ffffff; --surface-card: #ffffff; -
 html.fx-off .card, html.fx-off .stat-card, html.fx-off .chart-container, html.fx-off .budget-card, html.fx-off .goal-card, html.fx-off .sidebar, html.fx-off .modal-card, html.fx-off .sel-bar, html.fx-off .dropdown-content, html.fx-off #help-bubble, html.fx-off #mobile-month-bar, html.fx-off .dn-hole { border: 1px solid var(--border-soft) !important; }
 html.fx-off .card:hover, html.fx-off .budget-card:hover { border-color: var(--accent) !important; box-shadow: var(--shadow-card) !important; }
 html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-card), inset 3px 0 0 var(--accent) !important; }
+
+/* Clickable category in Cost Breakdown + the "Category: X" chip in the ledger */
+.cat-link { background: none; border: none; padding: 0; margin: 0; font: inherit; font-size: 1.06em; font-weight: 700; color: var(--text-main); cursor: pointer; text-align: left; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color 0.15s; }
+.cat-link:hover, .cat-link:focus-visible { text-decoration-color: currentColor; }
+.cat-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #fff; border: none; border-radius: 20px; padding: 6px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.cat-chip:hover { filter: brightness(1.1); }

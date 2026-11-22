@@ -993,10 +993,13 @@
             }
             let tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${esc(cat)}</td>
+                <td><button type="button" class="cat-link" title="See every ${esc(cat)} line in Transactions"></button></td>
                 <td class="col-num">${fmt(amt)}</td>
                 <td style="padding-left: 12px;">${displayInfo}</td>
             `;
+            const link = tr.querySelector('.cat-link');
+            link.textContent = cat;
+            link.onclick = () => openCategoryInLedger(cat);
             catTbody.appendChild(tr);
         });
         renderBudgetHealth(catMap, projBal, transactions);

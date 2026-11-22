@@ -665,6 +665,20 @@
         showToast("Transactions sorted by date!");
     }
 
+    // Click a category in Cost Breakdown: jump to Transactions showing only that category (this month)
+    function openCategoryInLedger(cat) {
+        ledgerCat = cat;
+        currentFilter = 'all';
+        document.querySelectorAll('.filter-pills .pill').forEach((p, i) => p.classList.toggle('active', i === 0));
+        const s = document.getElementById('search-input'); if (s) s.value = '';
+        const all = document.getElementById('search-all'); if (all) all.checked = false;
+        showView('transactions');
+    }
+    function clearCategoryFilter() {
+        ledgerCat = '';
+        renderApp();
+    }
+
     function setFilter(filterType, element) {
         currentFilter = filterType;
         document.querySelectorAll('.filter-pills .pill').forEach(p => p.classList.remove('active'));
@@ -772,6 +786,7 @@
             if (searchTerm && !String(tx.desc || '').toLowerCase().includes(searchTerm) && !String(tx.cost || '').toLowerCase().includes(searchTerm) && !String(tx.date || '').includes(searchTerm)) {
                 return;
             }
+            if (ledgerCat && String(tx.cost || '') !== ledgerCat) return;
             if (currentFilter === 'cleared' && tx.paid.toLowerCase() !== 'yes') return;
             if (currentFilter === 'pending' && tx.paid.toUpperCase() !== 'NO') return;
             if (currentFilter === 'credits' && cVal <= 0) return;
@@ -839,12 +854,18 @@
         if (!tfoot || !datasets[activeMonthKey]) return;
         let totalCreditSum = 0, totalDebitSum = 0;
         datasets[activeMonthKey].data.forEach(t => {
+            if (ledgerCat && String(t.cost || '') !== ledgerCat) return;
             totalCreditSum += parseFloat(t.credit) || 0;
             totalDebitSum += parseFloat(t.debit) || 0;
         });
+        const chip = document.getElementById('cat-chip');
+        if (chip) {
+            chip.style.display = ledgerCat ? '' : 'none';
+            chip.textContent = ledgerCat ? 'Category: ' + ledgerCat + '  ✕' : '';
+        }
         tfoot.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: right; font-weight: 700; color: var(--text-muted);">Ledger Totals:</td>
+                <td colspan="6" style="text-align: right; font-weight: 700; color: var(--text-muted);">${ledgerCat ? esc(ledgerCat) + ' Totals:' : 'Ledger Totals:'}</td>
                 <td class="col-num text-success">${fmt(totalCreditSum)}</td>
                 <td class="col-num text-danger">${fmt(totalDebitSum)}</td>
                 <td colspan="3" style="text-align: right; padding-right: 8px;">

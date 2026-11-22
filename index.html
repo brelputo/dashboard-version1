@@ -912,6 +912,7 @@
                     <input type="text" id="search-input" placeholder="Search description or category..." oninput="renderTransactions()">
                 </div>
                 <label class="all-months" title="Search every month, not just this one"><input type="checkbox" id="search-all" onchange="renderTransactions()"> All months</label>
+                <button type="button" class="cat-chip" id="cat-chip" style="display:none" onclick="clearCategoryFilter()" title="Show every line again"></button>
                 <div class="filter-pills">
                     <div class="pill active" onclick="setFilter('all', this)">All</div>
                     <div class="pill" onclick="setFilter('cleared', this)">Cleared</div>
