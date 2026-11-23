@@ -523,6 +523,7 @@
             case 'goals': renderGoals(); return;
             case 'forecast': renderForecast(); return;
             case 'subscriptions': renderSubscriptions(); return;
+            case 'investments': renderInvestments(); return;
         }
         syncRolloverBalances();
         renderTransactions();

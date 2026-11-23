@@ -1,4 +1,4 @@
-/* PLANNING: savings goals, subscriptions and the cash-flow forecast.
+/* PLANNING: savings goals, subscriptions, the cash-flow forecast and the Investments page.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
     function getYearNetStats(yr) {
@@ -567,3 +567,258 @@
             </div>`;
         }).join('') + (savingsGoals.length > 3 ? `<div class="ov-empty" style="padding-bottom:0;">+${savingsGoals.length - 3} more goal${savingsGoals.length - 3 === 1 ? '' : 's'}</div>` : '');
     }
+
+
+/* ---------- INVESTMENTS ----------
+   Anything whose category name contains "invest" counts:
+   - an expense line (debit) with an "Investment..." category = money put in
+   - a credit line with an "Investment Return..." category   = money coming back */
+const INVEST_RE = /invest/i;
+
+function investMonth(key) {
+    const out = { put: [], ret: [], putTotal: 0, retTotal: 0 };
+    const ds = datasets[key];
+    ((ds && ds.data) || []).forEach(t => {
+        if (isRolloverTx(t)) return;
+        const d = parseFloat(t.debit) || 0, c = parseFloat(t.credit) || 0;
+        const paid = String(t.paid || '').toLowerCase() === 'yes';
+        if (d > 0 && INVEST_RE.test(t.cost || '')) { out.put.push({ t, amt: d, paid }); out.putTotal += d; }
+        if (c > 0 && INVEST_RE.test(t.creditCat || '')) { out.ret.push({ t, amt: c, paid }); out.retTotal += c; }
+    });
+    return out;
+}
+
+function investGroup(lines) {
+    const m = new Map();
+    lines.forEach(l => {
+        const label = String(l.t.desc || '').trim() || '(no description)';
+        const k = label.toLowerCase();
+        const g = m.get(k) || { label, amt: 0 };
+        g.amt += l.amt;
+        m.set(k, g);
+    });
+    return m;
+}
+
+function ivGoMonth(i) {
+    const name = rawMonthNames[i];
+    const dd = document.getElementById('month-dropdown');
+    if (dd) dd.value = name;
+    switchMonth(name);
+}
+
+function renderInvestments() {
+    const box = document.getElementById('iv-body');
+    if (!box) return;
+    const key = activeMonthKey;
+    const mName = rawMonthNames.find(m => key.startsWith(m));
+    if (!mName) { box.innerHTML = ''; return; }
+    const yr = parseInt(key.slice(mName.length), 10), mIdx = rawMonthNames.indexOf(mName);
+    const prevDate = new Date(yr, mIdx - 1, 1), prevKey = monthKeyOfDate(prevDate);
+    const curLabel = SHORT_MONTHS[mIdx] + ' ' + yr, prevLabel = SHORT_MONTHS[prevDate.getMonth()] + ' ' + prevDate.getFullYear();
+    const curFull = new Date(yr, mIdx, 1).toLocaleString('en-AU', { month: 'long' });
+    const prevFull = prevDate.toLocaleString('en-AU', { month: 'long' });
+    document.getElementById('iv-sub').textContent = `${curLabel} against ${prevLabel}`;
+
+    const cur = investMonth(key), prev = investMonth(prevKey);
+    const months = rawMonthNames.map((n, i) => ({ i, ...investMonth(n + yr) }));
+    const yPut = months.reduce((a, m) => a + m.putTotal, 0), yRet = months.reduce((a, m) => a + m.retTotal, 0);
+
+    if (!yPut && !yRet && !cur.put.length && !cur.ret.length && !prev.put.length && !prev.ret.length && !investEverPut()) {
+        box.innerHTML = `<div class="card"><div class="empty-note">Nothing is recorded as an investment yet.<br>Add a transaction with the category <strong>Investment</strong> (money you put in) and it will show up here, with a running total of how much you have invested.</div></div>`;
+        return;
+    }
+
+    // running total of everything ever put in (all years) up to and including a month
+    const ym = k => { const m = rawMonthNames.find(n => k.startsWith(n)); return m ? parseInt(k.slice(m.length), 10) * 12 + rawMonthNames.indexOf(m) : null; };
+    const allPut = Object.keys(datasets).map(k => ({ v: ym(k), put: investMonth(k).putTotal })).filter(x => x.v !== null);
+    const cumTo = (y, mi) => allPut.reduce((a, x) => a + (x.v <= y * 12 + mi ? x.put : 0), 0);
+    const T = { cur: cumTo(yr, mIdx), prev: cumTo(yr, mIdx - 1) };
+    const td = T.cur - T.prev, tPct = mvPct(T.cur, T.prev);
+    const avgTo = i => { const xs = months.slice(0, i + 1).filter(m => m.putTotal > 0); return xs.length ? xs.reduce((a, m) => a + m.putTotal, 0) / xs.length : 0; };
+    const A = { cur: avgTo(mIdx), prev: mIdx > 0 ? avgTo(mIdx - 1) : 0 };
+    const ad = A.cur - A.prev, aPct = mvPct(A.cur, A.prev);
+
+    const P = { cur: cur.putTotal, prev: prev.putTotal };
+    const R = { cur: cur.retTotal, prev: prev.retTotal };
+    const pd = P.cur - P.prev, rd = R.cur - R.prev;
+    const pPct = mvPct(P.cur, P.prev), rPct = mvPct(R.cur, R.prev);
+
+    // headline: the running total first, then what this month added
+    let heroCls = 'flat', heroIc = '＝', heroTxt;
+    if (!T.cur) heroTxt = `Nothing has been put into investments up to the end of ${esc(curFull)}.`;
+    else {
+        heroCls = P.cur > 0 ? 'down' : 'flat'; heroIc = P.cur > 0 ? '▲' : '＝';
+        let add = P.cur > 0 ? `${esc(curFull)} added <strong>${fmt(P.cur)}</strong>` : `Nothing was added in ${esc(curFull)}`;
+        if (P.cur > 0 && P.prev > 0 && Math.abs(pd) >= 0.005) add += `, ${fmt(Math.abs(pd))} ${pd > 0 ? 'more' : 'less'} than ${esc(prevFull)}`;
+        else if (P.cur > 0 && P.prev > 0) add += `, the same as ${esc(prevFull)}`;
+        heroTxt = `You have invested <strong>${fmt(T.cur)}</strong> in total so far. ${add}${tPct === null || P.cur <= 0 ? '' : `, which grew the total by ${tPct.toFixed(1)}%`}.`;
+    }
+
+    const kpi = (label, icon, o, d, pct, tone, help, desc, prevLabelTxt) => `
+        <div class="card mv-kpi">
+            <div class="mv-kpi-top"><span>${label}<button type="button" class="help" data-help="${esc(help)}" aria-label="What is ${esc(label)}?">?</button></span><span aria-hidden="true">${icon}</span></div>
+            <div class="mv-kpi-val">${fmt(o.cur)}</div>
+            <div class="iv-desc">${esc(desc)}</div>
+            <div class="mv-kpi-delta">${mvPill(d, pct, tone)}<span class="mv-amt ${tone}">${Math.abs(d) < 0.005 ? '' : (d > 0 ? '+' : '−') + fmt(Math.abs(d))}</span></div>
+            <div class="mv-kpi-prev">${esc(prevLabelTxt || prevFull)}: ${fmt(o.prev)}</div>
+        </div>`;
+
+    // this year
+    const best = months.reduce((b, m) => (m.putTotal > b.putTotal ? m : b), { putTotal: 0, i: 0 });
+    const yPct = yPut > 0 ? (yRet / yPut) * 100 : null;
+    const yearStats = `
+        <div class="annual-grid iv-year">
+            <div class="stat-card"><span class="stat-card-title">Put in · ${yr}<button type="button" class="help" data-help="All the money you have put into investments in ${yr}, January to December, paid or planned." aria-label="What is Put in this year?">?</button></span><span class="stat-card-value">${fmt(yPut)}</span><span class="iv-desc">Added to your investments this year.</span></div>
+            <div class="stat-card"><span class="stat-card-title">Biggest month<button type="button" class="help" data-help="The month of ${yr} when you put the most money into investments." aria-label="What is Biggest month?">?</button></span><span class="stat-card-value">${best.putTotal ? fmt(best.putTotal) : '—'}</span><span class="iv-desc">${best.putTotal ? esc(new Date(yr, best.i, 1).toLocaleString('en-AU', { month: 'long' })) + ' was your biggest month.' : 'No money put in yet this year.'}</span></div>
+            <div class="stat-card"><span class="stat-card-title">Returns · ${yr}<button type="button" class="help" data-help="Cash that came back to you from investments in ${yr} (dividends, interest, sales). Only lines with the category Investment Return count. It does not include what your investments are worth today." aria-label="What are Returns this year?">?</button></span><span class="stat-card-value text-success">${fmt(yRet)}</span><span class="iv-desc">Cash that came back this year.</span></div>
+            <div class="stat-card"><span class="stat-card-title">Returns as % of put in<button type="button" class="help" data-help="Returns divided by Put in. For example, put in $1,000 and $68 came back as cash: 6.8%. It is only a rough guide, because it does not know what your investments are worth today." aria-label="What is Returns as a percentage?">?</button></span><span class="stat-card-value">${yPct === null ? '—' : yPct.toFixed(1) + '%'}</span><span class="iv-desc">Cash back for every $100 put in.</span></div>
+        </div>`;
+
+    // growth chart: total invested over the year (running total)
+    const t0 = startOfToday(), thisStart = new Date(t0.getFullYear(), t0.getMonth(), 1);
+    const pts = months.filter(m => new Date(yr, m.i, 1) <= thisStart || m.putTotal > 0)
+        .map(m => ({ i: m.i, v: cumTo(yr, m.i), add: m.putTotal }));
+    const baseV = cumTo(yr, -1);
+    let growth = '<div class="empty-note">Nothing to show for this year yet.</div>';
+    if (pts.length) {
+        // draw at the real card width so the chart keeps a modest height on wide screens
+        const W = Math.max(320, Math.min(960, Math.round((box.clientWidth || 640) - 44))), H = W < 500 ? 220 : 240;
+        const pl = 58, pr = 18, pt = 22, pb = 30, iw = W - pl - pr, ih = H - pt - pb;
+        const maxV = Math.max(100, ...pts.map(q => q.v));
+        const step = mvNiceStep(maxV, 4), tickN = Math.ceil(maxV / step), top = tickN * step;
+        const x = i => pl + (i / 11) * iw, y = v => pt + (1 - v / top) * ih;
+        let grid = '', xl = '';
+        for (let k = 0; k <= tickN; k++) { const v = k * step, yy = y(v); grid += `<line class="mv-grid-line" x1="${pl}" x2="${W - pr}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}"/><text class="mv-axis" x="${pl - 8}" y="${(yy + 4).toFixed(1)}" text-anchor="end">${top >= 10000 ? fmtCompact.format(v) : fmt(v).replace('.00', '')}</text>`; }
+        for (let k = 0; k < 12; k++) xl += `<text class="mv-axis" x="${x(k).toFixed(1)}" y="${H - 8}" text-anchor="middle">${SHORT_MONTHS[k]}</text>`;
+        const line = pts.map((q, n) => (n ? 'L' : 'M') + x(q.i).toFixed(1) + ',' + y(q.v).toFixed(1)).join('');
+        const area = line + `L${x(pts[pts.length - 1].i).toFixed(1)},${y(0).toFixed(1)}L${x(pts[0].i).toFixed(1)},${y(0).toFixed(1)}Z`;
+        const dots = pts.map(q => {
+            const sel = q.i === mIdx, before = q.i === mIdx - 1;
+            const tip = `${SHORT_MONTHS[q.i]} ${yr}: ${fmt(q.v)} invested in total` + (q.add > 0 ? ` (${signedMoney(q.add)} this month)` : ' (nothing added this month)');
+            return `<circle class="iv-dot${sel ? ' sel' : ''}${before ? ' before' : ''}" cx="${x(q.i).toFixed(1)}" cy="${y(q.v).toFixed(1)}" r="${sel ? 7 : 4.5}" onclick="ivGoMonth(${q.i})"><title>${esc(tip)}</title></circle>`;
+        }).join('');
+        const selPt = pts.find(q => q.i === mIdx);
+        const selLbl = selPt ? `<text class="iv-val" x="${Math.min(W - pr - 30, Math.max(pl + 30, x(mIdx))).toFixed(1)}" y="${(y(selPt.v) - 14).toFixed(1)}" text-anchor="middle">${fmt(selPt.v)}</text>` : '';
+        const endV = pts[pts.length - 1].v, gained = endV - baseV;
+        growth = `
+            <div class="iv-grow"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Total invested over ${yr}: from ${esc(fmt(baseV))} to ${esc(fmt(endV))}">${grid}${xl}<path class="iv-area" d="${area}"/><path class="iv-line" d="${line}"/>${dots}${selLbl}</svg></div>
+            <div class="iv-grow-sum"><span>Start of ${yr}: <strong>${fmt(baseV)}</strong></span><span>Now: <strong>${fmt(endV)}</strong></span><span class="${gained > 0 ? 'text-success' : ''}">Added in ${yr}: <strong>${gained > 0 ? '+' : ''}${fmt(gained)}</strong></span></div>`;
+    }
+
+    // month by month bars (money put in; returns lighter)
+    const maxV = Math.max(1, ...months.map(m => Math.max(m.putTotal, m.retTotal)));
+    const decPrev = investMonth('december' + (yr - 1));
+    const chg = (c, p) => {
+        if (!c && !p) return { t: '', cls: '' };
+        if (!p) return { t: 'new', cls: 'up' };
+        const pc = ((c - p) / p) * 100;
+        if (Math.abs(pc) < 0.05) return { t: '=', cls: '' };
+        const big = Math.abs(pc) >= 1000;
+        return { t: (pc > 0 ? '+' : '−') + (big ? '999+' : Math.abs(pc).toFixed(0)) + '%', cls: pc > 0 ? 'up' : 'down' };
+    };
+    const chart = months.map(m => {
+        const before = m.i > 0 ? months[m.i - 1] : decPrev;
+        const beforeName = SHORT_MONTHS[(m.i + 11) % 12];
+        const future = new Date(yr, m.i, 1) > thisStart;
+        const c = future ? { t: '', cls: '' } : chg(m.putTotal, before.putTotal);
+        const tip = `${SHORT_MONTHS[m.i]} ${yr}: put in ${fmt(m.putTotal)}, returns ${fmt(m.retTotal)}.` + (future ? '' : ` Against ${beforeName}: put in ${signedMoney(m.putTotal - before.putTotal)}, returns ${signedMoney(m.retTotal - before.retTotal)}.`);
+        const hIn = m.putTotal ? Math.max(3, (m.putTotal / maxV) * 100) : 0, hOut = m.retTotal ? Math.max(3, (m.retTotal / maxV) * 100) : 0;
+        return `<button type="button" class="iv-col${m.i === mIdx ? ' now' : ''}${m.i === mIdx - 1 ? ' before' : ''}" title="${esc(tip)}" aria-label="${esc(tip)}. Open this month." onclick="ivGoMonth(${m.i})">
+            <span class="iv-bars"><span class="iv-bar in" style="height:${hIn}%"></span><span class="iv-bar out" style="height:${hOut}%"></span></span>
+            <span class="iv-lbl">${SHORT_MONTHS[m.i]}</span><span class="iv-chg ${c.cls}">${c.t || '&nbsp;'}</span></button>`;
+    }).join('');
+
+    const cmpItem = (label, o, d, pct, tone) => `
+        <div class="iv-cmp-item"><span class="iv-cmp-lbl">${label}</span>
+            <span class="iv-cmp-nums"><strong>${fmt(o.cur)}</strong> <span class="iv-vs">in ${esc(curFull)}</span> · ${fmt(o.prev)} <span class="iv-vs">in ${esc(prevFull)}</span></span>
+            <span class="iv-cmp-delta">${mvPill(d, pct, tone)}<span class="mv-amt ${tone}">${Math.abs(d) < 0.005 ? '' : (d > 0 ? '+' : '−') + fmt(Math.abs(d))}</span></span></div>`;
+    const cmpStrip = `<div class="iv-cmp"><div class="iv-cmp-head">${esc(curFull)} against ${esc(prevFull)}</div>
+        ${cmpItem('Put in', P, pd, pPct, mvTone(pd, true))}${cmpItem('Returns', R, rd, rPct, mvTone(rd, true))}</div>`;
+
+    // by investment (grouped by description) for this month against last month
+    const rowsFor = (curLines, prevLines) => {
+        const a = investGroup(curLines), b = investGroup(prevLines);
+        const rows = [...new Set([...a.keys(), ...b.keys()])].map(k => {
+            const c = a.get(k), p = b.get(k);
+            return { label: (c || p).label, cur: c ? c.amt : 0, prev: p ? p.amt : 0 };
+        }).map(r => ({ ...r, diff: r.cur - r.prev })).sort((x, y) => Math.max(y.cur, y.prev) - Math.max(x.cur, x.prev));
+        if (!rows.length) return '<div class="empty-note">Nothing in either month.</div>';
+        const mx = Math.max(1, ...rows.map(r => Math.max(r.cur, r.prev)));
+        return rows.map(r => {
+            const isNew = r.prev === 0, gone = r.cur === 0, tone = Math.abs(r.diff) < 0.005 ? 'flat' : (r.diff > 0 ? 'good' : 'flat');
+            const pill = Math.abs(r.diff) < 0.005 ? '<span class="mv-pill flat">No change</span>'
+                : isNew ? '<span class="mv-pill new">New</span>'
+                : `<span class="mv-pill ${r.diff > 0 ? 'good' : 'flat'}">${r.diff > 0 ? '▲' : '▼'} ${gone ? '100' : Math.abs((r.diff / r.prev) * 100).toFixed(0)}%</span>`;
+            return `
+            <div class="mv-cat">
+                <div class="mv-cat-top"><span class="mv-cat-name" title="${esc(r.label)}">${esc(r.label)}</span>
+                    <span class="mv-cat-right"><span class="mv-amt ${tone}">${Math.abs(r.diff) < 0.005 ? '' : (r.diff > 0 ? '+' : '−') + fmt(Math.abs(r.diff))}</span>${pill}</span></div>
+                <div class="mv-bars">
+                    <div class="mv-bar-row"><div class="mv-track"><div class="mv-fill now" style="width:${((r.cur / mx) * 100).toFixed(1)}%"></div></div><span class="mv-bar-val now">${fmt(r.cur)}</span></div>
+                    <div class="mv-bar-row"><div class="mv-track"><div class="mv-fill prev" style="width:${((r.prev / mx) * 100).toFixed(1)}%"></div></div><span class="mv-bar-val">${fmt(r.prev)}</span></div>
+                </div>
+            </div>`;
+        }).join('');
+    };
+
+    const lineRows = (label, m) => {
+        const all = [...m.put.map(l => ({ ...l, kind: 'put' })), ...m.ret.map(l => ({ ...l, kind: 'ret' }))]
+            .sort((a, b) => String(a.t.date).localeCompare(String(b.t.date)));
+        if (!all.length) return `<tr class="iv-month-row"><td colspan="5">${esc(label)}</td></tr><tr><td colspan="5" class="iv-none">No investment lines.</td></tr>`;
+        return `<tr class="iv-month-row"><td colspan="5">${esc(label)}</td></tr>` + all.map(l => `
+            <tr><td>${esc(l.t.date)}</td><td>${esc(l.t.desc)}</td>
+            <td class="col-num">${l.kind === 'put' ? fmt(l.amt) : ''}</td>
+            <td class="col-num text-success">${l.kind === 'ret' ? fmt(l.amt) : ''}</td>
+            <td>${l.paid ? '<span class="mv-pill good">Paid</span>' : '<span class="mv-pill flat">Planned</span>'}</td></tr>`).join('');
+    };
+
+    box.innerHTML = `
+        <div class="card mv-hero"><span class="mv-hero-ic ${heroCls}" aria-hidden="true">${heroIc}</span><div class="mv-hero-text">${heroTxt}</div></div>
+        <div class="mv-kpis">
+            ${kpi('Total invested', '🏦', T, td, tPct, mvTone(td, true),
+                'Everything you have ever put into investments, added together, up to the end of this month. It grows every time you put more in.',
+                'All the money you have put in so far.')}
+            ${kpi('Put in this month', '📈', P, pd, pPct, mvTone(pd, true),
+                'The money you moved into investments this month (shares, ETFs, crypto and so on). It adds up every expense line with the category Investment, paid or planned.',
+                `Added in ${curFull}.`)}
+            ${kpi('Average per month', '📊', A, ad, aPct, mvTone(ad, true),
+                `Your ${yr} money put in so far, divided by the months where you put something in. It shows your usual monthly amount.`,
+                `Your usual amount in ${yr}.`)}
+        </div>
+        ${yearStats}
+        <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h2>Total invested · ${yr}</h2><span style="font-size:0.76rem;color:var(--text-muted)">Running total. Click a dot to open that month</span></div>
+            ${growth}
+        </div>
+        <div class="mv-grid">
+            <div class="card">
+                <div class="card-header"><h2>Put in each month · ${yr}</h2><span style="font-size:0.76rem;color:var(--text-muted)">Click a month to open it</span></div>
+                <div class="iv-chart" role="group" aria-label="Investments by month">${chart}</div>
+                <div class="mv-legend"><span><i style="border-color:var(--iv-in)"></i>Put in</span><span><i style="border-color:var(--iv-out)"></i>Returns</span><span><i class="iv-sw now"></i>${esc(curFull)}</span><span><i class="iv-sw before"></i>Month before</span></div>
+                <div class="iv-note-small">The % under each month is how much “Put in” changed compared with the month before it.</div>
+                ${cmpStrip}
+            </div>
+            <div class="card">
+                <div class="card-header"><h2>By investment</h2><span style="font-size:0.76rem;color:var(--text-muted)">${esc(curFull)} ▪ ${esc(prevFull)}</span></div>
+                <div class="mv-legend" style="margin:0 0 14px"><span><i style="border-color:var(--mv-now)"></i>${esc(curLabel)}</span><span><i style="border-color:var(--mv-prev)"></i>${esc(prevLabel)}</span></div>
+                <div class="iv-sect">Put in</div>
+                <div class="mv-cats">${rowsFor(cur.put, prev.put)}</div>
+                <div class="iv-sect">Returns</div>
+                <div class="mv-cats">${rowsFor(cur.ret, prev.ret)}</div>
+            </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+            <div class="card-header"><h2>Investment lines</h2></div>
+            <div class="table-container-clean iv-scroll"><table class="iv-table">
+                <thead><tr><th>Date</th><th>Description</th><th class="col-num">Put in</th><th class="col-num">Returns</th><th>Status</th></tr></thead>
+                <tbody>${lineRows(curFull + ' ' + yr, cur)}${lineRows(prevFull + ' ' + prevDate.getFullYear(), prev)}</tbody>
+            </table></div>
+        </div>
+        <div class="mv-note">Counts every line you have entered, paid or planned. Any category with “invest” in its name counts: <strong>Investment</strong> for money put in and <strong>Investment Return</strong> for money coming back. Lines are grouped by description, so keep the same description each month to compare like with like.</div>`;
+}
+
+// true if any month of any year has an investment line (used for the empty page)
+function investEverPut() {
+    return Object.keys(datasets).some(k => { const m = investMonth(k); return m.put.length || m.ret.length; });
+}

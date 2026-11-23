@@ -11,7 +11,7 @@ Open `index.html` (or the GitHub Pages address) to use it. All files live in the
 | `vault.js` | Sign-in, encryption, cloud saving (Supabase), lock/unlock, backups and import. |
 | `ledger.js` | Transactions page, New Transaction window (with Paid switch), recurring bills, due-soon alerts. |
 | `budgets.js` | Budgets, categories and budget alerts. |
-| `planning.js` | Savings goals, subscriptions and the cash-flow forecast. |
+| `planning.js` | Savings goals, subscriptions, the cash-flow forecast and the Investments page. |
 | `views.js` | Navigation, Dashboard overview, Annual, Multi-Year and Month vs Last Month pages. |
 | `startup.js` | Things that run once when the page opens. |
 

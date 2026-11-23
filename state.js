@@ -125,6 +125,7 @@
         annual:        { pane: 'annual-view',        month: false },
         goals:         { pane: 'goals-view',         month: false },
         subscriptions: { pane: 'subs-view',          month: false },
+        investments:   { pane: 'invest-view',        month: true },
         multiyear:     { pane: 'multi-year-view',    month: false, year: false },
         forecast:      { pane: 'forecast-view',      month: false, year: false }
     };

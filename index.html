@@ -283,8 +283,18 @@
                 </button>
                 <div class="nav-sub-list"><div class="nav-sub-inner">
                     <button type="button" class="nav-sub" data-view="forecast" onclick="showView('forecast')">Cash-Flow Forecast</button>
-                    <button type="button" class="nav-sub" data-view="goals" onclick="showView('goals')">Savings Goals</button>
                     <button type="button" class="nav-sub" data-view="subscriptions" onclick="showView('subscriptions')">Subscriptions &amp; Bills</button>
+                </div></div>
+            </div>
+            <div class="nav-group">
+                <button type="button" class="nav-item nav-parent" aria-expanded="false" onclick="toggleNavGroup(this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Savings &amp; Investments</span>
+                    <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <div class="nav-sub-list"><div class="nav-sub-inner">
+                    <button type="button" class="nav-sub" data-view="goals" onclick="showView('goals')">Savings Goals</button>
+                    <button type="button" class="nav-sub" data-view="investments" onclick="showView('investments')">Investments</button>
                 </div></div>
             </div>
         </nav>
@@ -384,6 +394,17 @@
             </div>
         </div>
         <div id="mv-body"></div>
+    </div>
+
+    <!-- INVESTMENTS VIEW -->
+    <div id="invest-view" class="view-pane" style="display: none;">
+        <div class="mv-head">
+            <div>
+                <h2 class="mv-title">Investments</h2>
+                <div class="mv-sub" id="iv-sub">&nbsp;</div>
+            </div>
+        </div>
+        <div id="iv-body"></div>
     </div>
 
     <!-- MULTI-YEAR VIEW -->

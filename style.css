@@ -1759,3 +1759,56 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
 .cat-link:hover, .cat-link:focus-visible { text-decoration-color: currentColor; }
 .cat-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #fff; border: none; border-radius: 20px; padding: 6px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .cat-chip:hover { filter: brightness(1.1); }
+
+/* Investments page */
+#invest-view { --mv-now: #2a78d6; --mv-prev: #eb6834; --iv-in: #3987e5; --iv-out: #10b981; }
+.iv-year { margin-bottom: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .iv-year { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .iv-year { grid-template-columns: 1fr; } }
+.iv-chart { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; }
+.iv-col { display: flex; flex-direction: column; background: none; border: none; border-radius: 8px; padding: 6px 0 4px; cursor: pointer; font: inherit; color: var(--text-muted); }
+.iv-col:hover { background: var(--table-tr-hover); }
+.iv-col.now { background: var(--accent-soft); color: var(--text-main); }
+.iv-bars { height: 190px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
+.iv-bar { display: block; width: 36%; max-width: 16px; border-radius: 4px 4px 0 0; }
+.iv-bar.in { background: var(--iv-in); }
+.iv-bar.out { background: var(--iv-out); }
+.iv-lbl { font-size: 0.7rem; font-weight: 600; text-align: center; padding-top: 6px; }
+.iv-sect { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 4px 0 10px; }
+.iv-sect:not(:first-of-type) { margin-top: 20px; }
+.iv-table .iv-month-row td { font-weight: 700; font-size: 0.8rem; background: var(--table-th-bg); color: var(--text-main); }
+.iv-table .iv-none { color: var(--text-muted); font-style: italic; }
+.iv-scroll { overflow-x: auto; }
+.iv-table { min-width: 560px; }
+.iv-table td, .iv-table th { white-space: nowrap; overflow: visible; text-overflow: clip; }
+.iv-table td:nth-child(2) { white-space: normal; min-width: 150px; }
+
+/* Investments: explanations, change vs month before, side-by-side summary */
+.iv-desc { font-size: 0.76rem; line-height: 1.4; color: var(--text-muted); font-weight: 500; text-transform: none; letter-spacing: 0; }
+.mv-kpi .iv-desc { margin-top: -2px; }
+.iv-chg { display: block; min-height: 1em; font-size: 0.64rem; font-weight: 700; text-align: center; padding-top: 2px; color: var(--text-muted); white-space: nowrap; }
+.iv-chg.up { color: var(--success); }
+.iv-col.before { box-shadow: inset 0 0 0 1.5px var(--text-muted); }
+.iv-col.before .iv-lbl { color: var(--text-main); }
+.iv-sw { width: 16px !important; height: 12px !important; border: 1.5px solid var(--text-muted) !important; border-radius: 4px; display: inline-block; }
+.iv-sw.now { background: var(--accent-soft); border-color: var(--accent) !important; }
+.iv-note-small { font-size: 0.74rem; color: var(--text-muted); margin-top: 8px; }
+.iv-cmp { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+.iv-cmp-head { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.iv-cmp-item { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+.iv-cmp-lbl { font-weight: 700; }
+.iv-vs { color: var(--text-muted); font-size: 0.74rem; }
+.iv-cmp-delta { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+@media (max-width: 560px) { .iv-chg { display: none; } .iv-cmp-item { grid-template-columns: 1fr; gap: 4px; } }
+
+/* Investments: growth chart (running total) */
+.iv-grow svg { display: block; width: 100%; height: auto; overflow: visible; }
+.iv-line { fill: none; stroke: var(--iv-in); stroke-width: 2.75; stroke-linejoin: round; stroke-linecap: round; }
+.iv-area { fill: var(--iv-in); opacity: 0.13; }
+.iv-dot { fill: var(--iv-in); stroke: var(--surface-card); stroke-width: 2; cursor: pointer; }
+.iv-dot.sel { fill: var(--accent); }
+.iv-dot.before { fill: var(--surface-card); stroke: var(--iv-in); stroke-width: 2.5; }
+.iv-val { fill: var(--text-main); font-size: 13px; font-weight: 700; }
+.iv-grow-sum { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px; font-size: 0.82rem; color: var(--text-muted); }
+.iv-grow-sum strong { color: var(--text-main); font-variant-numeric: tabular-nums; }
+.iv-grow-sum .text-success strong { color: var(--success); }
