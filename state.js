@@ -1,6 +1,19 @@
 /* STATE: settings, default data and the values the whole app shares. Loaded first.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
+    /* ------------------------------------------------------------------
+       DATABASE SAFETY NOTE (checked 23 Nov 2026)
+       The key below is a "publishable" key. It is meant to be visible in the page, so seeing it here is normal and not a leak.
+       What keeps your data safe is the lock inside Supabase, and it was checked and is CORRECT:
+         - Table: user_finances, with Row Level Security (RLS) switched ON.
+         - One rule called "own row only", for logged-in users, covering everything (ALL):
+             using: auth.uid() = user_id   and   check: auth.uid() = user_id
+           so you can only read or change your own row, and nobody else can.
+         - Column user_id has the default auth.uid(), so new rows get your ID automatically.
+       Your financial data is also encrypted in the browser with your vault passphrase before it is saved.
+       If you ever create a new table or a new Supabase project, set up the same lock again before using it.
+       Re-check: Supabase > SQL Editor > run  select rowsecurity from pg_tables where tablename = 'user_finances';  (it must say true).
+       ------------------------------------------------------------------ */
     const SUPABASE_URL = "https://utozececqvxippnerfrl.supabase.co";
     const SUPABASE_KEY = "sb_publishable_fAgjUuJkZ4LPA7LLucfe3g_UAfpW88K";
     let supabaseClient = null;
