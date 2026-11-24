@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-24-h';
+window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-l';
 /* VIEWS: page navigation, Dashboard overview, Annual, Multi-Year and Month vs Last Month pages.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 

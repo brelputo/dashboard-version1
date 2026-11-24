@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-24-h';
+window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-25-l';
 /* STATE: settings, default data and the values the whole app shares. Loaded first.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 

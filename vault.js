@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-24-h';
+window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-l';
 /* VAULT: sign-in, encryption, cloud sync (Supabase), lock/unlock, backups and import.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 

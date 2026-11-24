@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-24-h';
+window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-25-l';
 /* ACCOUNTS: several separate accounts (e.g. Day by Day, Savings, Other bank), a switcher in the header,
    transfers between accounts, and the "All Accounts" overview page.
    How it works: the rest of the app always works on the ACTIVE account through the shared variables (datasets, categories, ...).
@@ -421,7 +421,7 @@ function renderAccountsView() {
             (accounts.length > 1 ? '<button type="button" class="btn btn-secondary" onclick="deleteAccount(\'' + r.a.id + '\')">Delete</button>' : '') +
             '</div></div>').join('') + '</div>' +
         '<div style="margin-top:16px"><button type="button" class="btn btn-primary" onclick="addAccount()">➕ Add account</button></div>' +
-        '<p class="acct-note">Each account has its own transactions, categories, budgets and goals. To move money between accounts, add a new transaction and choose the type <b>Transfer to another account</b>.</p>';
+        '<p class="acct-note">Each account has its own transactions, categories, budgets and goals. To move money between accounts, add a new transaction and choose the type <b>Transfer to another account</b>. For a line you already have, click the <b>🔗</b> button on that line (money-out lines only).</p>';
 }
 
 /* ---------- SAVINGS DASHBOARD (replaces the spending cards on a Savings & Investing account) ---------- */

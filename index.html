@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-build="2026-11-24-h">
+<html lang="en" data-build="2026-11-25-l">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +7,13 @@
     <script>try { if (localStorage.getItem('dashboard_fx') === 'off') document.documentElement.classList.add('fx-off'); } catch (e) { /* storage unavailable */ }</script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💲</text></svg>">
     <!-- Supabase is pinned to one exact version (2.119.2) so an update by its makers can never change your site without you knowing. To update it on purpose, change the number below. -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- libs:start -->
+    <!-- The two outside libraries. If supabase.js and crypto-js.min.js sit in this folder they are used (works even if the internet host is down); if not, the same versions are loaded from the internet. -->
+    <script src="supabase.js"></script>
+    <script>window.__libSrc = window.__libSrc || {}; if (window.supabase && window.supabase.createClient) { window.__libSrc.supabase = 'folder'; } else { window.__libSrc.supabase = 'online'; document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2"><\/script>'); }</script>
+    <script src="crypto-js.min.js"></script>
+    <script>if (window.CryptoJS && window.CryptoJS.AES) { window.__libSrc.crypto = 'folder'; } else { window.__libSrc.crypto = 'online'; document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"><\/script>'); }</script>
+    <!-- libs:end -->
     <link rel="stylesheet" href="style.css" onerror="(window.__missingFiles=window.__missingFiles||[]).push('style.css')">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -324,7 +329,7 @@
             </div>
         </nav>
         <div class="nav-footer">
-            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-24-h</div>
+            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-25-l</div>
             <button type="button" class="nav-item" onclick="lockVault()">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
                 <span>Lock vault</span>
@@ -1133,11 +1138,13 @@
 <script>
 /* File check: shows a red message at the top only when a file is missing or did not load. */
 window.addEventListener('load', function () {
+    var bt = document.querySelector('.build-tag');
+    if (bt && window.__libSrc) bt.textContent += ' · libraries: ' + (window.__libSrc.supabase === 'folder' && window.__libSrc.crypto === 'folder' ? 'from this folder' : 'from the internet');
     var missing = (window.__missingFiles || []).slice();
     var box = document.getElementById('login-overlay');
     var styled = box && getComputedStyle(box).position === 'fixed';
     if (!styled && missing.indexOf('style.css') < 0) missing.push('style.css');
-    var BUILD = '2026-11-24-h', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
+    var BUILD = '2026-11-25-l', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
     if (document.documentElement.getAttribute('data-build') !== BUILD) missing.push('index.html (old version)');
     JS.forEach(function (f) { if (missing.indexOf(f) < 0 && (window.__build || {})[f] !== BUILD) missing.push(f + ' (old version - replace it with the one from the latest zip)'); });
     var need = ['showView', 'renderApp', 'switchAccount', 'saveToSupabase', 'renderInvestments', 'renderNetWorth', 'renderYearReview', 'openCategoryInLedger'];
@@ -1148,7 +1155,7 @@ window.addEventListener('load', function () {
     b.setAttribute('role', 'alert');
     b.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;background:#b91c1c;color:#fff;padding:14px 18px;font:15px/1.5 system-ui,Arial,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.4)';
     b.innerHTML = '<strong>The dashboard could not load all of its files.</strong><br>Missing or not loading: <strong>' + missing.join(', ') + '</strong>.<br>' +
-        'All 12 files must sit together in the same folder as index.html: index.html, style.css, state.js, helpers.js, accounts.js, vault.js, ledger.js, budgets.js, planning.js, views.js, startup.js, README.md. ' +
+        'All 12 files (plus supabase.js and crypto-js.min.js if you added them) must sit together in the same folder as index.html: index.html, style.css, state.js, helpers.js, accounts.js, vault.js, ledger.js, budgets.js, planning.js, views.js, startup.js, README.md. ' +
         'Extract the whole zip first (do not open index.html from inside the zip), then open index.html from that folder and press Ctrl + Shift + R.';
     document.body.appendChild(b);
 });

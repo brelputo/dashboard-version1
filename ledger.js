@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-24-h';
+window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25-l';
 /* LEDGER: the Transactions page, the New Transaction window, recurring bills, due-soon alerts and row selection.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -862,7 +862,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-24
                 </td>
                 <td class="col-action">
                     <div class="btn-action-row">
-                        ${(!isRolloverTx(tx) && !tx.xferFrom && accounts.length > 1 && (parseFloat(tx.debit) || 0) > 0) ? `<button class="btn-xfer${tx.xfer ? ' linked' : ''}" onclick="openLinkPicker(${index})" title="${tx.xfer ? 'Linked to another account - click to unlink' : 'Also record this in another account'}">🔗</button>` : ''}
+                        ${(!isRolloverTx(tx) && !tx.xferFrom && accounts.length > 1 && (parseFloat(tx.debit) || 0) > 0) ? `<button class="btn-xfer${tx.xfer ? ' linked' : ''}" onclick="openLinkPicker(${index})" title="${tx.xfer ? 'Linked to another account - click to unlink' : 'Make this a transfer: also record it in another account'}">🔗</button>` : ''}
                         ${isRolloverTx(tx) ? '' : `<button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Move this line to the next month as Pending">➡️</button>`}
                         <button class="btn-copy" onclick="duplicateTransaction(${index})" title="Copy line">📋</button>
                         <button class="btn-danger" onclick="deleteTx(${index})" title="Delete">✕</button>
