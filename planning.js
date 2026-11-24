@@ -1,3 +1,4 @@
+window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-24-h';
 /* PLANNING: savings goals, subscriptions, the cash-flow forecast and the Investments page.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -575,13 +576,43 @@
    - a credit line with an "Investment Return..." category   = money coming back */
 const INVEST_RE = /invest/i;
 
+function cleanInvestGoal(g) {
+    return {
+        target: Math.max(0, parseFloat(g && g.target) || 0),
+        date: (g && typeof g.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(g.date)) ? g.date : ''
+    };
+}
+function saveInvestGoal() {
+    const t = parseMoney(document.getElementById('ig-target').value);
+    if (t <= 0) { showToast('Enter a goal amount above $0', true); return; }
+    investGoal = cleanInvestGoal({ target: t, date: document.getElementById('ig-date').value });
+    renderInvestments();
+    saveToSupabase();
+    showToast('Investment goal saved');
+}
+function clearInvestGoal() {
+    investGoal = { target: 0, date: '' };
+    renderInvestments();
+    saveToSupabase();
+    showToast('Investment goal removed');
+}
+
 function investMonth(key) {
     const out = { put: [], ret: [], putTotal: 0, retTotal: 0 };
     const ds = datasets[key];
+    const sav = activeAcctType() === 'savings';
     ((ds && ds.data) || []).forEach(t => {
         if (isRolloverTx(t)) return;
         const d = parseFloat(t.debit) || 0, c = parseFloat(t.credit) || 0;
         const paid = String(t.paid || '').toLowerCase() === 'yes';
+        if (sav) {
+            // Savings & Investing account: money received counts as put in; interest and investment returns count as returns
+            if (c > 0) {
+                if (INTEREST_RE.test(t.creditCat || '') || INVEST_RE.test(t.creditCat || '')) { out.ret.push({ t, amt: c, paid }); out.retTotal += c; }
+                else { out.put.push({ t, amt: c, paid }); out.putTotal += c; }
+            }
+            return;
+        }
         if (d > 0 && INVEST_RE.test(t.cost || '')) { out.put.push({ t, amt: d, paid }); out.putTotal += d; }
         if (c > 0 && INVEST_RE.test(t.creditCat || '')) { out.ret.push({ t, amt: c, paid }); out.retTotal += c; }
     });
@@ -625,7 +656,7 @@ function renderInvestments() {
     const yPut = months.reduce((a, m) => a + m.putTotal, 0), yRet = months.reduce((a, m) => a + m.retTotal, 0);
 
     if (!yPut && !yRet && !cur.put.length && !cur.ret.length && !prev.put.length && !prev.ret.length && !investEverPut()) {
-        box.innerHTML = `<div class="card"><div class="empty-note">Nothing is recorded as an investment yet.<br>Add a transaction with the category <strong>Investment</strong> (money you put in) and it will show up here, with a running total of how much you have invested.</div></div>`;
+        box.innerHTML = activeAcctType() === 'savings' ? `<div class="card"><div class="empty-note">Nothing has been put into this account yet.<br>Add a <strong>credit</strong> (money received, or a Transfer from another account) and it will show up here as money you put in, with a running total. Interest goes in with the category <strong>Interest</strong> and counts as a return.</div></div>` : `<div class="card"><div class="empty-note">Nothing is recorded as an investment yet.<br>Add a transaction with the category <strong>Investment</strong> (money you put in) and it will show up here, with a running total of how much you have invested.</div></div>`;
         return;
     }
 
@@ -685,12 +716,14 @@ function renderInvestments() {
         // draw at the real card width so the chart keeps a modest height on wide screens
         const W = Math.max(320, Math.min(960, Math.round((box.clientWidth || 640) - 44))), H = W < 500 ? 220 : 240;
         const pl = 58, pr = 18, pt = 22, pb = 30, iw = W - pl - pr, ih = H - pt - pb;
-        const maxV = Math.max(100, ...pts.map(q => q.v));
+        const gOn = investGoal.target > 0 && investGoal.target <= Math.max(...pts.map(q => q.v)) * 3;
+        const maxV = Math.max(100, ...pts.map(q => q.v), gOn ? investGoal.target : 0);
         const step = mvNiceStep(maxV, 4), tickN = Math.ceil(maxV / step), top = tickN * step;
         const x = i => pl + (i / 11) * iw, y = v => pt + (1 - v / top) * ih;
         let grid = '', xl = '';
         for (let k = 0; k <= tickN; k++) { const v = k * step, yy = y(v); grid += `<line class="mv-grid-line" x1="${pl}" x2="${W - pr}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}"/><text class="mv-axis" x="${pl - 8}" y="${(yy + 4).toFixed(1)}" text-anchor="end">${top >= 10000 ? fmtCompact.format(v) : fmt(v).replace('.00', '')}</text>`; }
-        for (let k = 0; k < 12; k++) xl += `<text class="mv-axis" x="${x(k).toFixed(1)}" y="${H - 8}" text-anchor="middle">${SHORT_MONTHS[k]}</text>`;
+        for (let k = 0; k < 12; k++) if (W >= 500 || k % 2 === 0) xl += `<text class="mv-axis" x="${x(k).toFixed(1)}" y="${H - 8}" text-anchor="middle">${SHORT_MONTHS[k]}</text>`;
+        const goalLine = gOn ? `<line class="iv-goal" x1="${pl}" x2="${W - pr}" y1="${y(investGoal.target).toFixed(1)}" y2="${y(investGoal.target).toFixed(1)}"/><text class="iv-goal-lbl" x="${W - pr}" y="${(y(investGoal.target) - 6).toFixed(1)}" text-anchor="end">Goal ${fmt(investGoal.target)}</text>` : '';
         const line = pts.map((q, n) => (n ? 'L' : 'M') + x(q.i).toFixed(1) + ',' + y(q.v).toFixed(1)).join('');
         const area = line + `L${x(pts[pts.length - 1].i).toFixed(1)},${y(0).toFixed(1)}L${x(pts[0].i).toFixed(1)},${y(0).toFixed(1)}Z`;
         const dots = pts.map(q => {
@@ -702,9 +735,53 @@ function renderInvestments() {
         const selLbl = selPt ? `<text class="iv-val" x="${Math.min(W - pr - 30, Math.max(pl + 30, x(mIdx))).toFixed(1)}" y="${(y(selPt.v) - 14).toFixed(1)}" text-anchor="middle">${fmt(selPt.v)}</text>` : '';
         const endV = pts[pts.length - 1].v, gained = endV - baseV;
         growth = `
-            <div class="iv-grow"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Total invested over ${yr}: from ${esc(fmt(baseV))} to ${esc(fmt(endV))}">${grid}${xl}<path class="iv-area" d="${area}"/><path class="iv-line" d="${line}"/>${dots}${selLbl}</svg></div>
+            <div class="iv-grow"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Total invested over ${yr}: from ${esc(fmt(baseV))} to ${esc(fmt(endV))}">${grid}${xl}<path class="iv-area" d="${area}"/><path class="iv-line" d="${line}"/>${dots}${selLbl}${goalLine}</svg></div>
             <div class="iv-grow-sum"><span>Start of ${yr}: <strong>${fmt(baseV)}</strong></span><span>Now: <strong>${fmt(endV)}</strong></span><span class="${gained > 0 ? 'text-success' : ''}">Added in ${yr}: <strong>${gained > 0 ? '+' : ''}${fmt(gained)}</strong></span></div>`;
     }
+
+    // investment goal card
+    const gd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(investGoal.date || '');
+    let goalBody = '<div class="iv-desc">Set a target, for example $20,000 by December 2027. You will see how close you are and what you need to put in each month.</div>';
+    if (investGoal.target > 0) {
+        const remaining = Math.max(0, investGoal.target - T.cur);
+        const pct = Math.min(100, (T.cur / investGoal.target) * 100);
+        const usual = A.cur;
+        const lines = [];
+        let chip = '';
+        if (remaining <= 0) { chip = '<span class="chip chip-ok">Goal reached 🎉</span>'; }
+        else {
+            if (usual > 0) {
+                const n = Math.ceil(remaining / usual);
+                lines.push(n > 600 ? `At your usual ${fmt(usual)} a month, this is more than 50 years away.`
+                    : `At your usual <strong>${fmt(usual)}</strong> a month you would reach it around <strong>${esc(new Date(yr, mIdx + n, 1).toLocaleString('en-AU', { month: 'long', year: 'numeric' }))}</strong>.`);
+            } else lines.push('Put some money in this year to see an estimate of when you would reach it.');
+            if (gd) {
+                const left = (parseInt(gd[1], 10) * 12 + parseInt(gd[2], 10) - 1) - (yr * 12 + mIdx);
+                if (left <= 0) chip = '<span class="chip chip-bad">Past the target date</span>';
+                else {
+                    const need = remaining / left;
+                    lines.push(`To reach it by <strong>${esc(toAUFormat(investGoal.date))}</strong> you need about <strong>${fmt(need)}</strong> a month.`);
+                    chip = usual >= need - 0.005 ? '<span class="chip chip-ok">On track</span>' : `<span class="chip chip-bad">Behind by ${fmt(need - usual)} a month</span>`;
+                }
+            }
+        }
+        goalBody = `
+            <div class="iv-goal-top"><span><strong>${fmt(T.cur)}</strong> of ${fmt(investGoal.target)}</span><span class="iv-goal-pct">${pct.toFixed(0)}%</span></div>
+            <div class="progress-bar-bg iv-goal-bar"><div class="progress-bar-fill ${remaining <= 0 ? 'success-fill' : ''}" style="width:${pct.toFixed(1)}%"></div></div>
+            <div class="iv-goal-sub">${remaining > 0 ? `${fmt(remaining)} to go` : ''} ${chip}</div>
+            ${lines.map(l => `<div class="iv-goal-line">${l}</div>`).join('')}`;
+    }
+    const goalCard = `
+        <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h2>Investment goal<button type="button" class="help" data-help="A target for your total invested. The estimate uses your usual monthly amount this year (the Average per month card). The goal is saved inside your encrypted vault." aria-label="What is the investment goal?">?</button></h2></div>
+            ${goalBody}
+            <div class="iv-goal-form">
+                <input type="text" inputmode="decimal" autocomplete="off" id="ig-target" placeholder="Goal amount ($)" aria-label="Investment goal amount" value="${investGoal.target > 0 ? '$' + investGoal.target : ''}" oninput="moneyInput(this)" onkeydown="if(event.key==='Enter') saveInvestGoal()">
+                <input type="date" id="ig-date" title="Target date (optional)" aria-label="Investment goal date" value="${esc(investGoal.date)}">
+                <button class="btn" onclick="saveInvestGoal()">${investGoal.target > 0 ? 'Update goal' : 'Set goal'}</button>
+                ${investGoal.target > 0 ? '<button class="btn-secondary" onclick="clearInvestGoal()">Remove</button>' : ''}
+            </div>
+        </div>`;
 
     // month by month bars (money put in; returns lighter)
     const maxV = Math.max(1, ...months.map(m => Math.max(m.putTotal, m.retTotal)));
@@ -791,6 +868,7 @@ function renderInvestments() {
             <div class="card-header"><h2>Total invested · ${yr}</h2><span style="font-size:0.76rem;color:var(--text-muted)">Running total. Click a dot to open that month</span></div>
             ${growth}
         </div>
+        ${goalCard}
         <div class="mv-grid">
             <div class="card">
                 <div class="card-header"><h2>Put in each month · ${yr}</h2><span style="font-size:0.76rem;color:var(--text-muted)">Click a month to open it</span></div>
@@ -821,4 +899,240 @@ function renderInvestments() {
 // true if any month of any year has an investment line (used for the empty page)
 function investEverPut() {
     return Object.keys(datasets).some(k => { const m = investMonth(k); return m.put.length || m.ret.length; });
+}
+
+
+/* ---------- NET WORTH ----------
+   Cash (paid lines, same as the Dashboard "Total Balance") + savings goals + money put into investments.
+   Investments are shown at the amount you put in, because the dashboard does not know what they are worth today. */
+function cashBalanceFor(key) {
+    const ds = datasets[key];
+    if (!ds || !Array.isArray(ds.data)) return null;
+    let bal = 0;
+    ds.data.forEach(t => {
+        const paid = String(t.paid || '').toLowerCase() === 'yes';
+        if (isRolloverTx(t)) { bal += parseFloat(t.credit) || 0; return; }
+        if (paid) bal += (parseFloat(t.credit) || 0) - (parseFloat(t.debit) || 0);
+    });
+    return bal;
+}
+function investedThrough(y, mi) {
+    let sum = 0;
+    Object.keys(datasets).forEach(k => {
+        const m = rawMonthNames.find(n => k.startsWith(n));
+        if (!m) return;
+        if (parseInt(k.slice(m.length), 10) * 12 + rawMonthNames.indexOf(m) <= y * 12 + mi) sum += investMonth(k).putTotal;
+    });
+    return sum;
+}
+function returnsThrough(y, mi) {
+    let sum = 0;
+    Object.keys(datasets).forEach(k => {
+        const m = rawMonthNames.find(n => k.startsWith(n));
+        if (!m) return;
+        if (parseInt(k.slice(m.length), 10) * 12 + rawMonthNames.indexOf(m) <= y * 12 + mi) sum += investMonth(k).retTotal;
+    });
+    return sum;
+}
+// in a Savings & Investing account the money put in is already inside the cash balance, so Net Worth must not add it twice
+function nwInvested(y, mi) { return activeAcctType() === 'savings' ? 0 : investedThrough(y, mi); }
+function nwGoalsIncluded() { try { return localStorage.getItem('nw_goals_in_cash') === '1'; } catch (_) { return false; } }
+function setNwGoalsIncluded(on) { try { localStorage.setItem('nw_goals_in_cash', on ? '1' : '0'); } catch (_) { } renderNetWorth(); }
+
+function renderNetWorth() {
+    const box = document.getElementById('nw-body');
+    if (!box) return;
+    const key = activeMonthKey;
+    const mName = rawMonthNames.find(m => key.startsWith(m));
+    if (!mName) { box.innerHTML = ''; return; }
+    const yr = parseInt(key.slice(mName.length), 10), mIdx = rawMonthNames.indexOf(mName);
+    const prevDate = new Date(yr, mIdx - 1, 1), prevKey = monthKeyOfDate(prevDate);
+    const curLabel = SHORT_MONTHS[mIdx] + ' ' + yr, prevLabel = SHORT_MONTHS[prevDate.getMonth()] + ' ' + prevDate.getFullYear();
+    const curFull = new Date(yr, mIdx, 1).toLocaleString('en-AU', { month: 'long' });
+    const prevFull = prevDate.toLocaleString('en-AU', { month: 'long' });
+    document.getElementById('nw-sub').textContent = `${curLabel} against ${prevLabel}`;
+
+    const included = nwGoalsIncluded();
+    const goalsSaved = savingsGoals.reduce((a, g) => a + (Number(g.saved) || 0), 0);
+    const cash = cashBalanceFor(key) || 0, cashPrev = cashBalanceFor(prevKey);
+    const inv = nwInvested(yr, mIdx), invPrev = nwInvested(yr, mIdx - 1);
+    const goalsPart = included ? 0 : goalsSaved;
+    const total = cash + inv + goalsPart;
+    const hasPrev = cashPrev !== null;
+    const totalPrev = hasPrev ? cashPrev + invPrev + goalsPart : null;
+    const td = hasPrev ? total - totalPrev : 0, cd = hasPrev ? cash - cashPrev : 0, id = inv - invPrev;
+    const pctOf = (d, base) => (base && Math.abs(base) > 0.005) ? (d / Math.abs(base)) * 100 : null;
+
+    const delta = (d, base, show) => !show ? '<div class="mv-kpi-prev">No earlier month to compare with.</div>' :
+        `<div class="mv-kpi-delta">${mvPill(d, pctOf(d, base), mvTone(d, true))}<span class="mv-amt ${mvTone(d, true)}">${Math.abs(d) < 0.005 ? '' : (d > 0 ? '+' : '−') + fmt(Math.abs(d))}</span></div>`;
+    const card = (label, icon, val, help, desc, dHtml, cls) => `
+        <div class="card mv-kpi">
+            <div class="mv-kpi-top"><span>${label}<button type="button" class="help" data-help="${esc(help)}" aria-label="What is ${esc(label)}?">?</button></span><span aria-hidden="true">${icon}</span></div>
+            <div class="mv-kpi-val ${cls || ''}">${val < 0 ? '−' : ''}${fmt(Math.abs(val))}</div>
+            <div class="iv-desc">${esc(desc)}</div>
+            ${dHtml}
+        </div>`;
+
+    // hero
+    let heroCls = 'flat', heroIc = '＝', heroTxt = `Your net worth is <strong>${total < 0 ? '−' : ''}${fmt(Math.abs(total))}</strong>.`;
+    if (hasPrev && Math.abs(td) >= 0.005) {
+        heroCls = td > 0 ? 'down' : 'up'; heroIc = td > 0 ? '▲' : '▼';
+        heroTxt += ` That is <strong>${fmt(Math.abs(td))} ${td > 0 ? 'more' : 'less'}</strong> than at the end of ${esc(prevFull)} (cash and invested).`;
+    }
+
+    // composition bar
+    const parts = [{ n: 'Cash', v: cash, c: 'cash' }, { n: 'Savings goals', v: goalsPart, c: 'goals' }, { n: 'Invested', v: inv, c: 'inv' }];
+    const pos = parts.filter(p => p.v > 0), posTotal = pos.reduce((a, p) => a + p.v, 0);
+    const comp = (posTotal > 0 && cash >= 0) ? `
+        <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h2>What it is made of</h2></div>
+            <div class="nw-bar" role="img" aria-label="${esc(pos.map(p => p.n + ' ' + ((p.v / posTotal) * 100).toFixed(0) + '%').join(', '))}">${pos.map(p => `<span class="nw-seg ${p.c}" style="width:${((p.v / posTotal) * 100).toFixed(2)}%" title="${esc(p.n + ': ' + fmt(p.v))}"></span>`).join('')}</div>
+            <div class="mv-legend">${pos.map(p => `<span><i class="nw-sw ${p.c}"></i>${esc(p.n)} ${fmt(p.v)} · ${((p.v / posTotal) * 100).toFixed(0)}%</span>`).join('')}</div>
+        </div>` : '';
+
+    // trend: cash and invested by month, up to the latest month that has happened
+    const t0 = startOfToday(), thisStart = new Date(t0.getFullYear(), t0.getMonth(), 1);
+    const rows = [];
+    for (let i = 0; i < 12; i++) {
+        if (new Date(yr, i, 1) > thisStart) break;
+        const c = cashBalanceFor(rawMonthNames[i] + yr);
+        if (c === null) continue;
+        const v = nwInvested(yr, i);
+        rows.push({ i, cash: c, inv: v, tot: c + v });
+    }
+    let trend = '<div class="empty-note">Not enough months to draw a trend yet.</div>';
+    if (rows.length >= 2) {
+        const W = Math.max(320, Math.min(960, Math.round((box.clientWidth || 640) - 44))), H = W < 500 ? 220 : 250;
+        const pl = 62, pr = 18, pt = 16, pb = 30, iw = W - pl - pr, ih = H - pt - pb;
+        const all = rows.flatMap(r => [r.cash, r.inv, r.tot]);
+        let lo = Math.min(0, ...all), hi = Math.max(100, ...all);
+        const step = mvNiceStep(hi - lo, 4);
+        lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+        const x = i => pl + (i / 11) * iw, y = v => pt + (1 - (v - lo) / (hi - lo)) * ih;
+        let grid = '', xl = '';
+        for (let v = lo; v <= hi + 1e-6; v += step) grid += `<line class="mv-grid-line" x1="${pl}" x2="${W - pr}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text class="mv-axis" x="${pl - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${Math.abs(hi) >= 10000 ? fmtCompact.format(v) : fmt(v).replace('.00', '')}</text>`;
+        for (let k = 0; k < 12; k++) if (W >= 500 || k % 2 === 0) xl += `<text class="mv-axis" x="${x(k).toFixed(1)}" y="${H - 8}" text-anchor="middle">${SHORT_MONTHS[k]}</text>`;
+        const path = f => rows.map((r, n) => (n ? 'L' : 'M') + x(r.i).toFixed(1) + ',' + y(r[f]).toFixed(1)).join('');
+        const dots = f => rows.map(r => `<circle class="nw-dot ${f}${r.i === mIdx ? ' sel' : ''}" cx="${x(r.i).toFixed(1)}" cy="${y(r[f]).toFixed(1)}" r="${r.i === mIdx ? 5 : 3}"><title>${esc(SHORT_MONTHS[r.i] + ' ' + yr + ': ' + ({ cash: 'cash ', inv: 'invested ', tot: 'together ' }[f]) + fmt(r[f]))}</title></circle>`).join('');
+        trend = `<div class="iv-grow"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cash and money invested by month in ${yr}">${grid}${xl}
+            <path class="nw-line cash" d="${path('cash')}"/><path class="nw-line inv" d="${path('inv')}"/><path class="nw-line tot" d="${path('tot')}"/>${dots('cash')}${dots('inv')}${dots('tot')}</svg></div>
+            <div class="mv-legend"><span><i class="nw-sw cash"></i>Cash</span><span><i class="nw-sw inv"></i>Invested</span><span><i class="nw-sw tot"></i>Together</span></div>`;
+    }
+
+    box.innerHTML = `
+        <div class="card mv-hero"><span class="mv-hero-ic ${heroCls}" aria-hidden="true">${heroIc}</span><div class="mv-hero-text">${heroTxt}</div></div>
+        <div class="mv-kpis nw-kpis">
+            ${card('Cash', '💵', cash, 'The money in your accounts right now: your opening balance plus every income line marked Paid, minus every expense marked Paid. It is the same as Total Balance on the Dashboard.', 'Your balance from paid lines.', delta(cd, cashPrev, hasPrev))}
+            ${card('Savings goals', '🎯', goalsSaved, 'The total you have set aside across your Savings Goals. Goals are tracked separately from your transactions, so tick the box below if that money is already part of your cash balance.', included ? 'Already inside your cash, so not added again.' : 'Set aside in your goals.', '<div class="mv-kpi-prev">Goals do not keep a history.</div>')}
+            ${card('Invested', '📈', inv, 'Everything you have put into investments, added together. It is the amount you put in, not what it is worth today, because the dashboard does not know the current value.', 'Money you have put in so far.', delta(id, invPrev, true))}
+            ${card('Net worth', '🏦', total, 'Cash plus savings goals plus invested. The comparison with last month uses cash and invested only, because goals do not keep a history.', 'Everything together.', delta(td, totalPrev, hasPrev), total < 0 ? 'text-danger' : '')}
+        </div>
+        <label class="nw-check"><input type="checkbox" ${included ? 'checked' : ''} onchange="setNwGoalsIncluded(this.checked)"> My savings goals are already inside my cash balance (do not add them again)</label>
+        ${comp}
+        <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h2>Cash and invested · ${yr}</h2><span style="font-size:0.76rem;color:var(--text-muted)">Month by month</span></div>
+            ${trend}
+        </div>
+        <div class="mv-note">${activeAcctType() === 'savings' ? 'In a Savings & Investing account the money you put in is already part of the cash here, so it is not counted twice. ' : ''}Cash is the balance from paid lines at the end of each month. Invested is the running total you have put in. Neither includes what your investments are worth today, and savings goals are not in the monthly chart because they do not keep a history.</div>`;
+}
+
+// Investments section for the printed monthly report (empty when there is nothing to show)
+function investReportHtml(key) {
+    const mName = rawMonthNames.find(m => String(key).startsWith(m));
+    if (!mName) return '';
+    const yr = parseInt(key.slice(mName.length), 10), mIdx = rawMonthNames.indexOf(mName);
+    const cur = investMonth(key), prev = investMonth(monthKeyOfDate(new Date(yr, mIdx - 1, 1)));
+    const total = investedThrough(yr, mIdx);
+    if (!total && !cur.put.length && !cur.ret.length) return '';
+    const row = (label, val) => `<tr><td>${label}</td><td class="n">${val}</td></tr>`;
+    return `
+            <h2>Investments</h2>
+            <table class="sum"><tbody>
+                ${row('Put in this month', fmt(cur.putTotal))}
+                ${row('Put in last month', fmt(prev.putTotal))}
+                ${row('Returns this month', fmt(cur.retTotal))}
+                ${row('<strong>Total invested so far</strong>', '<strong>' + fmt(total) + '</strong>')}
+            </tbody></table>`;
+}
+
+
+
+/* ---------- INTEREST ----------
+   Interest = credit lines whose category starts with "Interest" (paid ones count as received).
+   The rate is worked out from what the bank actually paid you:
+   interest received / average daily balance, scaled to a full year. */
+const INTEREST_RE = /^\s*interest/i;
+
+function interestMonth(key) {
+    const m = rawMonthNames.find(n => key.startsWith(n));
+    const ds = datasets[key];
+    if (!m || !ds || !Array.isArray(ds.data)) return null;
+    const y = parseInt(key.slice(m.length), 10), i = rawMonthNames.indexOf(m);
+    const days = new Date(y, i + 1, 0).getDate();
+    const today = startOfToday(), first = new Date(y, i, 1), last = new Date(y, i, days);
+    const elapsed = today < first ? 0 : (today < last ? today.getDate() : days);
+    const open = ds.data.filter(isRolloverTx).reduce((s, t) => s + (parseFloat(t.credit) || 0), 0);
+    const byDay = new Array(days + 1).fill(0);
+    let interest = 0, last_ = null;
+    ds.data.forEach(t => {
+        if (isRolloverTx(t)) return;
+        const paid = String(t.paid || '').toLowerCase() === 'yes';
+        const c = parseFloat(t.credit) || 0;
+        if (paid) { const d = Math.min(days, Math.max(1, parseInt(String(t.date).slice(0, 2), 10) || 1)); byDay[d] += c - (parseFloat(t.debit) || 0); }
+        if (paid && c > 0 && INTEREST_RE.test(t.creditCat || '')) { interest += c; if (!last_ || parseDateString(t.date) > parseDateString(last_.date)) last_ = { date: t.date, amt: c }; }
+    });
+    let bal = open, sum = 0;
+    for (let d = 1; d <= elapsed; d++) { bal += byDay[d]; sum += bal; }
+    return { key, y, i, days, elapsed, avg: elapsed ? sum / elapsed : 0, interest, last: last_ };
+}
+
+function openInterestEntry() {
+    openTransactionModal();
+    document.getElementById('tm-type').value = 'credit';
+    onTxnTypeChange();
+    document.getElementById('tm-cat').value = 'Interest';
+    txmCatTouched = true;
+    document.getElementById('tm-desc').value = 'Interest';
+    document.getElementById('tm-paid').checked = true;
+    setTimeout(() => document.getElementById('tm-amount').focus(), 60);
+}
+
+function renderInterest() {
+    const box = document.getElementById('int-body'), sub = document.getElementById('int-sub');
+    if (!box) return;
+    syncRolloverBalances();
+    if (!creditCategories.some(c => INTEREST_RE.test(c))) { creditCategories.push('Interest'); saveToSupabase(); }
+    const yr = parseInt(selectedYear, 10);
+    const months = [];
+    for (let i = 0; i < 12; i++) { const r = interestMonth(rawMonthNames[i] + yr); if (r && r.elapsed > 0) months.push(r); }
+    const firstInt = months.findIndex(r => r.interest > 0);
+    const counted = firstInt < 0 ? [] : months.slice(firstInt);
+    const total = months.reduce((s, r) => s + r.interest, 0);
+    const days = counted.reduce((s, r) => s + r.elapsed, 0);
+    const wAvg = days ? counted.reduce((s, r) => s + r.avg * r.elapsed, 0) / days : 0;
+    const cTotal = counted.reduce((s, r) => s + r.interest, 0);
+    const rate = (wAvg > 0 && days) ? (cTotal / wAvg) * (365 / days) * 100 : null;
+    const lastPay = months.map(r => r.last).filter(Boolean).sort((a, b) => parseDateString(b.date) - parseDateString(a.date))[0] || null;
+    sub.textContent = activeAccountName() + ' · ' + yr;
+    if (!months.length || total <= 0) {
+        box.innerHTML = `<div class="card"><div class="empty-note">No interest recorded for ${yr} yet.<br>When the bank pays you interest, add it as a credit with the category <strong>Interest</strong> (the button above does this for you). Then this page shows how much you earned and the rate you are really getting.</div></div>`;
+        return;
+    }
+    const help = (t, h) => `<span class="stat-card-title">${t}<button type="button" class="help" data-help="${esc(h)}" aria-label="What is ${esc(t)}?">?</button></span>`;
+    const firstActive = months.findIndex(r => r.avg > 0 || r.interest > 0);
+    const rows = months.slice(Math.max(0, firstActive)).map(r => {
+        const mr = (r.avg > 0 && r.interest > 0) ? (r.interest / r.avg) * (365 / r.days) * 100 : null;
+        return `<tr><td>${esc(new Date(yr, r.i, 1).toLocaleString('en-AU', { month: 'long' }))}</td><td>${fmt(r.avg)}</td><td class="${r.interest > 0 ? 'text-success' : ''}">${r.interest > 0 ? fmt(r.interest) : '—'}</td><td>${mr === null ? '—' : mr.toFixed(2) + '%'}</td></tr>`;
+    }).join('');
+    box.innerHTML = `
+        <p class="int-hero">You earned <strong>${fmt(total)}</strong> in interest in ${yr}${rate === null ? '' : `, which works out to about <strong>${rate.toFixed(2)}% a year</strong> on an average balance of <strong>${fmt(wAvg)}</strong>`}.</p>
+        <div class="ov-stats">
+            <div class="stat-card">${help('Interest earned · ' + yr, 'All the interest the bank has paid into this account in ' + yr + '. Only lines with the category Interest that are marked Paid count.')}<span class="stat-card-value text-success">${fmt(total)}</span><span class="iv-desc">Paid into this account this year.</span></div>
+            <div class="stat-card">${help('Rate you are getting', 'Interest received divided by your average daily balance, scaled up to a full year. Example: $500 earned on an average of $12,000 over 12 months is 4.17% a year. It is an estimate: it uses the balance recorded here, and starts from the first month interest was paid.')}<span class="stat-card-value">${rate === null ? '—' : rate.toFixed(2) + '%'}</span><span class="iv-desc">Per year, from what you were actually paid.</span></div>
+            <div class="stat-card">${help('Average balance', 'The average of your daily balance since the first month interest was paid. Only lines marked Paid are counted.')}<span class="stat-card-value">${fmt(wAvg)}</span><span class="iv-desc">What the interest was earned on.</span></div>
+            <div class="stat-card">${help('Last payment', 'The most recent interest payment recorded in this account.')}<span class="stat-card-value">${lastPay ? fmt(lastPay.amt) : '—'}</span><span class="iv-desc">${lastPay ? 'Paid on ' + esc(lastPay.date) : 'None yet.'}</span></div>
+        </div>
+        <div class="iv-sect" style="margin-top:20px">Month by month · ${yr}</div>
+        <div class="table-container-clean iv-scroll"><table class="iv-table"><thead><tr><th>Month</th><th>Average balance</th><th>Interest paid</th><th>Rate per year</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="acct-note">A month with no interest is shown with a dash. If your bank pays interest monthly and a month is missing, add it so the rate stays accurate.</p>`;
 }

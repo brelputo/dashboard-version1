@@ -1,3 +1,4 @@
+window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-24-h';
 /* STATE: settings, default data and the values the whole app shares. Loaded first.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -59,6 +60,7 @@
     let activeMonthKey = "september2026";
     let lastMonthName = "september";
     let savingsGoals = [];
+    let investGoal = { target: 0, date: '' }; // optional goal for the Investments page
     let subscriptions = [];
     let forecastDays = 30;
     let subCandidates = [];
@@ -139,6 +141,10 @@
         goals:         { pane: 'goals-view',         month: false },
         subscriptions: { pane: 'subs-view',          month: false },
         investments:   { pane: 'invest-view',        month: true },
+        networth:      { pane: 'networth-view',      month: true },
+        interest:      { pane: 'interest-view',      month: false },
+        accounts:      { pane: 'accounts-view',      month: false, year: false },
+        review:        { pane: 'review-view',        month: false },
         multiyear:     { pane: 'multi-year-view',    month: false, year: false },
         forecast:      { pane: 'forecast-view',      month: false, year: false }
     };

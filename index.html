@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-build="2026-11-24-h">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
     <!-- Supabase is pinned to one exact version (2.119.2) so an update by its makers can never change your site without you knowing. To update it on purpose, change the number below. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" onerror="(window.__missingFiles=window.__missingFiles||[]).push('style.css')">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     
@@ -129,6 +129,21 @@
 </div>
 
 <!-- NEW TRANSACTION MODAL -->
+<div id="link-modal" class="modal-overlay" onclick="if(event.target===this) cancelTransferLink()">
+    <div class="modal-card modal-sm" role="dialog" aria-modal="true" aria-labelledby="link-modal-title">
+        <div class="modal-head"><h3 id="link-modal-title">Send to another account?</h3></div>
+        <p id="link-modal-text" class="modal-note"></p>
+        <div class="form-field" id="link-modal-pick" style="display:none">
+            <label for="link-modal-select">Send to account</label>
+            <select id="link-modal-select"></select>
+        </div>
+        <div class="modal-actions" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+            <button type="button" class="btn btn-secondary" id="link-modal-no" onclick="answerTransferLink(false)">No, keep it only here</button>
+            <button type="button" class="btn" id="link-modal-yes" onclick="answerTransferLink(true)">Yes</button>
+        </div>
+    </div>
+</div>
+
 <div id="txn-modal" class="modal-overlay" onclick="if(event.target===this) closeTransactionModal()">
     <div class="modal-card modal-sm" role="dialog" aria-modal="true" aria-labelledby="txn-modal-title">
         <div class="modal-head">
@@ -149,11 +164,16 @@
                 <select id="tm-type" onchange="onTxnTypeChange()">
                     <option value="expense">Expense</option>
                     <option value="credit">Credit</option>
+                    <option value="transfer">Transfer to another account</option>
                 </select>
             </div>
         </div>
         <div class="form-row">
-            <div class="form-field">
+            <div class="form-field" id="tm-dest-wrap" style="display:none">
+                <label for="tm-dest">Send to account</label>
+                <select id="tm-dest"></select>
+            </div>
+            <div class="form-field" id="tm-cat-wrap">
                 <label for="tm-cat">Category</label>
                 <select id="tm-cat" onchange="txmCatTouched = true"></select>
             </div>
@@ -268,6 +288,7 @@
                 </button>
                 <div class="nav-sub-list"><div class="nav-sub-inner">
                     <button type="button" class="nav-sub" data-view="annual" onclick="showView('annual')">Annual Summary</button>
+                    <button type="button" class="nav-sub" data-view="review" onclick="showView('review')">Year in Review</button>
                     <button type="button" class="nav-sub" data-view="multiyear" onclick="showView('multiyear')">Multi-Year Comparison</button>
                     <button type="button" class="nav-sub" data-view="trend" onclick="showView('trend')">Month vs Last Month</button>
                 </div></div>
@@ -294,12 +315,16 @@
                     <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                 </button>
                 <div class="nav-sub-list"><div class="nav-sub-inner">
+                    <button type="button" class="nav-sub" data-view="accounts" onclick="showView('accounts')">All Accounts</button>
+                    <button type="button" class="nav-sub" data-view="networth" onclick="showView('networth')">Net Worth</button>
                     <button type="button" class="nav-sub" data-view="goals" onclick="showView('goals')">Savings Goals</button>
                     <button type="button" class="nav-sub" data-view="investments" onclick="showView('investments')">Investments</button>
+                    <button type="button" class="nav-sub" data-view="interest" onclick="showView('interest')">Interest</button>
                 </div></div>
             </div>
         </nav>
         <div class="nav-footer">
+            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-24-h</div>
             <button type="button" class="nav-item" onclick="lockVault()">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
                 <span>Lock vault</span>
@@ -319,8 +344,8 @@
                     <button onclick="closeOptionsDropdown(); sortTransactionsByDateManual()">📅 Sort by Date</button>
                     <button onclick="closeOptionsDropdown(); copyFromPreviousMonth('fixed')">📋 Copy Last Month's Fixed Lines</button>
                     <button onclick="closeOptionsDropdown(); copyFromPreviousMonth('all')">📋 Copy All of Last Month</button>
-                    <button onclick="closeOptionsDropdown(); exportJSON()">💾 Backup JSON</button>
-                    <button onclick="closeOptionsDropdown(); exportEncryptedBackup()">🔐 Encrypted Backup</button>
+                    <button onclick="closeOptionsDropdown(); exportEncryptedBackup()">🔐 Encrypted Backup (recommended)</button>
+                    <button onclick="closeOptionsDropdown(); exportJSON()" title="This file is not encrypted: anyone who gets it can read your finances">💾 Backup JSON (not encrypted)</button>
                     <button onclick="closeOptionsDropdown(); exportCSV()">📄 Export Month (CSV)</button>
                     <button onclick="closeOptionsDropdown(); printReport()">🖨️ Print / Save Report (PDF)</button>
                     <label style="cursor: pointer;">
@@ -328,6 +353,8 @@
                     </label>
                     <button onclick="closeOptionsDropdown(); openSecurityModal()">🔑 Security (passwords)</button>
                     <button onclick="closeOptionsDropdown(); resetMonthData()">🔄 Reset Month</button>
+                    <button onclick="closeOptionsDropdown(); renameAccount(activeAccountId)">✏️ Rename this account</button>
+                    <button onclick="closeOptionsDropdown(); deleteAccount(activeAccountId)">🗑️ Delete this account</button>
                 </div>
             </div>
             </div>
@@ -353,6 +380,7 @@
             </div>
         </div>
         <div class="header-actions">
+            <select id="account-dropdown" class="select-picker" style="width: 250px;" onchange="onAccountDropdown(this.value)" aria-label="Account"></select>
             <select id="year-dropdown" class="select-picker" style="width: 140px;" onchange="switchYear(this.value)">
                 <option value="2025">🗓️ 2025</option>
                 <option value="2026" selected>🗓️ 2026</option>
@@ -395,6 +423,51 @@
             </div>
         </div>
         <div id="mv-body"></div>
+    </div>
+
+    <!-- YEAR IN REVIEW VIEW -->
+    <div id="review-view" class="view-pane" style="display: none;">
+        <div class="mv-head">
+            <div>
+                <h2 class="mv-title" id="yr-title">Year in Review</h2>
+                <div class="mv-sub" id="yr-sub">&nbsp;</div>
+            </div>
+        </div>
+        <div id="yr-body"></div>
+    </div>
+
+    <!-- ALL ACCOUNTS VIEW -->
+    <div id="accounts-view" class="view-pane" style="display: none;">
+        <div class="mv-head">
+            <div>
+                <h2 class="mv-title">All Accounts</h2>
+                <div class="mv-sub" id="acct-sub">&nbsp;</div>
+            </div>
+        </div>
+        <div id="acct-body"></div>
+    </div>
+
+    <!-- INTEREST VIEW -->
+    <div id="interest-view" class="view-pane" style="display: none;">
+        <div class="mv-head">
+            <div>
+                <h2 class="mv-title">Interest</h2>
+                <div class="mv-sub" id="int-sub">&nbsp;</div>
+            </div>
+            <button type="button" class="btn" onclick="openInterestEntry()">+ Add interest payment</button>
+        </div>
+        <div id="int-body"></div>
+    </div>
+
+    <!-- NET WORTH VIEW -->
+    <div id="networth-view" class="view-pane" style="display: none;">
+        <div class="mv-head">
+            <div>
+                <h2 class="mv-title">Net Worth</h2>
+                <div class="mv-sub" id="nw-sub">&nbsp;</div>
+            </div>
+        </div>
+        <div id="nw-body"></div>
     </div>
 
     <!-- INVESTMENTS VIEW -->
@@ -656,6 +729,7 @@
             </div>
             <button type="button" class="btn" onclick="openTransactionModal()">+ Add Transaction</button>
         </div>
+        <div id="ov-savings"></div>
         <div id="ov-due"></div>
         <div class="ov-alerts" id="ov-alerts"></div>
         <div class="ov-stats">
@@ -1047,13 +1121,37 @@
 <div id="toast">Synced with Supabase securely</div>
 <div id="print-report"></div>
 
-<script src="state.js"></script>
-<script src="helpers.js"></script>
-<script src="vault.js"></script>
-<script src="ledger.js"></script>
-<script src="budgets.js"></script>
-<script src="planning.js"></script>
-<script src="views.js"></script>
-<script src="startup.js"></script>
+<script src="state.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('state.js')"></script>
+<script src="helpers.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('helpers.js')"></script>
+<script src="accounts.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('accounts.js')"></script>
+    <script src="vault.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('vault.js')"></script>
+<script src="ledger.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('ledger.js')"></script>
+<script src="budgets.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('budgets.js')"></script>
+<script src="planning.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('planning.js')"></script>
+<script src="views.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('views.js')"></script>
+<script src="startup.js" onerror="(window.__missingFiles=window.__missingFiles||[]).push('startup.js')"></script>
+<script>
+/* File check: shows a red message at the top only when a file is missing or did not load. */
+window.addEventListener('load', function () {
+    var missing = (window.__missingFiles || []).slice();
+    var box = document.getElementById('login-overlay');
+    var styled = box && getComputedStyle(box).position === 'fixed';
+    if (!styled && missing.indexOf('style.css') < 0) missing.push('style.css');
+    var BUILD = '2026-11-24-h', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
+    if (document.documentElement.getAttribute('data-build') !== BUILD) missing.push('index.html (old version)');
+    JS.forEach(function (f) { if (missing.indexOf(f) < 0 && (window.__build || {})[f] !== BUILD) missing.push(f + ' (old version - replace it with the one from the latest zip)'); });
+    var need = ['showView', 'renderApp', 'switchAccount', 'saveToSupabase', 'renderInvestments', 'renderNetWorth', 'renderYearReview', 'openCategoryInLedger'];
+    var broken = need.filter(function (f) { return typeof window[f] !== 'function'; });
+    if (!missing.length && !broken.length) return;
+    if (broken.length && !missing.length) missing.push('one of the .js files (it loaded but is incomplete or old)');
+    var b = document.createElement('div');
+    b.setAttribute('role', 'alert');
+    b.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;background:#b91c1c;color:#fff;padding:14px 18px;font:15px/1.5 system-ui,Arial,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.4)';
+    b.innerHTML = '<strong>The dashboard could not load all of its files.</strong><br>Missing or not loading: <strong>' + missing.join(', ') + '</strong>.<br>' +
+        'All 12 files must sit together in the same folder as index.html: index.html, style.css, state.js, helpers.js, accounts.js, vault.js, ledger.js, budgets.js, planning.js, views.js, startup.js, README.md. ' +
+        'Extract the whole zip first (do not open index.html from inside the zip), then open index.html from that folder and press Ctrl + Shift + R.';
+    document.body.appendChild(b);
+});
+</script>
 </body>
 </html>

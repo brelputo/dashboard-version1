@@ -8,11 +8,12 @@ Open `index.html` (or the GitHub Pages address) to use it. All files live in the
 | `style.css` | All the colours, glass effects and spacing. |
 | `state.js` | Settings and default data shared by the whole app. |
 | `helpers.js` | Small tools: dollar format, dates, pop-up messages, theme and glass switch, `$` typing in the ledger. |
+| `accounts.js` | Several accounts: the switcher at the top, adding/renaming/deleting accounts, transfers between them and the All Accounts page. |
 | `vault.js` | Sign-in, encryption, cloud saving (Supabase), lock/unlock, backups and import. |
 | `ledger.js` | Transactions page, New Transaction window (with Paid switch), recurring bills, due-soon alerts. |
 | `budgets.js` | Budgets, categories and budget alerts. |
-| `planning.js` | Savings goals, subscriptions, the cash-flow forecast and the Investments page. |
-| `views.js` | Navigation, Dashboard overview, Annual, Multi-Year and Month vs Last Month pages. |
+| `planning.js` | Savings goals, subscriptions, the cash-flow forecast, the Investments page (with its goal), the Interest page and the Net Worth page. |
+| `views.js` | Navigation, Dashboard overview, Annual, Year in Review, Multi-Year and Month vs Last Month pages, and the printed report. |
 | `startup.js` | Things that run once when the page opens. |
 
 Do not reorder the `<script>` lines at the bottom of `index.html`.

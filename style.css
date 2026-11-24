@@ -1812,3 +1812,105 @@ html.fx-off .stat-card, html.fx-off .stat-card:hover { box-shadow: var(--shadow-
 .iv-grow-sum { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px; font-size: 0.82rem; color: var(--text-muted); }
 .iv-grow-sum strong { color: var(--text-main); font-variant-numeric: tabular-nums; }
 .iv-grow-sum .text-success strong { color: var(--success); }
+
+/* Investment goal */
+.iv-goal { stroke: var(--warning, #f59e0b); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.iv-goal-lbl { fill: var(--text-muted); font-size: 11px; font-weight: 600; }
+.iv-goal-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.iv-goal-pct { font-weight: 800; font-size: 1.1rem; color: var(--accent); }
+.iv-goal-bar { height: 10px !important; margin: 8px 0; }
+.iv-goal-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 0.84rem; color: var(--text-muted); margin-bottom: 6px; }
+.iv-goal-line { font-size: 0.88rem; line-height: 1.5; margin-top: 4px; }
+.iv-goal-form { display: grid; grid-template-columns: 1.2fr 1fr auto auto; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+@media (max-width: 700px) { .iv-goal-form { grid-template-columns: 1fr 1fr; } }
+.mv-cat-name.cat-link { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.86rem; }
+.budget-name.cat-link { font-size: 1rem; }
+
+/* Net worth */
+#networth-view { --nw-cash: #3987e5; --nw-goals: #f59e0b; --nw-inv: #10b981; --nw-tot: var(--text-main); }
+.nw-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .nw-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .nw-kpis { grid-template-columns: 1fr; } }
+.nw-check { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 16px; font-size: 0.84rem; color: var(--text-muted); cursor: pointer; }
+.nw-check input { margin-top: 2px; }
+.nw-bar { display: flex; height: 18px; border-radius: 10px; overflow: hidden; background: var(--border); }
+.nw-seg.cash, .nw-sw.cash { background: var(--nw-cash); }
+.nw-seg.goals, .nw-sw.goals { background: var(--nw-goals); }
+.nw-seg.inv, .nw-sw.inv { background: var(--nw-inv); }
+.nw-sw.tot { background: var(--nw-tot); }
+.nw-sw { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+.nw-line { fill: none; stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
+.nw-line.cash { stroke: var(--nw-cash); } .nw-line.inv { stroke: var(--nw-inv); } .nw-line.tot { stroke: var(--nw-tot); stroke-width: 3; stroke-dasharray: 0; opacity: 0.9; }
+.nw-dot { stroke: var(--surface-card); stroke-width: 1.5; }
+.nw-dot.cash { fill: var(--nw-cash); } .nw-dot.inv { fill: var(--nw-inv); } .nw-dot.tot { fill: var(--nw-tot); }
+.mv-legend .nw-sw { width: 12px; height: 12px; border-top: 0; }
+
+/* Year in Review: same chart colours as the Investments page, and a tidy 3-column highlight grid */
+#review-view { --mv-now: #2a78d6; --mv-prev: #eb6834; --iv-in: #3987e5; --iv-out: #10b981; }
+.yr-ins { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1000px) { .yr-ins { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .yr-ins { grid-template-columns: 1fr; } }
+#review-view .iv-col { cursor: default; }
+#review-view .iv-col:hover { background: none; }
+
+/* Phones: wide bar charts scroll inside their own card instead of pushing the page wider */
+@media (max-width: 700px) {
+    #annual-view .chart-container, #multi-year-view .chart-container, #monthly-trend-view .chart-container { min-width: 0; max-width: 100%; overflow-x: auto; }
+}
+
+/* Phones: let the Annual page cards shrink to the screen; their tables scroll inside the card */
+@media (max-width: 700px) {
+    .breakdowns-grid { grid-template-columns: minmax(0, 1fr); }
+    .breakdowns-grid > .card { min-width: 0; }
+    .table-container-annual-cats, .breakdowns-grid .table-container-clean { overflow-x: auto; }
+}
+
+
+/* ---------- ACCOUNTS ---------- */
+#account-dropdown { max-width: 100%; font-weight: 600; }
+#accounts-view { --acct-bg: var(--surface-card); }
+.acct-total { background: var(--surface-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.acct-total small { color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: .75rem; }
+.acct-total > b { font-size: 2rem; line-height: 1.1; }
+.acct-total span { color: var(--text-muted); font-size: .9rem; }
+.acct-total span b { color: var(--text-main); }
+.acct-list { display: flex; flex-direction: column; gap: 10px; }
+.acct-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--surface-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; }
+.acct-row.is-active { border-color: var(--border-focus); }
+.acct-name { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.acct-name b { font-size: 1.05rem; overflow-wrap: anywhere; }
+.acct-name em { font-style: normal; font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: #fff; }
+.acct-fig { display: flex; flex-direction: column; min-width: 0; }
+.acct-fig small { color: var(--text-muted); font-size: .75rem; }
+.acct-fig b { font-size: 1.1rem; }
+.acct-btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.acct-btns .btn { padding: 6px 12px; }
+.acct-note { color: var(--text-muted); font-size: .9rem; margin-top: 14px; line-height: 1.5; }
+@media (max-width: 700px) {
+    .acct-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .acct-name, .acct-btns { grid-column: 1 / -1; justify-content: flex-start; }
+    #account-dropdown { width: 100% !important; }
+}
+
+/* ---------- SAVINGS & INVESTING ACCOUNT ---------- */
+.nav-hidden { display: none !important; }
+body.acct-savings #dashboard-view > *:not(.page-head):not(#ov-savings):not(#ov-due) { display: none !important; }
+#ov-savings:empty { display: none; }
+.sav-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.sav-panel { background: var(--surface-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.sav-panel h3 { font-size: 1rem; }
+.sav-panel .btn { align-self: flex-start; }
+.sav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.acct-type { font-size: .7rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--border); color: var(--text-muted); }
+@media (max-width: 800px) { .sav-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- INTEREST ---------- */
+.int-hero { font-size: 1.05rem; line-height: 1.5; margin: 0 0 14px; }
+
+/* ---------- LINK BUTTON + VERSION TAG ---------- */
+.btn-xfer { background-color: rgba(148, 163, 184, 0.12); color: #94a3b8; padding: 5px 8px; font-size: 0.8rem; border-radius: 8px; font-weight: 600; border: 1px solid rgba(148, 163, 184, 0.3); cursor: pointer; }
+.btn-xfer:hover { background-color: rgba(148, 163, 184, 0.3); color: #ffffff; }
+.btn-xfer.linked { background-color: rgba(168, 85, 247, 0.25); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.6); }
+.build-tag { font-size: 0.68rem; color: var(--text-muted); opacity: 0.7; padding: 4px 14px 8px; }
+
+.col-num[data-manual="1"] { box-shadow: inset 0 -2px 0 #a855f7; }

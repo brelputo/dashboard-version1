@@ -1,3 +1,4 @@
+window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-24-h';
 /* VAULT: sign-in, encryption, cloud sync (Supabase), lock/unlock, backups and import.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -250,7 +251,8 @@
     }
 
     function buildVaultPayload() {
-        return { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions, autoApplyRecurring, recurringApplied };
+        captureActiveAccount();
+        return { accounts, activeAccountId };
     }
 
     function markBackupDone() {
@@ -431,21 +433,7 @@
             const stored = data[0].encrypted_data;
             const parsedVault = await decryptVault(stored);
             lastSyncedCipher = stored;
-            if (parsedVault.categories && Array.isArray(parsedVault.categories)) {
-                categories = parsedVault.categories;
-                creditCategories = parsedVault.creditCategories || creditCategories;
-                if (parsedVault.datasets && typeof parsedVault.datasets === 'object') datasets = parsedVault.datasets;
-                categoryBudgets = parsedVault.categoryBudgets || {};
-                enableBudgetRollover = parsedVault.enableBudgetRollover || false;
-                recurringTemplates = parsedVault.recurringTemplates || recurringTemplates;
-                autoCategorizationMap = parsedVault.autoCategorizationMap || autoCategorizationMap;
-                savingsGoals = Array.isArray(parsedVault.savingsGoals) ? parsedVault.savingsGoals : [];
-                subscriptions = Array.isArray(parsedVault.subscriptions) ? parsedVault.subscriptions : [];
-                autoApplyRecurring = !!parsedVault.autoApplyRecurring;
-                recurringApplied = (parsedVault.recurringApplied && typeof parsedVault.recurringApplied === 'object') ? parsedVault.recurringApplied : {};
-            } else {
-                datasets = parsedVault;
-            }
+            loadAccountsFromVault(parsedVault);
             normalizeVault();
             if (!stored.startsWith(VAULT_PREFIX) && hasSubtle()) saveToSupabase();
         } else {
@@ -472,10 +460,13 @@
         vaultKey = null;
         vaultSalt = null;
         datasets = {};
+        accounts = [];
+        activeAccountId = '';
         selectedTx.clear();
         autoApplyRecurring = false;
         recurringApplied = {};
         savingsGoals = [];
+        investGoal = { target: 0, date: '' };
         subscriptions = [];
         subCandidates = [];
         document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #mv-body, #cmp-body, #budgets-grid, #ov-due, #tx-due, #global-results, #ov-upcoming, #ov-goals, #ov-alerts, #print-report').forEach(el => { el.innerHTML = ''; });
@@ -499,6 +490,7 @@
     }
 
     function saveToSupabase() {
+        reconcileTransfers();   // every change keeps linked transfers in step straight away
         clearTimeout(saveTimer);
         saveTimer = setTimeout(saveNow, 700);
         if (masterKey) setSyncStatus('saving');
@@ -512,10 +504,7 @@
         saving = true;
         const client = supabaseClient;
         try {
-            const vaultPayload = {
-                categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover,
-                recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions, autoApplyRecurring, recurringApplied
-            };
+            const vaultPayload = buildVaultPayload();
             const encryptedString = await encryptVault(vaultPayload);
             const { data, error: fetchError } = await client
                 .from('user_finances')
@@ -554,6 +543,7 @@
     }
 
     function exportJSON() {
+        if (!confirm('This backup file is NOT encrypted.\n\nAnyone who gets this file can read all of your finances. The Encrypted Backup is safer.\n\nPress OK to download the readable file anyway, or Cancel to stop.')) return;
         const vaultPayload = buildVaultPayload();
         const blob = new Blob([JSON.stringify(vaultPayload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -584,6 +574,14 @@
                     catch (err) { throw new Error('encrypted: ' + err.message); }
                 }
                 if (!imported || typeof imported !== 'object') throw new Error('not an object');
+                if (Array.isArray(imported.accounts) && imported.accounts.length) {
+                    loadAccountsFromVault(imported);
+                    ensureYearDatasetsExist(selectedYear);
+                    document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
+                    sortTransactions(); saveToSupabase(); updateAccountUi(); showView(currentView === 'accounts' ? 'dashboard' : currentView);
+                    showToast('Successfully restored all accounts from backup & synced!');
+                    return;
+                }
                 const looksLikeMonths = o => o && typeof o === 'object' && Object.values(o).some(v => v && Array.isArray(v.data));
                 const incomingDatasets = imported.categories && imported.datasets ? imported.datasets : imported;
                 if (!looksLikeMonths(incomingDatasets)) throw new Error('no month data found');
@@ -596,6 +594,7 @@
                     recurringTemplates = imported.recurringTemplates || recurringTemplates;
                     autoCategorizationMap = imported.autoCategorizationMap || autoCategorizationMap;
                     savingsGoals = Array.isArray(imported.savingsGoals) ? imported.savingsGoals : savingsGoals;
+                    if (imported.investGoal) investGoal = cleanInvestGoal(imported.investGoal);
                     subscriptions = Array.isArray(imported.subscriptions) ? imported.subscriptions : subscriptions;
                     autoApplyRecurring = !!imported.autoApplyRecurring;
                     recurringApplied = (imported.recurringApplied && typeof imported.recurringApplied === 'object') ? imported.recurringApplied : {};

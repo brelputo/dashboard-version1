@@ -1,3 +1,4 @@
+window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-24-h';
 /* BUDGETS: budgets, categories and budget alerts.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -214,7 +215,7 @@
             return `
                 <div class="budget-card ${over ? 'is-over' : ''}">
                     <div class="budget-top">
-                        <span class="budget-name" title="${esc(r.cat)}">${esc(r.cat)}</span>
+                        <button type="button" class="cat-link budget-name" data-open-cat="${esc(r.cat)}" title="See every ${esc(r.cat)} line in Transactions">${esc(r.cat)}</button>
                         <span class="budget-badge ${state}">${Math.round(r.pct)}% Spent</span>
                     </div>
                     <div class="budget-sub">

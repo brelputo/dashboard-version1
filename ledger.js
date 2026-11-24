@@ -1,3 +1,4 @@
+window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-24-h';
 /* LEDGER: the Transactions page, the New Transaction window, recurring bills, due-soon alerts and row selection.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -29,10 +30,21 @@
     function populateTxnModalCategories() {
         const type = document.getElementById('tm-type').value;
         const list = type === 'credit' ? creditCategories : categories;
+        const isTr = type === 'transfer';
+        document.getElementById('tm-cat-wrap').style.display = isTr ? 'none' : '';
+        document.getElementById('tm-dest-wrap').style.display = isTr ? '' : 'none';
+        if (isTr) {
+            const targets = transferTargets();
+            document.getElementById('tm-dest').innerHTML = targets.map(a => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('');
+        }
         document.getElementById('tm-cat').innerHTML =
             '<option value="">-- None --</option>' + [...list].sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
     }
     function onTxnTypeChange() {
+        if (document.getElementById('tm-type').value === 'transfer' && !transferTargets().length) {
+            document.getElementById('tm-type').value = 'expense';
+            showToast('Add a second account first (Account menu at the top > New account)', true);
+        }
         txmCatTouched = false;
         populateTxnModalCategories();
         onTxnDescInput();
@@ -86,15 +98,25 @@
         ensureYearDatasetsExist(yr);
         const monthName = rawMonthNames[d.getMonth()];
         const key = monthName + yr;
-        const isExpense = type === 'expense';
+        const isTransfer = type === 'transfer';
+        const isExpense = type === 'expense' || isTransfer;
+        let destAcct = null;
+        if (isTransfer) {
+            destAcct = accounts.find(a => a.id === document.getElementById('tm-dest').value);
+            if (!destAcct || destAcct.id === activeAccountId) { showToast('Pick the account to send the money to', true); return; }
+            if (!categories.includes('Transfer Out')) categories.push('Transfer Out');
+        }
         const tx = {
             date: toAUFormat(iso), desc,
-            cost: isExpense ? cat : '', creditCat: isExpense ? '' : cat,
+            cost: isTransfer ? 'Transfer Out' : (isExpense ? cat : ''), creditCat: isExpense ? '' : cat,
             type: isExpense ? 'Variable' : '',
             credit: isExpense ? 0 : amount, debit: isExpense ? amount : 0,
-            method: isExpense ? 'Debit' : 'Transfer', paid: document.getElementById('tm-paid').checked ? 'Yes' : 'NO'
+            method: (isExpense && !isTransfer) ? 'Debit' : 'Transfer', paid: document.getElementById('tm-paid').checked ? 'Yes' : 'NO'
         };
         datasets[key].data.push(tx);
+        if (isTransfer) { tx.xfer = { to: destAcct.id, id: newLinkId() }; reconcileTransfers(); }
+        let matchedAcct = null;
+        const askAfter = (isExpense && !isTransfer);
         const again = !!(document.getElementById('tm-again') || {}).checked;
         if (!again) closeTransactionModal();
         currentFilter = 'all';
@@ -110,6 +132,7 @@
         sortTransactions();
         renderApp();
         saveToSupabase();
+        if (askAfter) offerTransferLink(tx);
         const idx = datasets[key].data.indexOf(tx);
         requestAnimationFrame(() => {
             const row = document.querySelector(`#txn-tbody tr[data-idx="${idx}"]`);
@@ -122,11 +145,11 @@
             resetTxnModalForAnother();
             showToast(moved ? `Added to ${currentMonthLabel()} · ready for the next one` : 'Added · ready for the next one');
         } else {
-            showToast(moved ? `Transaction added to ${currentMonthLabel()}` : 'Transaction added');
+            showToast(isTransfer ? `Transfer added here and in ${destAcct.name}` : matchedAcct ? `Added here and in ${matchedAcct.name}` : (moved ? `Transaction added to ${currentMonthLabel()}` : 'Transaction added'));
         }
     }
 
-    function closeAllModals() { closeRecurringModal(); closeTransactionModal(); closeBudgetModal(); closeSecurityModal(); }
+    function closeAllModals() { try { cancelTransferLink(); } catch (_) { } closeRecurringModal(); closeTransactionModal(); closeBudgetModal(); closeSecurityModal(); }
 
     function periodSummaryFor(monthKey) {
         const ds = datasets[monthKey];
@@ -175,8 +198,10 @@
         const ds = datasets[activeMonthKey];
         const tx = ds && ds.data[index];
         if (!tx) return;
+        if (blockMirrorEdit(tx)) return;
         const wasPaid = String(tx.paid || '').toLowerCase() === 'yes';
         tx.paid = wasPaid ? 'NO' : 'Yes';
+        if (!wasPaid) offerTransferLink(tx); else askUnlinkOnPending(tx);
         renderApp();
         saveToSupabase();
         showToast(wasPaid ? 'Marked as Pending' : 'Marked as Paid');
@@ -196,6 +221,7 @@
         changed.forEach(t => { t.paid = 'Yes'; });
         renderApp();
         saveToSupabase();
+        changed.forEach(t => offerTransferLink(t));
         showToast(`Marked ${changed.length} line${changed.length === 1 ? '' : 's'} as paid`, false, {
             label: 'Undo',
             fn: () => {
@@ -465,6 +491,7 @@
         it.tx.paid = 'Yes';
         renderApp();
         saveToSupabase();
+        offerTransferLink(it.tx);
         showToast(`Marked "${it.desc}" as paid`, false, {
             label: 'Undo',
             fn: () => { it.tx.paid = 'NO'; renderApp(); saveToSupabase(); showToast('Undone'); }
@@ -613,7 +640,9 @@
             const currData = datasets[currKey].data;
             const rolloverItem = currData.find(t => isRolloverTx(t));
             if (rolloverItem) {
-                if (rolloverItem.credit !== prevProj) {
+                if (rolloverItem.manual) {
+                    // the person typed this opening balance themselves: keep it
+                } else if (rolloverItem.credit !== prevProj) {
                     rolloverItem.credit = prevProj;
                     changed = true;
                 }
@@ -822,7 +851,7 @@
                         <option value="Variable" ${tx.type === 'Variable' ? 'selected' : ''}>Variable</option>
                     </select>
                 </td>
-                <td><input type="text" inputmode="decimal" autocomplete="off" class="col-num" aria-label="Credit amount" value="${Number(tx.credit) ? '$' + Number(tx.credit).toFixed(2) : ''}" oninput="moneyInput(this)" onchange="updateTx(${index}, 'credit', parseMoney(this.value)); moneyBlur(this)"></td>
+                <td><input type="text" inputmode="decimal" autocomplete="off" class="col-num" aria-label="Credit amount" ${isRolloverTx(tx) ? `title="${tx.manual ? 'Set by you. Clear the box to calculate it automatically again.' : 'Calculated automatically from last month. Type a number to set it yourself.'}"` : ''} ${tx.manual ? 'data-manual="1"' : ''} value="${Number(tx.credit) ? '$' + Number(tx.credit).toFixed(2) : ''}" oninput="moneyInput(this)" onchange="updateTx(${index}, 'credit', parseMoney(this.value)); moneyBlur(this)"></td>
                 <td><input type="text" inputmode="decimal" autocomplete="off" class="col-num" aria-label="Debit amount" value="${tx.debit > 0 ? '$' + Number(tx.debit).toFixed(2) : ''}" oninput="moneyInput(this)" onchange="updateTx(${index}, 'debit', parseMoney(this.value)); moneyBlur(this)"></td>
                 <td><input type="text" class="col-method" aria-label="Payment method" value="${esc(tx.method)}" onchange="updateTx(${index}, 'method', this.value)"></td>
                 <td class="col-paid">
@@ -833,6 +862,7 @@
                 </td>
                 <td class="col-action">
                     <div class="btn-action-row">
+                        ${(!isRolloverTx(tx) && !tx.xferFrom && accounts.length > 1 && (parseFloat(tx.debit) || 0) > 0) ? `<button class="btn-xfer${tx.xfer ? ' linked' : ''}" onclick="openLinkPicker(${index})" title="${tx.xfer ? 'Linked to another account - click to unlink' : 'Also record this in another account'}">🔗</button>` : ''}
                         ${isRolloverTx(tx) ? '' : `<button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Move this line to the next month as Pending">➡️</button>`}
                         <button class="btn-copy" onclick="duplicateTransaction(${index})" title="Copy line">📋</button>
                         <button class="btn-danger" onclick="deleteTx(${index})" title="Delete">✕</button>
@@ -891,8 +921,11 @@
 
     function updateTxDesc(index, descVal) {
         const tx = datasets[activeMonthKey].data[index];
+        if (blockMirrorEdit(tx)) return;
         const oldDesc = tx['desc'];
         tx['desc'] = descVal;
+        if (descVal !== oldDesc) declinedLinks.delete(tx);   // a changed description gets a fresh question
+        offerTransferLink(tx);
         let lowerDesc = descVal.toLowerCase();
         for (let keyword in autoCategorizationMap) {
             if (lowerDesc.includes(keyword)) {
@@ -964,7 +997,9 @@
     }
 
     function handlePaidChange(index, value) {
+        if (blockMirrorEdit(datasets[activeMonthKey].data[index])) return;
         datasets[activeMonthKey].data[index]['paid'] = value;
+        if (String(value).toLowerCase() === 'yes') offerTransferLink(datasets[activeMonthKey].data[index]); else askUnlinkOnPending(datasets[activeMonthKey].data[index]);
         calculateMetrics();
         renderTransactions();
         saveToSupabase();
@@ -977,6 +1012,7 @@
         const ds = datasets[fromKey];
         const tx = ds && ds.data[index];
         if (!tx) return;
+        if (blockMirrorEdit(tx)) return;
         const d = parseIso(isoDateVal);
         if (!d) { showToast('That date could not be read', true); return; }
         const yr = String(d.getFullYear());
@@ -1030,8 +1066,18 @@
 
     function updateTx(index, field, value) {
         const tx = datasets[activeMonthKey].data[index];
+        if ((field === 'debit' || field === 'credit') && blockMirrorEdit(tx)) return;
         const oldValue = tx[field];
         tx[field] = value;
+        if (field === 'credit' && isRolloverTx(tx)) {
+            // Previous Period Balance: a number you type is kept (and later months carry on from it); clearing the box goes back to automatic
+            if (parseFloat(value) > 0) tx.manual = true; else delete tx.manual;
+            syncRolloverBalances();
+            renderApp();
+            saveToSupabase();
+            showToast(tx.manual ? 'Starting balance set. Later months carry on from it.' : 'Starting balance is automatic again.');
+            return;
+        }
         if (field === 'cost' && value) {
             let desc = tx['desc'].toLowerCase().trim();
             if (desc && desc.length > 2 && !autoCategorizationMap[desc]) {
@@ -1051,6 +1097,7 @@
         const tx = ds && ds.data[index];
         if (!tx) return;
         ds.data.splice(index, 1);
+        if (tx.xferFrom) unlinkTransferSource(tx.xferFrom.id);
         renderApp();
         saveToSupabase();
         showToast(`Deleted "${tx.desc || 'line'}"`, false, {

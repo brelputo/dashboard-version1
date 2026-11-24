@@ -1,3 +1,4 @@
+window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-24-h';
 /* VIEWS: page navigation, Dashboard overview, Annual, Multi-Year and Month vs Last Month pages.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -135,6 +136,7 @@
         document.getElementById('month-nav').classList.toggle('hidden', !meta.month);
         document.getElementById('year-dropdown').style.display = meta.year === false ? 'none' : '';
         closeSidebar();
+        updateAccountUi();
         renderApp();
         window.scrollTo(0, 0);
     }
@@ -148,6 +150,8 @@
 
     function renderOverview() {
         if (!document.getElementById('ov-balance')) return;
+        if (activeAcctType() === 'savings') { renderSavingsDashboard(); return; }
+        const sv = document.getElementById('ov-savings'); if (sv) sv.innerHTML = '';
         const ds = datasets[activeMonthKey];
         if (!ds || !Array.isArray(ds.data)) return;
         const txs = ds.data;
@@ -323,6 +327,7 @@
             </tbody></table>
             <h2>Spending by Category</h2>
             <table><thead><tr><th>Category</th><th class="n">Spent</th><th class="n">Budget</th><th class="n">Used</th></tr></thead><tbody>${catRows}</tbody></table>
+            ${investReportHtml(key)}
             <h2>Transactions</h2>
             <table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="n">Credit</th><th class="n">Debit</th><th>Status</th></tr></thead><tbody>${lines}</tbody></table>
             <div class="foot">This report contains personal financial information. Store or share it carefully.</div>`;
@@ -513,7 +518,10 @@
     }
 
     function renderApp() {
-        document.getElementById('app-title-header').innerText = `Financial Movement Dashboard — ${selectedYear}`;
+        reconcileTransfers();   // keep the receiving side of linked transfers in step with the sending side
+        updateAccountUi();
+        renderDueSoon();   // refresh the due-soon banner and menu badges for THIS account on every page
+        document.getElementById('app-title-header').innerText = `Financial Movement Dashboard — ${selectedYear}` + (accounts.length > 1 ? ` · ${activeAccountName()}` : '');
         const mLabel = document.getElementById('mobile-month-label');
         if (mLabel) mLabel.textContent = currentMonthLabel();
         switch (currentView) {
@@ -524,6 +532,10 @@
             case 'forecast': renderForecast(); return;
             case 'subscriptions': renderSubscriptions(); return;
             case 'investments': renderInvestments(); return;
+            case 'networth': renderNetWorth(); return;
+            case 'review': renderYearReview(); return;
+            case 'accounts': renderAccountsView(); return;
+            case 'interest': renderInterest(); return;
         }
         syncRolloverBalances();
         renderTransactions();
@@ -658,7 +670,7 @@
                 : `<span class="mv-pill ${tone}">${r.diff > 0 ? '▲' : '▼'} ${gone ? '100' : Math.abs((r.diff / r.prev) * 100).toFixed(0)}%</span>`;
             return `
                 <div class="mv-cat">
-                    <div class="mv-cat-top"><span class="mv-cat-name" title="${esc(r.c)}">${esc(r.c)}</span>
+                    <div class="mv-cat-top">${r.c === 'Uncategorised' ? `<span class="mv-cat-name" title="${esc(r.c)}">${esc(r.c)}</span>` : `<button type="button" class="cat-link mv-cat-name" data-open-cat="${esc(r.c)}" title="See every ${esc(r.c)} line in Transactions">${esc(r.c)}</button>`}
                         <span class="mv-cat-right"><span class="mv-amt ${tone}">${Math.abs(r.diff) < 0.005 ? '' : (r.diff > 0 ? '+' : '−') + fmt(Math.abs(r.diff))}</span>${pill}</span></div>
                     <div class="mv-bars">
                         <div class="mv-bar-row"><div class="mv-track"><div class="mv-fill now" style="width:${((r.cur / maxCat) * 100).toFixed(1)}%"></div></div><span class="mv-bar-val now">${fmt(r.cur)}</span></div>
@@ -1071,3 +1083,94 @@
         renderOverview();
         renderTxSummary();
     }
+
+/* ---------- YEAR IN REVIEW ----------
+   Uses the same rules as the rest of the app: income without the carried-over balance, spending = every expense line (paid or planned).
+   Investments are shown on their own and left out of "biggest category" so they do not hide your real spending. */
+function renderYearReview() {
+    const box = document.getElementById('yr-body');
+    if (!box) return;
+    const yr = parseInt(selectedYear, 10);
+    document.getElementById('yr-title').textContent = `${yr} in Review`;
+    const months = getMonthKeysOrderForYear(yr).map((k, i) => {
+        const ds = datasets[k], lines = ((ds && ds.data) || []).filter(t => !isRolloverTx(t));
+        let earned = 0, spent = 0, invested = 0;
+        lines.forEach(t => {
+            const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
+            if (c > 0) earned += c;
+            if (d > 0) { spent += d; if (INVEST_RE.test(t.cost || '')) invested += d; }
+        });
+        return { i, earned, spent, invested, net: earned - spent, has: lines.length > 0 };
+    });
+    const active = months.filter(m => m.has);
+    document.getElementById('yr-sub').textContent = active.length ? `${active.length} month${active.length === 1 ? '' : 's'} with entries` : ' ';
+    if (!active.length) { box.innerHTML = `<div class="card"><div class="empty-note">There are no transactions in ${yr} yet.</div></div>`; return; }
+
+    const earned = active.reduce((a, m) => a + m.earned, 0), spent = active.reduce((a, m) => a + m.spent, 0), invested = active.reduce((a, m) => a + m.invested, 0);
+    const left = earned - spent, rate = earned > 0 ? (left / earned) * 100 : null;
+    const mFull = i => new Date(yr, i, 1).toLocaleString('en-AU', { month: 'long' });
+
+    // categories (investments left out) and the biggest single expense
+    const cats = {}; let big = null;
+    getMonthKeysOrderForYear(yr).forEach((k, i) => (((datasets[k] || {}).data) || []).forEach(t => {
+        if (isRolloverTx(t)) return;
+        const d = parseFloat(t.debit) || 0;
+        if (d <= 0 || INVEST_RE.test(t.cost || '')) return;
+        const c = t.cost || 'Uncategorised';
+        cats[c] = (cats[c] || 0) + d;
+        if (!big || d > big.d) big = { d, desc: t.desc, date: t.date, cat: c };
+    }));
+    const catRows = Object.keys(cats).map(c => ({ c, v: cats[c] })).sort((a, b) => b.v - a.v);
+    const catTotal = catRows.reduce((a, r) => a + r.v, 0);
+    const top = catRows.slice(0, 6), topMax = Math.max(1, ...top.map(r => r.v));
+    const best = active.reduce((b, m) => (m.net > b.net ? m : b), active[0]);
+    const priciest = active.reduce((b, m) => (m.spent > b.spent ? m : b), active[0]);
+    const inGreen = active.filter(m => m.net > 0).length;
+    const avgSpend = spent / active.length;
+
+    const hero = left >= 0
+        ? `In ${yr} you earned <strong>${fmt(earned)}</strong>, spent <strong>${fmt(spent)}</strong> and kept <strong>${fmt(left)}</strong>${rate === null ? '' : ` (${rate.toFixed(1)}% of what you earned)`}.`
+        : `In ${yr} you earned <strong>${fmt(earned)}</strong> and spent <strong>${fmt(spent)}</strong>, which is <strong>${fmt(-left)}</strong> more than you earned.`;
+    const ins = (tone, icon, label, main, sub) => `<div class="mv-ins"><span class="mv-ins-ic ${tone}" aria-hidden="true">${icon}</span><div style="min-width:0"><small>${label}</small><strong title="${esc(main)}">${esc(main)}</strong><span class="s">${sub}</span></div></div>`;
+    const stat = (label, val, desc, cls) => `<div class="stat-card"><span class="stat-card-title">${label}</span><span class="stat-card-value ${cls || ''}">${val}</span><span class="iv-desc">${esc(desc)}</span></div>`;
+
+    const maxV = Math.max(1, ...months.map(m => Math.max(m.earned, m.spent)));
+    const chart = months.map(m => {
+        const tip = `${mFull(m.i)} ${yr}: earned ${fmt(m.earned)}, spent ${fmt(m.spent)}, ${m.net >= 0 ? 'kept ' + fmt(m.net) : 'overspent by ' + fmt(-m.net)}`;
+        return `<div class="iv-col${best === m && m.has ? ' now' : ''}" title="${esc(tip)}" role="img" aria-label="${esc(tip)}">
+            <span class="iv-bars"><span class="iv-bar out" style="height:${m.earned ? Math.max(3, (m.earned / maxV) * 100) : 0}%"></span><span class="iv-bar in" style="height:${m.spent ? Math.max(3, (m.spent / maxV) * 100) : 0}%"></span></span>
+            <span class="iv-lbl">${SHORT_MONTHS[m.i]}</span></div>`;
+    }).join('');
+
+    box.innerHTML = `
+        <div class="card mv-hero"><span class="mv-hero-ic ${left >= 0 ? 'down' : 'up'}" aria-hidden="true">${left >= 0 ? '▲' : '▼'}</span><div class="mv-hero-text">${hero}</div></div>
+        <div class="annual-grid iv-year">
+            ${stat('Earned', fmt(earned), 'All income entered this year.', 'text-success')}
+            ${stat('Spent', fmt(spent), `About ${fmt(avgSpend)} a month.`)}
+            ${stat('Kept', (left < 0 ? '−' : '') + fmt(Math.abs(left)), 'Earned minus spent.', left < 0 ? 'text-danger' : '')}
+            ${stat('Savings rate', rate === null ? '—' : rate.toFixed(1) + '%', 'Share of your income you kept.')}
+        </div>
+        <div class="mv-insights yr-ins" style="margin:0 0 16px">
+            ${ins('good', '🏆', 'Best month', mFull(best.i), best.net >= 0 ? `Kept ${fmt(best.net)}` : `Overspent by ${fmt(-best.net)}`)}
+            ${ins('bad', '💸', 'Most spent in a month', mFull(priciest.i), fmt(priciest.spent))}
+            ${ins('flat', '🛒', 'Biggest category', top.length ? top[0].c : 'None', top.length ? `${fmt(top[0].v)} · ${((top[0].v / catTotal) * 100).toFixed(0)}% of spending` : 'No spending yet')}
+            ${ins('flat', '🧾', 'Biggest single expense', big ? (big.desc || big.cat) : 'None', big ? `${fmt(big.d)} on ${esc(big.date)}` : '')}
+            ${ins('good', '🌱', 'Invested this year', fmt(invested), invested > 0 ? 'Shown separately from spending below' : 'Nothing put into investments')}
+            ${ins(inGreen === active.length ? 'good' : 'flat', '📅', 'Months in the green', `${inGreen} of ${active.length}`, 'Months you earned more than you spent')}
+        </div>
+        <div class="mv-grid">
+            <div class="card">
+                <div class="card-header"><h2>Earned and spent by month</h2><span style="font-size:0.76rem;color:var(--text-muted)">Best month outlined</span></div>
+                <div class="iv-chart" role="group" aria-label="Earned and spent by month">${chart}</div>
+                <div class="mv-legend"><span><i style="border-color:var(--iv-out)"></i>Earned</span><span><i style="border-color:var(--iv-in)"></i>Spent</span></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2>Where the money went</h2><span style="font-size:0.76rem;color:var(--text-muted)">Top ${top.length}</span></div>
+                <div class="mv-cats">${top.length ? top.map(r => `
+                    <div class="mv-cat"><div class="mv-cat-top"><button type="button" class="cat-link mv-cat-name" data-open-cat="${esc(r.c)}" title="See every ${esc(r.c)} line in Transactions">${esc(r.c)}</button><span class="mv-cat-right"><span class="mv-amt flat">${((r.v / catTotal) * 100).toFixed(0)}%</span><strong>${fmt(r.v)}</strong></span></div>
+                    <div class="mv-bars"><div class="mv-bar-row"><div class="mv-track"><div class="mv-fill now" style="width:${((r.v / topMax) * 100).toFixed(1)}%"></div></div></div></div></div>`).join('') : '<div class="empty-note">No spending yet.</div>'}</div>
+            </div>
+        </div>
+        <div class="mv-note">Counts every line entered in ${yr}, paid or planned. Investments are counted in “Spent” like everywhere else in the dashboard, but they are left out of the biggest category, the category list and the biggest single expense so they do not hide your everyday spending. Clicking a category opens it in the month you were last viewing.</div>`;
+}
+
