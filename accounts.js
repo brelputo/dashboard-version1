@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-25-o';
+window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-25-q';
 /* ACCOUNTS: several separate accounts (e.g. Day by Day, Savings, Other bank), a switcher in the header,
    transfers between accounts, and the "All Accounts" overview page.
    How it works: the rest of the app always works on the ACTIVE account through the shared variables (datasets, categories, ...).
@@ -17,12 +17,12 @@ let activeAccountId = '';
 function acctNewId() { return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
 function getAcctState() {
-    return { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions, autoApplyRecurring, recurringApplied, investGoal };
+    return { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions, schedules, autoApplyRecurring, recurringApplied, investGoal };
 }
 function setAcctState(s) {
     categories = s.categories; creditCategories = s.creditCategories; datasets = s.datasets; categoryBudgets = s.categoryBudgets;
     enableBudgetRollover = s.enableBudgetRollover; recurringTemplates = s.recurringTemplates; autoCategorizationMap = s.autoCategorizationMap;
-    savingsGoals = s.savingsGoals; subscriptions = s.subscriptions; autoApplyRecurring = s.autoApplyRecurring; recurringApplied = s.recurringApplied; investGoal = s.investGoal;
+    savingsGoals = s.savingsGoals; subscriptions = s.subscriptions; schedules = s.schedules; autoApplyRecurring = s.autoApplyRecurring; recurringApplied = s.recurringApplied; investGoal = s.investGoal;
 }
 // fills anything missing so an account always has every field the app expects
 function cleanAcctData(d) {
@@ -37,6 +37,7 @@ function cleanAcctData(d) {
         autoCategorizationMap: (d.autoCategorizationMap && typeof d.autoCategorizationMap === 'object') ? d.autoCategorizationMap : {},
         savingsGoals: Array.isArray(d.savingsGoals) ? d.savingsGoals : [],
         subscriptions: Array.isArray(d.subscriptions) ? d.subscriptions : [],
+        schedules: Array.isArray(d.schedules) ? d.schedules : [],
         autoApplyRecurring: !!d.autoApplyRecurring,
         recurringApplied: (d.recurringApplied && typeof d.recurringApplied === 'object' && !Array.isArray(d.recurringApplied)) ? d.recurringApplied : {},
         investGoal: cleanInvestGoal(d.investGoal)
@@ -115,7 +116,7 @@ function loadAccountsFromVault(p) {
                 datasets: (p.datasets && typeof p.datasets === 'object') ? p.datasets : datasets,
                 categoryBudgets: p.categoryBudgets || {}, enableBudgetRollover: p.enableBudgetRollover || false,
                 recurringTemplates: p.recurringTemplates || recurringTemplates, autoCategorizationMap: p.autoCategorizationMap || autoCategorizationMap,
-                savingsGoals: p.savingsGoals, investGoal: p.investGoal, subscriptions: p.subscriptions,
+                savingsGoals: p.savingsGoals, investGoal: p.investGoal, subscriptions: p.subscriptions, schedules: p.schedules,
                 autoApplyRecurring: p.autoApplyRecurring, recurringApplied: p.recurringApplied
             };
         } else {

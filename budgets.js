@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-25-o';
+window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-25-q';
 /* BUDGETS: budgets, categories and budget alerts.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 

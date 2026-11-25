@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25-o';
+window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25-q';
 /* LEDGER: the Transactions page, the New Transaction window, recurring bills, due-soon alerts and row selection.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -149,7 +149,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
         }
     }
 
-    function closeAllModals() { try { cancelTransferLink(); } catch (_) { } closeRecurringModal(); closeTransactionModal(); closeBudgetModal(); closeSecurityModal(); }
+    function closeAllModals() { try { cancelTransferLink(); } catch (_) { } closeRecurringModal(); closeTransactionModal(); closeBudgetModal(); closeSecurityModal(); closeScheduleModal(); }
 
     function periodSummaryFor(monthKey) {
         const ds = datasets[monthKey];

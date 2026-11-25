@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-o';
+window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-q';
 /* VAULT: sign-in, encryption, cloud sync (Supabase), lock/unlock, backups and import.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -546,6 +546,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
         savingsGoals = [];
         investGoal = { target: 0, date: '' };
         subscriptions = [];
+        schedules = [];
         subCandidates = [];
         document.querySelectorAll('#main-app tbody, #main-app tfoot, #goals-list, #forecast-chart, #forecast-tbody, #subs-tbody, #subs-suggestions, #mv-body, #cmp-body, #budgets-grid, #ov-due, #tx-due, #global-results, #ov-upcoming, #ov-goals, #ov-alerts, #print-report').forEach(el => { el.innerHTML = ''; });
         document.getElementById('search-input').value = '';
@@ -677,6 +678,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
                     savingsGoals = Array.isArray(imported.savingsGoals) ? imported.savingsGoals : savingsGoals;
                     if (imported.investGoal) investGoal = cleanInvestGoal(imported.investGoal);
                     subscriptions = Array.isArray(imported.subscriptions) ? imported.subscriptions : subscriptions;
+                    schedules = Array.isArray(imported.schedules) ? imported.schedules : schedules;
                     autoApplyRecurring = !!imported.autoApplyRecurring;
                     recurringApplied = (imported.recurringApplied && typeof imported.recurringApplied === 'object') ? imported.recurringApplied : {};
                 } else {

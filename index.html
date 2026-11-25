@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-build="2026-11-25-o">
+<html lang="en" data-build="2026-11-25-q">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -212,6 +212,71 @@
     </div>
 </div>
 
+<!-- SCHEDULE MODAL -->
+<div id="sched-modal" class="modal-overlay" onclick="if(event.target===this) closeScheduleModal()">
+    <div class="modal-card modal-sm" role="dialog" aria-modal="true" aria-labelledby="sched-modal-title">
+        <div class="modal-head">
+            <h3 id="sched-modal-title">New Schedule</h3>
+            <button type="button" class="modal-close" onclick="closeScheduleModal()" aria-label="Close">✕</button>
+        </div>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="sm-name">Name</label>
+                <input type="text" id="sm-name" placeholder="e.g. Internet bill" autocomplete="off" onkeydown="if(event.key==='Enter') saveSchedule()">
+            </div>
+            <div class="form-field">
+                <label for="sm-payee">Payee (optional)</label>
+                <input type="text" id="sm-payee" placeholder="e.g. Fast Internet" autocomplete="off" onkeydown="if(event.key==='Enter') saveSchedule()">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="sm-amount">Amount ($)</label>
+                <input type="number" id="sm-amount" step="0.01" min="0" inputmode="decimal" placeholder="140.00" onkeydown="if(event.key==='Enter') saveSchedule()">
+            </div>
+            <div class="form-field">
+                <label for="sm-kind">Type</label>
+                <select id="sm-kind" onchange="onSchedKindChange()">
+                    <option value="out">Expense (money out)</option>
+                    <option value="in">Credit (money in)</option>
+                    <option value="transfer">Transfer to another account</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-field" id="sm-dest-wrap" style="display:none">
+                <label for="sm-dest">Send to account</label>
+                <select id="sm-dest"></select>
+            </div>
+            <div class="form-field" id="sm-cat-wrap">
+                <label for="sm-cat">Category</label>
+                <select id="sm-cat"></select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="sm-date">Next date</label>
+                <input type="date" id="sm-date" onkeydown="if(event.key==='Enter') saveSchedule()">
+            </div>
+            <div class="form-field">
+                <label for="sm-cycle">Repeats</label>
+                <select id="sm-cycle">
+                    <option value="once">Does not repeat</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="fortnightly">Fortnightly</option>
+                    <option value="monthly" selected>Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+            <button type="button" class="btn" id="sm-save" onclick="saveSchedule()">Save Schedule</button>
+        </div>
+    </div>
+</div>
+
 <!-- NEW / EDIT BUDGET MODAL (with 3-month average suggestion) -->
 <div id="budget-modal" class="modal-overlay" onclick="if(event.target===this) closeBudgetModal()">
     <div class="modal-card modal-sm" role="dialog" aria-modal="true" aria-labelledby="budget-modal-title">
@@ -311,6 +376,7 @@
                 </button>
                 <div class="nav-sub-list"><div class="nav-sub-inner">
                     <button type="button" class="nav-sub" data-view="forecast" onclick="showView('forecast')">Cash-Flow Forecast</button>
+                    <button type="button" class="nav-sub" data-view="schedules" onclick="showView('schedules')">Schedules <span class="nav-badge" id="nav-due-sched" hidden></span></button>
                     <button type="button" class="nav-sub" data-view="subscriptions" onclick="showView('subscriptions')">Subscriptions &amp; Bills</button>
                 </div></div>
             </div>
@@ -330,7 +396,7 @@
             </div>
         </nav>
         <div class="nav-footer">
-            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-25-o</div>
+            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-25-q</div>
             <button type="button" class="nav-item" onclick="lockVault()">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
                 <span>Lock vault</span>
@@ -634,6 +700,32 @@
                 <span class="chip">Repeating charges you are not tracking yet</span>
             </div>
             <div id="subs-suggestions" class="suggest-list"></div>
+        </div>
+    </div>
+
+    <!-- SCHEDULES VIEW -->
+    <div id="sched-view" class="view-pane" style="display: none;">
+        <div class="page-head">
+            <div class="page-head-title">
+                <h2>Schedules</h2>
+                <span class="chip" id="sched-chip">--</span>
+            </div>
+            <div class="sched-head-actions">
+                <button type="button" class="btn-secondary" id="sched-postall" onclick="postAllDueSchedules()">Post all due</button>
+                <button type="button" class="btn" onclick="openScheduleModal()">+ Add Schedule</button>
+            </div>
+        </div>
+        <div class="card sched-card">
+            <div class="sched-filter-row">
+                <input type="search" id="sched-filter" class="sched-filter" placeholder="Filter schedules..." aria-label="Filter schedules" oninput="renderSchedules()">
+            </div>
+            <div class="table-container-clean">
+                <table class="data-table-auto sched-table">
+                    <thead><tr><th>Name</th><th>Payee</th><th>Account</th><th>Next date</th><th>Status</th><th class="col-num">Amount</th><th style="text-align:center;">Recurring</th><th></th></tr></thead>
+                    <tbody id="sched-tbody"></tbody>
+                </table>
+            </div>
+            <p class="sched-note">A schedule is a payment you expect: it shows as <b>Missed</b> once its date has passed, <b>Due</b> on the day, and <b>Upcoming</b> in the next 7 days. <b>Post</b> adds it to your Transactions and moves it to its next date. <b>Skip</b> moves it on without adding anything.</p>
         </div>
     </div>
 
@@ -1149,7 +1241,7 @@ window.addEventListener('load', function () {
     var box = document.getElementById('login-overlay');
     var styled = box && getComputedStyle(box).position === 'fixed';
     if (!styled && missing.indexOf('style.css') < 0) missing.push('style.css');
-    var BUILD = '2026-11-25-o', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
+    var BUILD = '2026-11-25-q', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
     if (document.documentElement.getAttribute('data-build') !== BUILD) missing.push('index.html (old version)');
     JS.forEach(function (f) { if (missing.indexOf(f) < 0 && (window.__build || {})[f] !== BUILD) missing.push(f + ' (old version - replace it with the one from the latest zip)'); });
     var need = ['showView', 'renderApp', 'switchAccount', 'saveToSupabase', 'renderInvestments', 'renderNetWorth', 'renderYearReview', 'openCategoryInLedger'];

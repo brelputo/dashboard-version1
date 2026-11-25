@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-o';
+window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-q';
 /* VIEWS: page navigation, Dashboard overview, Annual, Multi-Year and Month vs Last Month pages.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -520,6 +520,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
     function renderApp() {
         reconcileTransfers();   // keep the receiving side of linked transfers in step with the sending side
         updateAccountUi();
+        updateSchedBadge();
         renderDueSoon();   // refresh the due-soon banner and menu badges for THIS account on every page
         document.getElementById('app-title-header').innerText = `Financial Movement Dashboard — ${selectedYear}` + (accounts.length > 1 ? ` · ${activeAccountName()}` : '');
         const mLabel = document.getElementById('mobile-month-label');
@@ -531,6 +532,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
             case 'goals': renderGoals(); return;
             case 'forecast': renderForecast(); return;
             case 'subscriptions': renderSubscriptions(); return;
+            case 'schedules': renderSchedules(); return;
             case 'investments': renderInvestments(); return;
             case 'networth': renderNetWorth(); return;
             case 'review': renderYearReview(); return;

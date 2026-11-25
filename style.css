@@ -1923,3 +1923,60 @@ body.acct-savings #dashboard-view > *:not(.page-head):not(#ov-savings):not(#ov-d
 .backup-go, .backup-later { border-radius: 8px; padding: 6px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: 1px solid rgba(148, 163, 184, 0.4); background: transparent; color: inherit; }
 .backup-go { background: #10b981; border-color: #10b981; color: #fff; margin-left: auto; }
 .backup-dot.due { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.6); animation: syncPulse 1.4s ease-in-out infinite; }
+
+/* ---------- SCHEDULES PAGE ---------- */
+.sched-head-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sched-head-actions .btn-secondary { padding: 9px 16px; font-size: 0.85rem; font-weight: 600; }
+.sched-filter-row { display: flex; justify-content: flex-end; padding: 4px 4px 14px; }
+.sched-filter { width: 260px; max-width: 100%; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--pill-bg, rgba(148,163,184,0.12)); color: var(--text-main); font-size: 0.85rem; }
+.sched-table td, .sched-table th { vertical-align: middle; }
+.sched-none { color: var(--text-muted); opacity: 0.6; }
+.sched-amt-xfer { color: #60a5fa; }
+.sched-tick { font-weight: 800; color: var(--text-main); }
+.sched-note { margin: 14px 4px 2px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+.sch-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 11px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; border: 1px solid transparent; }
+.sch-badge.missed { background: #b91c1c; color: #fff; }
+.sch-badge.due { background: #b45309; color: #fff; }
+.sch-badge.upcoming { background: #7e22ce; color: #fff; }
+.sch-badge.scheduled { background: rgba(148, 163, 184, 0.2); color: var(--text-main); border-color: rgba(148, 163, 184, 0.3); }
+.sch-badge.paused { background: transparent; color: var(--text-muted); border-color: var(--border); }
+.sched-more { background: transparent; border: none; color: var(--text-muted); font-size: 1.3rem; line-height: 1; padding: 4px 10px; border-radius: 8px; cursor: pointer; }
+.sched-more:hover { background: var(--pill-bg); color: var(--text-main); }
+.sched-menu { position: absolute; z-index: 1200; min-width: 190px; padding: 6px; border-radius: 12px; background: var(--surface-card, #1e293b); border: 1px solid var(--border); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45); display: flex; flex-direction: column; }
+.sched-menu button { text-align: left; background: transparent; border: none; color: var(--text-main); padding: 9px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.sched-menu button:hover { background: var(--pill-bg); }
+.sched-menu button.danger { color: var(--danger); }
+.nav-sub .nav-badge { height: 18px; min-width: 18px; font-size: 0.65rem; }
+
+/* ---------- ANDROID (Material 3) SWITCHES ----------
+   Off: dark track with an outline and a small grey thumb. On: filled green track, big white thumb with a tick.
+   Delete this whole block to go back to the previous toggles. */
+.paid-toggle { width: 52px !important; height: 32px !important; }
+.sub-toggle input { width: 52px !important; height: 32px !important; }
+.paid-toggle .pt-track, .sub-toggle .st-track { width: 52px !important; height: 32px !important; box-sizing: border-box !important; border-radius: 16px !important; background: rgba(30, 41, 59, 0.9) !important; border: 2px solid #8b95a7 !important; box-shadow: none !important; transition: background-color 0.2s, border-color 0.2s !important; }
+.paid-toggle .pt-knob, .sub-toggle .st-knob { width: 16px !important; height: 16px !important; top: 50% !important; left: 6px !important; margin-top: -8px !important; border-radius: 50% !important; background-color: #8b95a7 !important; background-image: none !important; box-shadow: none !important; transform: none !important; transition: left 0.2s cubic-bezier(0.2, 0, 0, 1), width 0.2s, height 0.2s, margin-top 0.2s, background-color 0.2s !important; }
+.paid-toggle input:checked ~ .pt-track, .sub-toggle input:checked + .st-track { background: #10b981 !important; border-color: #10b981 !important; box-shadow: none !important; }
+.paid-toggle input:checked ~ .pt-track .pt-knob, .sub-toggle input:checked + .st-track .st-knob { width: 24px !important; height: 24px !important; margin-top: -12px !important; left: 22px !important; transform: none !important; background-color: #ffffff !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23065f46' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") !important; background-size: 15px 15px !important; background-repeat: no-repeat !important; background-position: center !important; }
+.paid-toggle:hover .pt-knob, .sub-toggle:hover .st-knob { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.08) !important; }
+.paid-toggle:hover input:checked ~ .pt-track .pt-knob, .sub-toggle:hover input:checked + .st-track .st-knob { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.22) !important; }
+.paid-toggle:active .pt-knob, .sub-toggle:active .st-knob { transform: none !important; width: 28px !important; height: 28px !important; margin-top: -14px !important; left: 2px !important; background-color: #cbd5e1 !important; }
+.paid-toggle input:checked:active ~ .pt-track .pt-knob, .sub-toggle input:checked:active + .st-track .st-knob { transform: none !important; left: 18px !important; }
+/* the small Glass switch in the header */
+.fx-track { width: 36px !important; height: 22px !important; box-sizing: border-box !important; border-radius: 11px !important; background: rgba(30, 41, 59, 0.9) !important; border: 2px solid #8b95a7 !important; box-shadow: none !important; }
+.fx-knob { top: 50% !important; left: 3px !important; width: 10px !important; height: 10px !important; margin-top: -5px !important; background: #8b95a7 !important; box-shadow: none !important; transition: left 0.2s cubic-bezier(0.2, 0, 0, 1), width 0.2s, height 0.2s, margin-top 0.2s, background-color 0.2s !important; }
+.fx-toggle input:checked + .fx-track { background: #10b981 !important; border-color: #10b981 !important; box-shadow: none !important; }
+.fx-toggle input:checked + .fx-track .fx-knob { transform: none !important; width: 16px !important; height: 16px !important; margin-top: -8px !important; left: 14px !important; background: #ffffff !important; }
+/* the two tick-box switches: "Auto-add each month" and "Auto-Rollover Unused Budget" */
+.rec-auto input[type=checkbox], #budget-rollover-toggle { -webkit-appearance: none; appearance: none; position: relative; flex: none; width: 52px; height: 32px; margin: 0; border-radius: 16px; border: 2px solid #8b95a7; background: rgba(30, 41, 59, 0.9); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; box-sizing: border-box; }
+.rec-auto input[type=checkbox]::before, #budget-rollover-toggle::before { content: ""; position: absolute; top: 50%; left: 6px; width: 16px; height: 16px; margin-top: -8px; border-radius: 50%; background: #8b95a7; transition: left 0.2s cubic-bezier(0.2, 0, 0, 1), width 0.2s, height 0.2s, margin-top 0.2s, background-color 0.2s; }
+.rec-auto input[type=checkbox]:checked, #budget-rollover-toggle:checked { background: #10b981; border-color: #10b981; }
+.rec-auto input[type=checkbox]:checked::before, #budget-rollover-toggle:checked::before { left: 22px; width: 24px; height: 24px; margin-top: -12px; background-color: #ffffff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23065f46' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); background-size: 15px 15px; background-repeat: no-repeat; background-position: center; }
+#budget-rollover-toggle { width: 40px; height: 24px; border-radius: 12px; }
+#budget-rollover-toggle::before { left: 4px; width: 12px; height: 12px; margin-top: -6px; }
+#budget-rollover-toggle:checked::before { left: 16px; width: 18px; height: 18px; margin-top: -9px; background-size: 11px 11px; }
+.rec-auto input[type=checkbox]:focus-visible, #budget-rollover-toggle:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+/* Android switches in light mode: lighter "off" track */
+[data-theme="light"] .paid-toggle .pt-track, [data-theme="light"] .sub-toggle .st-track, [data-theme="light"] .fx-track,
+[data-theme="light"] .rec-auto input[type=checkbox]:not(:checked), [data-theme="light"] #budget-rollover-toggle:not(:checked) { background: #e8edf5 !important; border-color: #6b7587 !important; }
+[data-theme="light"] .paid-toggle input:not(:checked) ~ .pt-track .pt-knob, [data-theme="light"] .sub-toggle input:not(:checked) + .st-track .st-knob { background-color: #6b7587 !important; }
+[data-theme="light"] .sched-filter { background: #fff; }

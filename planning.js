@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-25-o';
+window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-25-q';
 /* PLANNING: savings goals, subscriptions, the cash-flow forecast and the Investments page.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -1136,3 +1136,260 @@ function renderInterest() {
         <div class="table-container-clean iv-scroll"><table class="iv-table"><thead><tr><th>Month</th><th>Average balance</th><th>Interest paid</th><th>Rate per year</th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="acct-note">A month with no interest is shown with a dash. If your bank pays interest monthly and a month is missing, add it so the rate stays accurate.</p>`;
 }
+
+/* ---------- SCHEDULES: payments you expect, with Missed / Due / Upcoming / Scheduled status ---------- */
+    let editingSchedId = null;
+    const SCHED_CYCLES = { once: 'Does not repeat', weekly: 'Weekly', fortnightly: 'Fortnightly', monthly: 'Monthly', quarterly: 'Quarterly', yearly: 'Yearly' };
+
+    function schedStatus(s, today) {
+        if (s.active === false) return { key: 'paused', label: 'Paused' };
+        const d = parseIso(s.nextDate);
+        if (!d) return { key: 'scheduled', label: 'Scheduled' };
+        const n = daysBetween(today, d);
+        if (n < 0) return { key: 'missed', label: 'Missed' };
+        if (n === 0) return { key: 'due', label: 'Due' };
+        if (n <= 7) return { key: 'upcoming', label: 'Upcoming' };
+        return { key: 'scheduled', label: 'Scheduled' };
+    }
+    // the date after this one (keeps "the 31st" meaning the last day of shorter months)
+    function schedNextDate(s) {
+        const a = parseIso(s.nextDate);
+        if (!a || !s.cycle || s.cycle === 'once') return null;
+        if (s.cycle === 'weekly') return addDays(a, 7);
+        if (s.cycle === 'fortnightly') return addDays(a, 14);
+        const step = s.cycle === 'quarterly' ? 3 : s.cycle === 'yearly' ? 12 : 1;
+        const d = addMonthsClamped(a, step);
+        const anchor = s.anchor || a.getDate();
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        return new Date(d.getFullYear(), d.getMonth(), Math.min(anchor, last));
+    }
+    function schedMoveOn(s) {
+        const nx = schedNextDate(s);
+        if (!nx) { schedules = schedules.filter(x => x !== s); return 'done'; }
+        s.nextDate = isoDate(nx);
+        return 'moved';
+    }
+    function schedOpenCount() {
+        const t = startOfToday();
+        let n = 0, late = 0;
+        schedules.forEach(s => { const k = schedStatus(s, t).key; if (k === 'missed') { n++; late++; } else if (k === 'due') n++; });
+        return { n, late };
+    }
+    function updateSchedBadge() {
+        const b = document.getElementById('nav-due-sched');
+        if (!b) return;
+        const c = schedOpenCount();
+        b.hidden = !c.n;
+        b.innerText = String(c.n);
+        b.classList.toggle('late', c.late > 0);
+        b.title = c.n ? `${c.n} schedule${c.n === 1 ? '' : 's'} due${c.late ? ', ' + c.late + ' missed' : ''}` : '';
+    }
+
+    function renderSchedules() {
+        const tbody = document.getElementById('sched-tbody');
+        if (!tbody) return;
+        const today = startOfToday();
+        const q = (document.getElementById('sched-filter').value || '').toLowerCase().trim();
+        const acctName = activeAccountName();
+        const rows = schedules.map(s => ({ s, st: schedStatus(s, today), d: parseIso(s.nextDate) }))
+            .filter(r => !q || [r.s.name, r.s.payee, acctName, r.s.category].join(' ').toLowerCase().includes(q))
+            .sort((a, b) => (a.d ? a.d.getTime() : Infinity) - (b.d ? b.d.getTime() : Infinity));
+        const c = schedOpenCount();
+        const chip = document.getElementById('sched-chip');
+        if (chip) chip.textContent = schedules.length ? `${schedules.length} schedule${schedules.length === 1 ? '' : 's'}${c.n ? ' · ' + c.n + ' to post' : ''}` : 'None yet';
+        const pa = document.getElementById('sched-postall');
+        if (pa) pa.style.display = c.n ? '' : 'none';
+        updateSchedBadge();
+        if (!rows.length) {
+            tbody.innerHTML = `<tr class="empty-state"><td colspan="8">${schedules.length ? 'No schedules match your filter.' : 'No schedules yet. Click <b>+ Add Schedule</b> for a bill or payment you expect (rent, internet, a transfer to savings...).'}</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map(({ s, st, d }) => {
+            const dest = s.kind === 'transfer' ? accounts.find(a => a.id === s.toAccount) : null;
+            const acct = s.kind === 'transfer' ? `${esc(acctName)} → ${esc(dest ? dest.name : '(deleted account)')}` : esc(acctName);
+            const sign = s.kind === 'in' ? 'text-success' : s.kind === 'transfer' ? 'sched-amt-xfer' : 'text-danger';
+            return `<tr class="${st.key === 'paused' ? 'sub-row-paused' : ''}">
+                <td style="font-weight:600;">${esc(s.name)}</td>
+                <td>${s.payee ? esc(s.payee) : '<span class="sched-none">None</span>'}</td>
+                <td>${acct}</td>
+                <td>${d ? esc(toAUFormat(s.nextDate)) : '--'}</td>
+                <td><span class="sch-badge ${st.key}">${st.key === 'missed' ? '⛔ ' : st.key === 'due' ? '⚠ ' : ''}${st.label}</span></td>
+                <td class="col-num ${sign}">${fmt(s.amount)}</td>
+                <td style="text-align:center;">${s.cycle && s.cycle !== 'once' ? '<span class="sched-tick" title="' + esc(SCHED_CYCLES[s.cycle] || '') + '">✓</span>' : ''}</td>
+                <td class="col-action"><button type="button" class="sched-more" aria-label="More" onclick="openSchedMenu('${s.id}', this)">⋯</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function closeSchedMenu() { const m = document.getElementById('sched-menu'); if (m) m.remove(); }
+    function openSchedMenu(id, btn) {
+        const wasOpen = document.getElementById('sched-menu') && document.getElementById('sched-menu').dataset.id === id;
+        closeSchedMenu();
+        if (wasOpen) return;
+        const s = schedules.find(x => x.id === id);
+        if (!s) return;
+        const m = document.createElement('div');
+        m.id = 'sched-menu'; m.className = 'sched-menu'; m.dataset.id = id;
+        const item = (label, fn, cls) => `<button type="button" class="${cls || ''}" onclick="closeSchedMenu(); ${fn}">${label}</button>`;
+        m.innerHTML = (s.active === false ? '' :
+            item('Post transaction', `postSchedule('${id}', true)`) +
+            item('Post as pending', `postSchedule('${id}', false)`) +
+            item('Skip this date', `skipSchedule('${id}')`)) +
+            item(s.active === false ? 'Resume' : 'Pause', `toggleSchedule('${id}')`) +
+            item('Edit', `openScheduleModal('${id}')`) +
+            item('Delete', `deleteSchedule('${id}')`, 'danger');
+        document.body.appendChild(m);
+        const r = btn.getBoundingClientRect();
+        const w = m.offsetWidth, h = m.offsetHeight;
+        let left = Math.min(window.innerWidth - w - 8, Math.max(8, r.right - w));
+        let top = r.bottom + 4 + window.scrollY;
+        if (r.bottom + h + 8 > window.innerHeight && r.top > h + 8) top = r.top - h - 4 + window.scrollY;
+        m.style.left = (left + window.scrollX) + 'px'; m.style.top = top + 'px';
+    }
+    document.addEventListener('click', e => { if (!e.target.closest('#sched-menu') && !e.target.closest('.sched-more')) closeSchedMenu(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSchedMenu(); });
+
+    function onSchedKindChange() {
+        const kind = document.getElementById('sm-kind').value;
+        if (kind === 'transfer' && !transferTargets().length) {
+            document.getElementById('sm-kind').value = 'out';
+            showToast('Add a second account first (Account menu at the top > New account)', true);
+        }
+        fillSchedCategories(document.getElementById('sm-kind').value);
+    }
+    function fillSchedCategories(kind, keep) {
+        const isTr = kind === 'transfer';
+        document.getElementById('sm-cat-wrap').style.display = isTr ? 'none' : '';
+        document.getElementById('sm-dest-wrap').style.display = isTr ? '' : 'none';
+        if (isTr) document.getElementById('sm-dest').innerHTML = transferTargets().map(a => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('');
+        const list = kind === 'in' ? creditCategories : categories;
+        const sel = document.getElementById('sm-cat');
+        sel.innerHTML = '<option value="">-- None --</option>' + [...list].sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        if (keep && [...sel.options].some(o => o.value === keep)) sel.value = keep;
+    }
+    function openScheduleModal(id) {
+        const s = id ? schedules.find(x => x.id === id) : null;
+        editingSchedId = s ? s.id : null;
+        document.getElementById('sched-modal-title').textContent = s ? 'Edit Schedule' : 'New Schedule';
+        document.getElementById('sm-save').textContent = s ? 'Save changes' : 'Save Schedule';
+        document.getElementById('sm-name').value = s ? s.name : '';
+        document.getElementById('sm-payee').value = s ? (s.payee || '') : '';
+        document.getElementById('sm-amount').value = s ? s.amount : '';
+        document.getElementById('sm-kind').value = s ? (s.kind || 'out') : 'out';
+        fillSchedCategories(document.getElementById('sm-kind').value, s ? s.category : '');
+        if (s && s.kind === 'transfer') document.getElementById('sm-dest').value = s.toAccount;
+        document.getElementById('sm-date').value = s ? s.nextDate : isoDate(startOfToday());
+        document.getElementById('sm-cycle').value = s ? (s.cycle || 'once') : 'monthly';
+        document.getElementById('sched-modal').style.display = 'flex';
+        setTimeout(() => document.getElementById('sm-name').focus(), 50);
+    }
+    function closeScheduleModal() { const m = document.getElementById('sched-modal'); if (m) m.style.display = 'none'; editingSchedId = null; }
+    function saveSchedule() {
+        const name = document.getElementById('sm-name').value.trim();
+        const payee = document.getElementById('sm-payee').value.trim();
+        const amount = parseFloat(document.getElementById('sm-amount').value);
+        const kind = document.getElementById('sm-kind').value;
+        const date = document.getElementById('sm-date').value;
+        const cycle = document.getElementById('sm-cycle').value;
+        if (!name) { showToast('Add a name', true); document.getElementById('sm-name').focus(); return; }
+        if (!(amount > 0)) { showToast('Enter an amount above $0', true); document.getElementById('sm-amount').focus(); return; }
+        const d = parseIso(date);
+        if (!d) { showToast('Pick the next date', true); return; }
+        if (!SCHED_CYCLES[cycle]) { showToast('Pick how often it repeats', true); return; }
+        let toAccount = '';
+        if (kind === 'transfer') {
+            toAccount = document.getElementById('sm-dest').value;
+            if (!accounts.some(a => a.id === toAccount && a.id !== activeAccountId)) { showToast('Pick the account to send the money to', true); return; }
+        }
+        const rec = { name, payee, amount, kind, cycle, nextDate: date, anchor: d.getDate(), category: kind === 'transfer' ? '' : document.getElementById('sm-cat').value, toAccount, active: true };
+        if (editingSchedId) {
+            const s = schedules.find(x => x.id === editingSchedId);
+            if (s) { rec.active = s.active !== false; Object.assign(s, rec); }
+        } else schedules.push(Object.assign({ id: newId() }, rec));
+        const wasEdit = !!editingSchedId;
+        closeScheduleModal();
+        renderApp();
+        saveToSupabase();
+        showToast(wasEdit ? `"${name}" updated` : `"${name}" scheduled`);
+    }
+
+    // add the line to the Transactions ledger for this schedule's date, then move the schedule on
+    function makeScheduleTx(s, paid) {
+        const d = parseIso(s.nextDate);
+        if (!d) return null;
+        const yr = String(d.getFullYear());
+        if (!allYears.includes(yr)) { showToast(`${yr} is outside the years this dashboard covers`, true); return null; }
+        ensureYearDatasetsExist(yr);
+        const key = rawMonthNames[d.getMonth()] + yr;
+        const out = s.kind !== 'in';
+        const isTr = s.kind === 'transfer';
+        let dest = null;
+        if (isTr) {
+            dest = accounts.find(a => a.id === s.toAccount && a.id !== activeAccountId);
+            if (!dest) { showToast(`"${s.name}": the account to send to no longer exists. Edit the schedule.`, true); return null; }
+            if (!categories.includes('Transfer Out')) categories.push('Transfer Out');
+        }
+        const tx = {
+            date: toAUFormat(s.nextDate), desc: s.payee || s.name,
+            cost: isTr ? 'Transfer Out' : (out ? (s.category || '') : ''), creditCat: out ? '' : (s.category || ''),
+            type: out ? 'Fixed' : '',
+            credit: out ? 0 : s.amount, debit: out ? s.amount : 0,
+            method: (out && !isTr) ? 'Debit' : 'Transfer', paid: paid ? 'Yes' : 'NO'
+        };
+        datasets[key].data.push(tx);
+        if (isTr) { tx.xfer = { to: dest.id, id: newLinkId() }; reconcileTransfers(); }
+        return tx;
+    }
+    function postSchedule(id, paid) {
+        const s = schedules.find(x => x.id === id);
+        if (!s) return;
+        const tx = makeScheduleTx(s, paid);
+        if (!tx) return;
+        const r = schedMoveOn(s);
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+        showToast(`"${s.name}" added to Transactions as ${paid ? 'Paid' : 'Pending'}` + (r === 'done' ? ' (one-off schedule finished)' : ` · next ${toAUFormat(s.nextDate)}`));
+        if (s.kind === 'out' && paid) offerTransferLink(tx);
+    }
+    function skipSchedule(id) {
+        const s = schedules.find(x => x.id === id);
+        if (!s) return;
+        const was = toAUFormat(s.nextDate);
+        const r = schedMoveOn(s);
+        renderApp();
+        saveToSupabase();
+        showToast(r === 'done' ? `"${s.name}" skipped and removed (it was a one-off)` : `"${s.name}" skipped ${was} · next ${toAUFormat(s.nextDate)}`);
+    }
+    function postAllDueSchedules() {
+        const today = startOfToday();
+        let posted = 0;
+        schedules.slice().forEach(s => {
+            for (let guard = 0; guard < 60 && schedules.includes(s); guard++) {
+                const k = schedStatus(s, today).key;
+                if (k !== 'missed' && k !== 'due') break;
+                if (!makeScheduleTx(s, false)) break;
+                posted++;
+                schedMoveOn(s);
+            }
+        });
+        sortTransactions();
+        renderApp();
+        saveToSupabase();
+        showToast(posted ? `${posted} line${posted === 1 ? '' : 's'} added to Transactions as Pending` : 'Nothing to post');
+    }
+    function toggleSchedule(id) {
+        const s = schedules.find(x => x.id === id);
+        if (!s) return;
+        s.active = s.active === false;
+        renderApp();
+        saveToSupabase();
+        showToast(s.active ? `"${s.name}" resumed` : `"${s.name}" paused`);
+    }
+    function deleteSchedule(id) {
+        const s = schedules.find(x => x.id === id);
+        if (!s || !confirm(`Delete the schedule "${s.name}"?\n\nTransactions it already added stay in your ledger.`)) return;
+        schedules = schedules.filter(x => x.id !== id);
+        renderApp();
+        saveToSupabase();
+    }
