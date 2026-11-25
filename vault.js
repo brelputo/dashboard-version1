@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-l';
+window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-o';
 /* VAULT: sign-in, encryption, cloud sync (Supabase), lock/unlock, backups and import.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -252,45 +252,120 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
 
     function buildVaultPayload() {
         captureActiveAccount();
-        return { accounts, activeAccountId };
+        return { accounts, activeAccountId, lastBackup: backupLastMs() };
     }
 
-    function markBackupDone() {
-        try { localStorage.setItem('dashboard_last_backup', String(Date.now())); } catch (_) { }
+    function markBackupDone(noSync) {
+        vaultLastBackup = Date.now();
+        try { localStorage.setItem('dashboard_last_backup', String(vaultLastBackup)); localStorage.removeItem('dashboard_backup_snooze'); } catch (_) { }
+        if (typeof updateBackupUi === 'function') updateBackupUi(true);
+        if (!noSync && masterKey && typeof saveToSupabase === 'function') saveToSupabase();   // so your other browsers learn about it too
     }
 
+    /* ---------- tiny ZIP maker/reader (no outside library) ---------- */
+    const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; } return t; })();
+    function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+    async function pipeBytes(bytes, transform) {
+        return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(transform)).arrayBuffer());
+    }
+    async function makeZip(fileName, text) {
+        const data = new TextEncoder().encode(text);
+        let comp = data, method = 0;
+        if (typeof CompressionStream !== 'undefined') {
+            try { comp = await pipeBytes(data, new CompressionStream('deflate-raw')); method = 8; } catch (_) { comp = data; method = 0; }
+        }
+        const name = new TextEncoder().encode(fileName);
+        const d = new Date();
+        const dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+        const dosDate = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+        const crc = crc32(data);
+        const local = new Uint8Array(30 + name.length), lv = new DataView(local.buffer);
+        lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0, true); lv.setUint16(8, method, true);
+        lv.setUint16(10, dosTime, true); lv.setUint16(12, dosDate, true); lv.setUint32(14, crc, true);
+        lv.setUint32(18, comp.length, true); lv.setUint32(22, data.length, true); lv.setUint16(26, name.length, true); lv.setUint16(28, 0, true);
+        local.set(name, 30);
+        const central = new Uint8Array(46 + name.length), cv = new DataView(central.buffer);
+        cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, method, true);
+        cv.setUint16(12, dosTime, true); cv.setUint16(14, dosDate, true); cv.setUint32(16, crc, true);
+        cv.setUint32(20, comp.length, true); cv.setUint32(24, data.length, true); cv.setUint16(28, name.length, true);
+        cv.setUint32(42, 0, true);
+        central.set(name, 46);
+        const cdOffset = local.length + comp.length;
+        const end = new Uint8Array(22), ev = new DataView(end.buffer);
+        ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, 1, true); ev.setUint16(10, 1, true);
+        ev.setUint32(12, central.length, true); ev.setUint32(16, cdOffset, true);
+        return new Blob([local, comp, central, end], { type: 'application/zip' });
+    }
+    async function readZipText(arrayBuffer) {
+        const u = new Uint8Array(arrayBuffer), v = new DataView(arrayBuffer);
+        let e = -1;
+        for (let i = u.length - 22; i >= Math.max(0, u.length - 70000); i--) { if (v.getUint32(i, true) === 0x06054b50) { e = i; break; } }
+        if (e < 0) throw new Error('not a zip');
+        const cd = v.getUint32(e + 16, true);
+        if (v.getUint32(cd, true) !== 0x02014b50) throw new Error('bad zip');
+        const method = v.getUint16(cd + 10, true), csize = v.getUint32(cd + 20, true), lho = v.getUint32(cd + 42, true);
+        if (v.getUint32(lho, true) !== 0x04034b50) throw new Error('bad zip');
+        const start = lho + 30 + v.getUint16(lho + 26, true) + v.getUint16(lho + 28, true);
+        let bytes = u.slice(start, start + csize);
+        if (method === 8) bytes = await pipeBytes(bytes, new DecompressionStream('deflate-raw'));
+        else if (method !== 0) throw new Error('unsupported zip');
+        return new TextDecoder().decode(bytes);
+    }
+
+    /* ---------- weekly backup: zipped, encrypted ---------- */
+    const BACKUP_EVERY_DAYS = 7;
     async function exportEncryptedBackup() {
         if (!masterKey) { showToast('Unlock the vault first', true); return; }
         try {
             const cipher = await encryptVault(buildVaultPayload());
-            const blob = new Blob([cipher], { type: 'text/plain' });
+            const blob = await makeZip(`finance_backup_encrypted_${isoDate(new Date())}.enc`, cipher);
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `finance_backup_encrypted_${isoDate(new Date())}.enc`;
+            a.download = 'finance-backup.zip';
             document.body.appendChild(a);
             a.click();
             a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 1500);
             markBackupDone();
-            showToast('Encrypted backup downloaded');
+            showToast('Backup downloaded (zip, encrypted)');
         } catch (e) {
             showToast('Backup failed: ' + (e.message || e), true);
         }
     }
-
-    function checkBackupReminder() {
-        let last = 0, snooze = 0;
-        try {
-            last = parseInt(localStorage.getItem('dashboard_last_backup') || '0', 10) || 0;
-            snooze = parseInt(localStorage.getItem('dashboard_backup_snooze') || '0', 10) || 0;
-        } catch (_) { }
-        if (Date.now() < snooze) return;
-        const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
-        if (days !== null && days < 30) return;
-        try { localStorage.setItem('dashboard_backup_snooze', String(Date.now() + 7 * 86400000)); } catch (_) { }
-        showToast(days === null ? 'You have not made a backup yet' : `Your last backup was ${days} days ago`, false, { label: 'Back up now', fn: exportEncryptedBackup });
+    function backupLastMs() { let l = 0; try { l = parseInt(localStorage.getItem('dashboard_last_backup') || '0', 10) || 0; } catch (_) { } return Math.max(l, vaultLastBackup || 0); }
+    function backupDue() { const l = backupLastMs(); return !l || (Date.now() - l) >= BACKUP_EVERY_DAYS * 86400000; }
+    let backupDoneTimer = null;
+    function updateBackupUi(justDone) {
+        const bar = document.getElementById('backup-bar'), dot = document.getElementById('backup-dot'), btn = document.getElementById('backup-btn');
+        if (!bar || !dot) return;
+        const unlocked = !!masterKey, due = backupDue();
+        dot.className = 'sync-status backup-dot' + (unlocked && due ? ' due' : '');
+        if (btn) btn.title = unlocked ? (due ? 'Your weekly backup is ready - click to download' : 'Backup done ' + isoDate(new Date(backupLastMs())) + ' - click to download a new one') : 'Backup';
+        let snooze = 0; try { snooze = parseInt(localStorage.getItem('dashboard_backup_snooze') || '0', 10) || 0; } catch (_) { }
+        clearTimeout(backupDoneTimer);
+        if (!unlocked) { bar.style.display = 'none'; return; }
+        if (justDone === true) {
+            bar.className = 'backup-bar done';
+            bar.innerHTML = '<span class="backup-ok"></span><span>Backup done. Your next one will be ready in 7 days.</span>';
+            bar.style.display = 'flex';
+            backupDoneTimer = setTimeout(() => { bar.style.display = 'none'; }, 7000);
+        } else if (due && Date.now() >= snooze) {
+            const l = backupLastMs();
+            const days = l ? Math.floor((Date.now() - l) / 86400000) : null;
+            bar.className = 'backup-bar due';
+            bar.innerHTML = '<span class="backup-ok"></span><span>Your backup is ready for download' + (days === null ? ' (none made yet).' : ' (last one was ' + days + ' days ago).') + '</span>'
+                + '<button type="button" class="backup-go" onclick="exportEncryptedBackup()">Download</button>'
+                + '<button type="button" class="backup-later" onclick="snoozeBackup()">Later</button>';
+            bar.style.display = 'flex';
+        } else { bar.style.display = 'none'; }
     }
+    function snoozeBackup() {
+        try { localStorage.setItem('dashboard_backup_snooze', String(Date.now() + 12 * 3600000)); } catch (_) { }
+        updateBackupUi();
+    }
+    function checkBackupReminder() { updateBackupUi(); }
+    setInterval(() => { if (masterKey) updateBackupUi(); }, 10 * 60 * 1000);
 
     async function initSession() {
         if (unlocking) return;
@@ -348,6 +423,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
             } else {
                 showToast(autoAdded ? `Vault unlocked · added ${autoAdded} recurring bill${autoAdded === 1 ? '' : 's'} due` : "Vault unlocked & synced");
             }
+            updateBackupUi();
             setTimeout(() => {
                 if (!masterKey) return;
                 if (toastHasAction()) setTimeout(() => { if (masterKey) checkBackupReminder(); }, 8500);
@@ -442,6 +518,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
     }
 
     async function lockVault() {
+        setTimeout(() => { if (typeof updateBackupUi === 'function') updateBackupUi(); }, 0);
         for (let i = 0; i < 100 && (saveTimer || saving); i++) {
             if (saving) await new Promise(r => setTimeout(r, 100));
             else await saveNow();
@@ -459,6 +536,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
         try { showLoginPanel('login'); } catch (_) { }
         vaultKey = null;
         vaultSalt = null;
+        vaultLastBackup = 0;
         datasets = {};
         accounts = [];
         activeAccountId = '';
@@ -554,7 +632,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
         downloadAnchor.click();
         downloadAnchor.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1500);
-        markBackupDone();
+        markBackupDone(true);
         showToast("Backup downloaded successfully");
     }
 
@@ -562,10 +640,13 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
         const input = event.target;
         const file = input.files[0];
         if (!file) return;
+        const isZip = /\.zip$/i.test(file.name);
         const reader = new FileReader();
         reader.onload = async function(e) {
             try {
-                const raw = String(e.target.result || '').trim();
+                let raw;
+                if (isZip) { try { raw = (await readZipText(e.target.result)).trim(); } catch (_) { throw new Error('Invalid zip'); } }
+                else raw = String(e.target.result || '').trim();
                 let imported;
                 try {
                     imported = JSON.parse(raw);
@@ -614,6 +695,6 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
                     : 'Invalid backup file format.');
             }
         };
-        reader.readAsText(file);
+        if (isZip) reader.readAsArrayBuffer(file); else reader.readAsText(file);
         input.value = '';
     }

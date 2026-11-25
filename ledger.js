@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25-l';
+window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25-o';
 /* LEDGER: the Transactions page, the New Transaction window, recurring bills, due-soon alerts and row selection.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 

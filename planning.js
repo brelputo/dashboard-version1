@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-25-l';
+window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-25-o';
 /* PLANNING: savings goals, subscriptions, the cash-flow forecast and the Investments page.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 

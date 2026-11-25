@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-25-l';
+window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-25-o';
 /* ACCOUNTS: several separate accounts (e.g. Day by Day, Savings, Other bank), a switcher in the header,
    transfers between accounts, and the "All Accounts" overview page.
    How it works: the rest of the app always works on the ACTIVE account through the shared variables (datasets, categories, ...).
@@ -102,6 +102,7 @@ function applyAccount(id) {
 
 // reads the saved vault (new format with accounts, or the older single-account format)
 function loadAccountsFromVault(p) {
+    if (p && Number(p.lastBackup) > vaultLastBackup) { vaultLastBackup = Number(p.lastBackup); if (typeof updateBackupUi === 'function') updateBackupUi(); }
     const good = p && Array.isArray(p.accounts) ? p.accounts.filter(a => a && a.id && a.data && typeof a.data === 'object') : [];
     if (good.length) {
         accounts = good.map(a => ({ id: String(a.id), name: String(a.name || 'Account'), type: a.type === 'savings' ? 'savings' : 'everyday', data: a.data }));

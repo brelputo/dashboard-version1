@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-25-l';
+window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-25-o';
 /* STATE: settings, default data and the values the whole app shares. Loaded first.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -107,6 +107,7 @@ window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-25-
     const PBKDF2_ITERATIONS = 310000;
     let vaultKey = null;
     let vaultSalt = null;
+    let vaultLastBackup = 0;   // time of the last backup on ANY device (saved inside the encrypted vault)
 
     const hasSubtle = () => !!(window.crypto && crypto.subtle);
 

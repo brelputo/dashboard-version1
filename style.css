@@ -1914,3 +1914,12 @@ body.acct-savings #dashboard-view > *:not(.page-head):not(#ov-savings):not(#ov-d
 .build-tag { font-size: 0.68rem; color: var(--text-muted); opacity: 0.7; padding: 4px 14px 8px; }
 
 .col-num[data-manual="1"] { box-shadow: inset 0 -2px 0 #a855f7; }
+
+/* ---------- WEEKLY BACKUP BAR + DOT ---------- */
+.backup-bar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; margin: 0 0 12px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.14); color: var(--text, #e2e8f0); flex-wrap: wrap; }
+.backup-bar.done { border-color: rgba(52, 211, 153, 0.5); background: rgba(52, 211, 153, 0.14); }
+.backup-ok { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.7); flex: none; }
+.backup-bar.done .backup-ok { background: #34d399; box-shadow: 0 0 6px rgba(52, 211, 153, 0.7); }
+.backup-go, .backup-later { border-radius: 8px; padding: 6px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: 1px solid rgba(148, 163, 184, 0.4); background: transparent; color: inherit; }
+.backup-go { background: #10b981; border-color: #10b981; color: #fff; margin-left: auto; }
+.backup-dot.due { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.6); animation: syncPulse 1.4s ease-in-out infinite; }
