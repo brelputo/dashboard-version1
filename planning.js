@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-26-financial-audit-3';
 /* PLANNING: savings goals, subscriptions, the cash-flow forecast and the Investments page.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -8,10 +8,9 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
             const ds = datasets[k];
             ((ds && ds.data) || []).forEach(t => {
                 const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
-                if (c > 0 && !isRolloverTx(t)) income += c;
-                if (d > 0) spend += d;
+                if (isReportableTx(t)) { if (c > 0) income += c; if (d > 0) spend += d; }
             });
-            if (ds && Array.isArray(ds.data) && ds.data.some(x => !isRolloverTx(x))) months++;
+            if (ds && Array.isArray(ds.data) && ds.data.some(isReportableTx)) months++;
         });
         if (!months) months = 1;
         return { net: income - spend, months, avg: (income - spend) / months };
@@ -196,7 +195,7 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
         let start = 0;
         cur.data.forEach(t => {
             const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
-            if (isRolloverTx(t) || String(t.paid).toLowerCase() === 'yes') start += c - d;
+            if (isRolloverTx(t) || txIsPaid(t)) start += c - d;
         });
         const events = [];
         for (let off = -6; off <= 4; off++) {
@@ -204,7 +203,7 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
             const ds = datasets[monthKeyOfDate(md)];
             if (!ds || !Array.isArray(ds.data)) continue;
             ds.data.forEach(t => {
-                if (isRolloverTx(t) || String(t.paid).toLowerCase() === 'yes') return;
+                if (isRolloverTx(t) || txIsPaid(t)) return;
                 const amt = (parseFloat(t.credit) || 0) - (parseFloat(t.debit) || 0);
                 if (!amt) return;
                 const dt = parseTxDate(t.date) || (off === 0 ? today : md);
@@ -221,18 +220,33 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
                 events.push({ date: d, desc: sub.name, amount: -Math.abs(Number(sub.amount) || 0), source: 'Subscription', overdue: false, cat: sub.category || '' });
             });
         });
+        schedules.forEach(sc => {
+            if (sc.active === false || !(Number(sc.amount) > 0)) return;
+            const sign = sc.kind === 'in' ? 1 : -1;
+            let cursor = { nextDate: sc.nextDate, cycle: sc.cycle, anchor: sc.anchor };
+            for (let guard = 0; guard < 200; guard++) {
+                const d = parseIso(cursor.nextDate);
+                if (!d || d > end) break;
+                const overdue = d < today;
+                events.push({ date: overdue ? today : d, desc: sc.name, amount: sign * Math.abs(Number(sc.amount)), source: 'Schedule', overdue, cat: sc.category || '' });
+                const nx = schedNextDate(cursor);
+                if (!nx) break;
+                cursor.nextDate = isoDate(nx);
+            }
+        });
         events.sort((a, b) => (a.date - b.date) || (a.amount - b.amount));
         const series = [];
-        let bal = start, ei = 0;
+        let balCents = moneyCents(start), ei = 0;
         for (let i = 0; i <= days; i++) {
             const flows = [];
             while (ei < events.length && daysBetween(today, events[ei].date) <= i) {
-                bal += events[ei].amount;
-                events[ei].after = bal;
+                balCents += moneyCents(events[ei].amount);
+                balCents = moneyCents(centsMoney(balCents));
+                events[ei].after = centsMoney(balCents);
                 flows.push(events[ei]);
                 ei++;
             }
-            series.push({ date: addDays(today, i), balance: bal, flows });
+            series.push({ date: addDays(today, i), balance: centsMoney(balCents), flows });
         }
         let low = series[0];
         series.forEach(p => { if (p.balance < low.balance) low = p; });
@@ -361,7 +375,7 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
             <tr>
                 <td>${esc(fmtDayLong(e.date))}${e.overdue ? ' <span class="tag tag-bad">Overdue</span>' : ''}</td>
                 <td>${esc(e.desc)}${e.cat ? `<span style="color: var(--text-muted);"> · ${esc(e.cat)}</span>` : ''}</td>
-                <td><span class="tag ${e.source === 'Subscription' ? 'tag-sub' : ''}">${e.source}</span></td>
+                <td><span class="tag ${e.source === 'Subscription' ? 'tag-sub' : e.source === 'Schedule' ? 'tag-sched' : ''}">${e.source}</span></td>
                 <td class="col-num ${e.amount < 0 ? 'text-danger' : 'text-success'}">${signedMoney(e.amount)}</td>
                 <td class="col-num ${e.after < 0 ? 'text-danger' : ''}">${fmt(e.after)}</td>
             </tr>`).join('');
@@ -598,23 +612,22 @@ function clearInvestGoal() {
 }
 
 function investMonth(key) {
-    const out = { put: [], ret: [], putTotal: 0, retTotal: 0 };
+    const out = { put: [], ret: [], putTotal: 0, retTotal: 0, paidPutTotal: 0, paidRetTotal: 0 };
     const ds = datasets[key];
     const sav = activeAcctType() === 'savings';
     ((ds && ds.data) || []).forEach(t => {
         if (isRolloverTx(t)) return;
         const d = parseFloat(t.debit) || 0, c = parseFloat(t.credit) || 0;
-        const paid = String(t.paid || '').toLowerCase() === 'yes';
+        const paid = txIsPaid(t);
         if (sav) {
-            // Savings & Investing account: money received counts as put in; interest and investment returns count as returns
             if (c > 0) {
-                if (INTEREST_RE.test(t.creditCat || '') || INVEST_RE.test(t.creditCat || '')) { out.ret.push({ t, amt: c, paid }); out.retTotal += c; }
-                else { out.put.push({ t, amt: c, paid }); out.putTotal += c; }
+                if (INTEREST_RE.test(t.creditCat || '') || INVEST_RE.test(t.creditCat || '')) { out.ret.push({ t, amt: c, paid }); out.retTotal += c; if (paid) out.paidRetTotal += c; }
+                else { out.put.push({ t, amt: c, paid }); out.putTotal += c; if (paid) out.paidPutTotal += c; }
             }
             return;
         }
-        if (d > 0 && INVEST_RE.test(t.cost || '')) { out.put.push({ t, amt: d, paid }); out.putTotal += d; }
-        if (c > 0 && INVEST_RE.test(t.creditCat || '')) { out.ret.push({ t, amt: c, paid }); out.retTotal += c; }
+        if (d > 0 && INVEST_RE.test(t.cost || '')) { out.put.push({ t, amt: d, paid }); out.putTotal += d; if (paid) out.paidPutTotal += d; }
+        if (c > 0 && INVEST_RE.test(t.creditCat || '')) { out.ret.push({ t, amt: c, paid }); out.retTotal += c; if (paid) out.paidRetTotal += c; }
     });
     return out;
 }
@@ -904,24 +917,18 @@ function investEverPut() {
 
 /* ---------- NET WORTH ----------
    Cash (paid lines, same as the Dashboard "Total Balance") + savings goals + money put into investments.
-   Investments are shown at the amount you put in, because the dashboard does not know what they are worth today. */
+   Investments are shown at paid contribution cost, less no withdrawals or market movements, because current valuations are not recorded. */
 function cashBalanceFor(key) {
-    const ds = datasets[key];
-    if (!ds || !Array.isArray(ds.data)) return null;
-    let bal = 0;
-    ds.data.forEach(t => {
-        const paid = String(t.paid || '').toLowerCase() === 'yes';
-        if (isRolloverTx(t)) { bal += parseFloat(t.credit) || 0; return; }
-        if (paid) bal += (parseFloat(t.credit) || 0) - (parseFloat(t.debit) || 0);
-    });
-    return bal;
+    if (!datasets[key] || !Array.isArray(datasets[key].data)) return null;
+    return getMonthFinancials(key).currentBalance;
 }
+
 function investedThrough(y, mi) {
     let sum = 0;
     Object.keys(datasets).forEach(k => {
         const m = rawMonthNames.find(n => k.startsWith(n));
         if (!m) return;
-        if (parseInt(k.slice(m.length), 10) * 12 + rawMonthNames.indexOf(m) <= y * 12 + mi) sum += investMonth(k).putTotal;
+        if (parseInt(k.slice(m.length), 10) * 12 + rawMonthNames.indexOf(m) <= y * 12 + mi) sum += investMonth(k).paidPutTotal;
     });
     return sum;
 }
@@ -930,7 +937,7 @@ function returnsThrough(y, mi) {
     Object.keys(datasets).forEach(k => {
         const m = rawMonthNames.find(n => k.startsWith(n));
         if (!m) return;
-        if (parseInt(k.slice(m.length), 10) * 12 + rawMonthNames.indexOf(m) <= y * 12 + mi) sum += investMonth(k).retTotal;
+        if (parseInt(k.slice(m.length), 10) * 12 + rawMonthNames.indexOf(m) <= y * 12 + mi) sum += investMonth(k).paidRetTotal;
     });
     return sum;
 }
@@ -1024,7 +1031,7 @@ function renderNetWorth() {
         <div class="mv-kpis nw-kpis">
             ${card('Cash', '💵', cash, 'The money in your accounts right now: your opening balance plus every income line marked Paid, minus every expense marked Paid. It is the same as Total Balance on the Dashboard.', 'Your balance from paid lines.', delta(cd, cashPrev, hasPrev))}
             ${card('Savings goals', '🎯', goalsSaved, 'The total you have set aside across your Savings Goals. Goals are tracked separately from your transactions, so tick the box below if that money is already part of your cash balance.', included ? 'Already inside your cash, so not added again.' : 'Set aside in your goals.', '<div class="mv-kpi-prev">Goals do not keep a history.</div>')}
-            ${card('Invested', '📈', inv, 'Everything you have put into investments, added together. It is the amount you put in, not what it is worth today, because the dashboard does not know the current value.', 'Money you have put in so far.', delta(id, invPrev, true))}
+            ${card('Invested', '📈', inv, 'Paid investment contributions added together. This is a cost-basis estimate, not the current market value, and it does not subtract withdrawals or sales.', 'Paid contributions at recorded cost.', delta(id, invPrev, true))}
             ${card('Net worth', '🏦', total, 'Cash plus savings goals plus invested. The comparison with last month uses cash and invested only, because goals do not keep a history.', 'Everything together.', delta(td, totalPrev, hasPrev), total < 0 ? 'text-danger' : '')}
         </div>
         <label class="nw-check"><input type="checkbox" ${included ? 'checked' : ''} onchange="setNwGoalsIncluded(this.checked)"> My savings goals are already inside my cash balance (do not add them again)</label>
@@ -1071,12 +1078,12 @@ function interestMonth(key) {
     const days = new Date(y, i + 1, 0).getDate();
     const today = startOfToday(), first = new Date(y, i, 1), last = new Date(y, i, days);
     const elapsed = today < first ? 0 : (today < last ? today.getDate() : days);
-    const open = ds.data.filter(isRolloverTx).reduce((s, t) => s + (parseFloat(t.credit) || 0), 0);
+    const open = getMonthFinancials(key).opening;
     const byDay = new Array(days + 1).fill(0);
     let interest = 0, last_ = null;
     ds.data.forEach(t => {
         if (isRolloverTx(t)) return;
-        const paid = String(t.paid || '').toLowerCase() === 'yes';
+        const paid = txIsPaid(t);
         const c = parseFloat(t.credit) || 0;
         if (paid) { const d = Math.min(days, Math.max(1, parseInt(String(t.date).slice(0, 2), 10) || 1)); byDay[d] += c - (parseFloat(t.debit) || 0); }
         if (paid && c > 0 && INTEREST_RE.test(t.creditCat || '')) { interest += c; if (!last_ || parseDateString(t.date) > parseDateString(last_.date)) last_ = { date: t.date, amt: c }; }
@@ -1392,4 +1399,17 @@ function renderInterest() {
         schedules = schedules.filter(x => x.id !== id);
         renderApp();
         saveToSupabase();
+    }
+
+    // a transaction saved with "Repeats" creates (or updates) the matching schedule for its next date
+    function scheduleFromTransaction(o) {
+        const d = parseIso(o.iso);
+        if (!d || !SCHED_CYCLES[o.cycle] || o.cycle === 'once') return '';
+        const nx = schedNextDate({ nextDate: o.iso, cycle: o.cycle, anchor: d.getDate() });
+        if (!nx) return '';
+        const rec = { name: o.desc, payee: '', amount: o.amount, kind: o.kind, cycle: o.cycle, nextDate: isoDate(nx), anchor: d.getDate(), category: o.cat || '', toAccount: o.toAccount || '', active: true };
+        const same = schedules.find(s => String(s.name).trim().toLowerCase() === o.desc.trim().toLowerCase() && s.kind === o.kind);
+        if (same) { Object.assign(same, rec, { id: same.id, name: same.name, payee: same.payee || '' }); }
+        else schedules.push(Object.assign({ id: newId() }, rec));
+        return `${same ? 'Schedule updated' : 'Added to Schedules'}: "${o.desc}" repeats ${SCHED_CYCLES[o.cycle].toLowerCase()}, next ${toAUFormat(rec.nextDate)}`;
     }

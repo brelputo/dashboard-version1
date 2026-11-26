@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-26-financial-audit-3';
 /* BUDGETS: budgets, categories and budget alerts.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -6,6 +6,14 @@ window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-2
         activeCreationType = type;
         document.getElementById('type-pill-expense').classList.toggle('active', type === 'expense');
         document.getElementById('type-pill-credit').className = type === 'credit' ? 'pill active' : 'pill';
+    }
+
+    // Money moved to another account is not "spending", but if the line is in a category that has a budget
+    // (e.g. Investment) it still has to count against that budget, otherwise the budget alert disappears once linked.
+    function isBudgetSpendTx(t, monthKey) {
+        if (isReportableTx(t)) return true;
+        if (!t || isRolloverTx(t) || !isInternalTransferTx(t) || !t.cost) return false;
+        return getCategoryBudgetForMonth(t.cost, monthKey || activeMonthKey) > 0;
     }
 
     function renderBudgetHealth(catMap, projBal, transactions) {
@@ -28,8 +36,8 @@ window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-2
         const leftEl = document.getElementById('bh-left');
         leftEl.innerText = totalBudget > 0 ? fmt(left) : '--';
         leftEl.className = totalBudget > 0 ? (left < 0 ? 'text-danger' : 'text-success') : '';
-        const income = transactions.filter(t => !isRolloverTx(t)).reduce((a, t) => a + (parseFloat(t.credit) || 0), 0);
-        const spend = transactions.reduce((a, t) => a + (parseFloat(t.debit) || 0), 0);
+        const income = transactions.filter(isReportableTx).reduce((a, t) => a + (parseFloat(t.credit) || 0), 0);
+        const spend = transactions.filter(isReportableTx).reduce((a, t) => a + (parseFloat(t.debit) || 0), 0);
         const rateEl = document.getElementById('bh-rate');
         if (income > 0) {
             const rate = ((income - spend) / income) * 100;
@@ -103,6 +111,7 @@ window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-2
         const txs = (datasets[activeMonthKey] && datasets[activeMonthKey].data) || [];
         const spentMap = {};
         txs.forEach(t => {
+            if (!isBudgetSpendTx(t)) return;
             const d = parseFloat(t.debit) || 0;
             if (t.cost && d > 0) spentMap[t.cost] = (spentMap[t.cost] || 0) + d;
         });
@@ -241,6 +250,7 @@ window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-2
         const txs = (datasets[activeMonthKey] && datasets[activeMonthKey].data) || [];
         const spentMap = {};
         txs.forEach(t => {
+            if (!isBudgetSpendTx(t)) return;
             const d = parseFloat(t.debit) || 0;
             if (t.cost && d > 0) spentMap[t.cost] = (spentMap[t.cost] || 0) + d;
         });
@@ -349,7 +359,7 @@ window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-2
 
     function ovBudgetAlerts(txs) {
         const spent = {};
-        txs.forEach(t => { const d = parseFloat(t.debit) || 0; if (t.cost && d > 0) spent[t.cost] = (spent[t.cost] || 0) + d; });
+        txs.forEach(t => { if (!isBudgetSpendTx(t)) return; const d = parseFloat(t.debit) || 0; if (t.cost && d > 0) spent[t.cost] = (spent[t.cost] || 0) + d; });
         const out = [];
         categories.forEach(cat => {
             const base = getCategoryBudgetForMonth(cat, activeMonthKey);
@@ -405,7 +415,7 @@ window.__build = window.__build || {}; window.__build['budgets.js'] = '2026-11-2
             const baseLimit = getCategoryBudgetForMonth(catName, mKey);
             if (baseLimit > 0) {
                 const mtxs = datasets[mKey] ? datasets[mKey].data || [] : [];
-                const spent = mtxs.filter(x => x.cost === catName && String(x.paid || '').toLowerCase() === 'yes').reduce((a, x) => a + (parseFloat(x.debit) || 0), 0);
+                const spent = centsMoney(mtxs.filter(x => x.cost === catName && isBudgetSpendTx(x, mKey)).reduce((a, x) => a + txAmountCents(x, 'debit'), 0));
                 const leftover = (baseLimit + accumulatedExtra) - spent;
                 accumulatedExtra = Math.max(0, leftover);
             }

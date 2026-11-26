@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-26-financial-audit-3';
 /* ACCOUNTS: several separate accounts (e.g. Day by Day, Savings, Other bank), a switcher in the header,
    transfers between accounts, and the "All Accounts" overview page.
    How it works: the rest of the app always works on the ACTIVE account through the shared variables (datasets, categories, ...).
@@ -85,7 +85,9 @@ function ensureAccounts() {
     if (!accounts.length) { accounts = [{ id: acctNewId(), name: 'Day by Day', type: 'everyday', data: getAcctState() }]; }
     activeAccountId = accounts[0].id;
 }
+let acctSwapDepth = 0, saveAfterSwap = false;   // > 0 while another account's data is temporarily loaded (withAccount)
 function captureActiveAccount() {
+    if (acctSwapDepth > 0) return;   // the live data belongs to another account right now: never save it as the active one
     ensureAccounts();
     const a = activeAccount();
     if (a) a.data = getAcctState();
@@ -138,8 +140,13 @@ function withAccount(id, fn) {
     other.data = cleanAcctData(other.data);
     setAcctState(other.data);
     normalizeVault();
+    acctSwapDepth++;
     try { return fn(); }
-    finally { other.data = getAcctState(); setAcctState(home.data); }
+    finally {
+        other.data = getAcctState(); setAcctState(home.data);
+        acctSwapDepth--;
+        if (acctSwapDepth === 0 && saveAfterSwap) { saveAfterSwap = false; saveToSupabase(); }   // a save asked for mid-swap happens now, with the right data
+    }
 }
 
 function updateAccountUi() {
@@ -336,7 +343,7 @@ function ensureYearIn(ds, yr) {
 }
 let reconciling = false;
 function reconcileTransfers() {
-    if (reconciling || accounts.length < 1) return false;
+    if (reconciling || acctSwapDepth > 0 || accounts.length < 1) return false;
     reconciling = true;
     let changed = false;
     try {
@@ -469,4 +476,33 @@ function renderSavingsDashboard() {
         '<div class="sav-grid"><div class="sav-panel"><h3>Savings goals</h3>' + goals + '<button type="button" class="btn btn-secondary" onclick="showView(\'goals\')">Manage goals</button></div>' +
         '<div class="sav-panel"><h3>Investments</h3>' + (ig || '<div class="ov-empty">No investment goal set. You can set one on the Investments page.</div>') +
         '<div class="sav-links"><button type="button" class="btn btn-secondary" onclick="showView(\'investments\')">Open Investments</button><button type="button" class="btn btn-secondary" onclick="showView(\'networth\')">Net Worth</button></div></div></div>';
+}
+
+
+/* ---------- SIDEBAR: balance of every account (click one to open it) ---------- */
+let sideAcctTimer = null;
+function scheduleSideAccounts() { clearTimeout(sideAcctTimer); sideAcctTimer = setTimeout(renderSideAccounts, 250); }
+function renderSideAccounts() {
+    const box = document.getElementById('side-accts');
+    if (!box) return;
+    if (!accounts.length || typeof masterKey === 'undefined' || !masterKey) { box.innerHTML = ''; return; }
+    captureActiveAccount();
+    const now = new Date(), yr = String(now.getFullYear()), key = monthKeyOfDate(now);
+    const rows = accounts.map(a => {
+        const bal = withAccount(a.id, () => { ensureYearDatasetsExist(yr); syncRolloverBalances(yr); return cashBalanceFor(key) || 0; }) || 0;
+        return { a, bal };
+    });
+    const cls = v => v < 0 ? ' neg' : '';
+    const group = (title, list) => {
+        if (!list.length) return '';
+        const sub = list.reduce((s, r) => s + r.bal, 0);
+        return '<div class="sa-group"><div class="sa-head"><span>' + title + '</span><b class="' + cls(sub).trim() + '">' + fmt(sub) + '</b></div>' +
+            list.map(r => '<button type="button" class="sa-row' + (r.a.id === activeAccountId && currentView !== 'accounts' ? ' is-active' : '') + '" onclick="switchAccount(\'' + r.a.id + '\')" title="Open ' + esc(r.a.name) + '"><span>' + esc(r.a.name) + '</span><b class="' + cls(r.bal).trim() + '">' + fmt(r.bal) + '</b></button>').join('') + '</div>';
+    };
+    const total = rows.reduce((s, r) => s + r.bal, 0);
+    box.innerHTML =
+        '<button type="button" class="sa-total' + (currentView === 'accounts' ? ' is-active' : '') + '" onclick="showView(\'accounts\')" title="Open the All Accounts page"><span>All accounts</span><b class="' + cls(total).trim() + '">' + fmt(total) + '</b></button>' +
+        group('Everyday', rows.filter(r => r.a.type !== 'savings')) +
+        group('Savings &amp; Investing', rows.filter(r => r.a.type === 'savings')) +
+        '<button type="button" class="sa-add" onclick="closeSidebar(); addAccount(); updateAccountUi();">+ Add account</button>';
 }

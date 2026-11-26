@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-26-financial-audit-3';
 /* HELPERS: small tools used everywhere (money format, dates, toast messages, theme and glass switch).
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -46,10 +46,60 @@ window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-2
                 let monthNumStr = String(idx + 1).padStart(2, '0');
                 datasets[mKey] = {
                     title: fullMonthTitle,
-                    data: [{ date: `01/${monthNumStr}/${yr}`, desc: idx === 0 ? "Starting Balance" : "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }]
+                    data: [{ date: `01/${monthNumStr}/${yr}`, desc: idx === 0 ? "Starting Balance" : "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 0, debit: 0, method: "Previous Balance", paid: "YES" }]
                 };
             }
         });
+    }
+
+    // Canonical money/status helpers. Accumulate monetary totals in integer cents.
+    function moneyCents(value) { const n = Number(typeof value === 'string' ? value.replace(/[$,\s]/g, '') : value); return Number.isFinite(n) ? Math.round((n + Number.EPSILON) * 100) : 0; }
+    function centsMoney(cents) { return (Number(cents) || 0) / 100; }
+    function txIsPaid(tx) { return String(tx && tx.paid != null ? tx.paid : 'NO').trim().toLowerCase() === 'yes'; }
+    function txAmountCents(tx, field) { return moneyCents(tx && tx[field]); }
+    function yearHasFinancialActivity(year) {
+        return getMonthKeysOrderForYear(String(year)).some(k => (datasets[k] && datasets[k].data || []).some(t => isRolloverTx(t) ? !!t.manual : (txAmountCents(t, 'credit') !== 0 || txAmountCents(t, 'debit') !== 0)));
+    }
+    // Net of the still-unpaid lines in one month (income minus expenses, in cents). Opening rows are ignored.
+    function monthPendingNetCents(monthKey) {
+        const ds = datasets && datasets[monthKey];
+        if (!ds || !Array.isArray(ds.data)) return 0;
+        let net = 0;
+        ds.data.forEach(tx => { if (!isRolloverTx(tx) && !txIsPaid(tx)) net += txAmountCents(tx, 'credit') - txAmountCents(tx, 'debit'); });
+        return net;
+    }
+    // Unpaid lines from EARLIER months. Each month opens with only the money that has really cleared,
+    // so anything still unpaid in an earlier month is carried here so the projected balance does not forget it.
+    function carriedPendingCents(monthKey) {
+        const m = /^([a-z]+)(\d{4})$/.exec(String(monthKey || ''));
+        if (!m) return 0;
+        let idx = rawMonthNames.indexOf(m[1]), yr = Number(m[2]), total = 0;
+        if (idx < 0) return 0;
+        for (let guard = 0; guard < 240; guard++) {
+            if (idx === 0) { if (!earlierYearsHaveActivity(yr)) break; idx = 11; yr -= 1; } else idx -= 1;
+            const k = rawMonthNames[idx] + yr;
+            if (!datasets[k]) break;
+            total += monthPendingNetCents(k);
+        }
+        return total;
+    }
+    // True when this year or any year before it holds real entries, so a balance has to be carried into it even if the year just before is empty.
+    function earlierYearsHaveActivity(year) {
+        return (typeof allYears !== 'undefined' ? allYears : []).some(y => Number(y) < Number(year) && yearHasFinancialActivity(y));
+    }
+    function getMonthFinancials(monthKey) {
+        const ds = datasets && datasets[monthKey], rows = ds && Array.isArray(ds.data) ? ds.data : [];
+        const carried = carriedPendingCents(monthKey);
+        let opening = 0, paidIncome = 0, paidExpense = 0, pendingIncome = 0, pendingExpense = 0, allIncome = 0, allExpense = 0, reportIncome = 0, reportExpense = 0;
+        rows.forEach(tx => {
+            const c = txAmountCents(tx, 'credit'), d = txAmountCents(tx, 'debit');
+            if (isRolloverTx(tx)) { opening += c - d; return; }
+            allIncome += c; allExpense += d;
+            if (isReportableTx(tx)) { reportIncome += c; reportExpense += d; }
+            if (txIsPaid(tx)) { paidIncome += c; paidExpense += d; } else { pendingIncome += c; pendingExpense += d; }
+        });
+        const cleared = opening + paidIncome - paidExpense;
+        return { opening:centsMoney(opening), paidIncome:centsMoney(paidIncome), paidExpense:centsMoney(paidExpense), pendingIncome:centsMoney(pendingIncome), pendingExpense:centsMoney(pendingExpense), allIncome:centsMoney(allIncome), allExpense:centsMoney(allExpense), reportIncome:centsMoney(reportIncome), reportExpense:centsMoney(reportExpense), currentBalance:centsMoney(cleared), carriedPending:centsMoney(carried), projectedBalance:centsMoney(cleared + carried + pendingIncome - pendingExpense), netMovement:centsMoney(reportIncome - reportExpense) };
     }
 
     function fmt(n) { return moneyFmt.format(Number(n) || 0); }
@@ -58,6 +108,8 @@ window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-2
         return String(v ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     }
 
+    function isInternalTransferTx(t) { return !!(t && (t.xfer || t.xferFrom)); }
+    function isReportableTx(t) { return !!t && !isRolloverTx(t) && !isInternalTransferTx(t); }
     function isRolloverTx(t) {
         const d = (t.desc || '').toLowerCase();
         return d.includes('previous period') || d.includes('starting balance') || t.method === 'Previous Balance';
@@ -110,7 +162,8 @@ window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-2
         let income = 0, expenses = 0;
         ds.data.forEach(t => {
             const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
-            if (c > 0 && !isRolloverTx(t)) income += c;
+            if (!isReportableTx(t)) return;
+            if (c > 0) income += c;
             if (d > 0) expenses += d;
         });
         return { income, expenses };
@@ -237,4 +290,69 @@ window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-2
         }
         const parsed = Date.parse(dateStr);
         return isNaN(parsed) ? new Date(0) : new Date(parsed);
+    }
+
+/* ---------- PRIVACY MODE: the eye button blurs every amount and percentage on screen ---------- */
+    const PV_RE = /[−+\-]?\$\s?\d[\d,]*(?:\.\d+)?|[−+\-]?\d[\d,]*\.\d+%?|[−+\-]?\d+(?:\.\d+)?%/g;
+    const PV_TEST = /[−+\-]?\$\s?\d|[−+\-]?\d[\d,]*\.\d+|\d%/;
+    let privacyOn = false, pvObserver = null, pvBusy = false;
+    function pvWrapText(n) {
+        const p = n.parentNode;
+        if (!p || !PV_TEST.test(n.nodeValue)) return;
+        if (/^(SCRIPT|STYLE|TEXTAREA|OPTION|SELECT|TITLE|NOSCRIPT)$/i.test(p.nodeName)) return;
+        if (p.closest && p.closest('.pv, svg, #privacy-btn')) return;
+        const txt = n.nodeValue, frag = document.createDocumentFragment();
+        let last = 0, hit = false;
+        txt.replace(PV_RE, (m, off) => {
+            hit = true;
+            if (off > last) frag.appendChild(document.createTextNode(txt.slice(last, off)));
+            const s = document.createElement('span'); s.className = 'pv'; s.textContent = m; frag.appendChild(s);
+            last = off + m.length; return m;
+        });
+        if (!hit) return;
+        if (last < txt.length) frag.appendChild(document.createTextNode(txt.slice(last)));
+        p.replaceChild(frag, n);
+    }
+    function pvWrapTree(root) {
+        if (root.nodeType === 3) { pvWrapText(root); return; }
+        if (root.nodeType !== 1) return;
+        const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), list = [];
+        while (w.nextNode()) list.push(w.currentNode);
+        list.forEach(pvWrapText);
+    }
+    function pvUnwrapAll() {
+        document.querySelectorAll('span.pv').forEach(s => { s.replaceWith(document.createTextNode(s.textContent)); });
+    }
+    function applyPrivacy(on, quiet) {
+        privacyOn = !!on;
+        document.body.classList.toggle('privacy', privacyOn);
+        const btn = document.getElementById('privacy-btn');
+        if (btn) {
+            btn.classList.toggle('on', privacyOn);
+            btn.setAttribute('aria-pressed', privacyOn ? 'true' : 'false');
+            btn.setAttribute('aria-label', privacyOn ? 'Disable privacy mode' : 'Enable privacy mode');
+        }
+        if (pvObserver) { pvObserver.disconnect(); pvObserver = null; }
+        if (privacyOn) {
+            pvBusy = true; try { pvWrapTree(document.body); } finally { pvBusy = false; }
+            pvObserver = new MutationObserver(muts => {
+                if (pvBusy) return;
+                pvBusy = true;
+                try {
+                    muts.forEach(m => {
+                        if (m.type === 'characterData') pvWrapText(m.target);
+                        else m.addedNodes.forEach(n => pvWrapTree(n));
+                    });
+                } finally { pvBusy = false; }
+            });
+            pvObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+        } else pvUnwrapAll();
+        try { localStorage.setItem('dashboard_privacy', privacyOn ? '1' : '0'); } catch (_) { }
+        if (!quiet) showToast(privacyOn ? 'Privacy mode on: amounts are hidden' : 'Privacy mode off');
+    }
+    function togglePrivacy() { applyPrivacy(!privacyOn); }
+    function initPrivacy() {
+        let on = false;
+        try { on = localStorage.getItem('dashboard_privacy') === '1'; } catch (_) { }
+        if (on) applyPrivacy(true, true);
     }

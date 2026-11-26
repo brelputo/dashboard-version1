@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-26-financial-audit-3';
 /* STATE: settings, default data and the values the whole app shares. Loaded first.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -81,7 +81,7 @@ window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-25-
                 res[mKey] = {
                     title: "September 2026",
                     data: [
-                        { date: "30/08/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 2113.98, debit: 0, method: "Previous Balance", paid: "YES" },
+                        { date: "30/08/2026", desc: "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 2113.98, debit: 0, method: "Previous Balance", paid: "YES", manual: true },
                         { date: "17/09/2026", desc: "Aldi", cost: "Supermarket", creditCat: "", type: "Variable", credit: 0, debit: 39.58, method: "Debit", paid: "Yes" },
                         { date: "17/09/2026", desc: "Tasman", cost: "Butcher Shop", creditCat: "", type: "Variable", credit: 0, debit: 5.62, method: "Debit", paid: "Yes" },
                         { date: "18/09/2026", desc: "Vodafone", cost: "Phone Plan", creditCat: "", type: "Fixed", credit: 0, debit: 53.00, method: "Debit", paid: "NO" },
@@ -94,7 +94,7 @@ window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-25-
             } else {
                 res[mKey] = {
                     title: fullMonthTitle,
-                    data: [{ date: `${dayStr}/${monthNumStr}/${yr}`, desc: idx === 0 ? "Starting Balance" : "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 1000.00, debit: 0, method: "Previous Balance", paid: "YES" }]
+                    data: [{ date: `${dayStr}/${monthNumStr}/${yr}`, desc: idx === 0 ? "Starting Balance" : "Previous Period Balance", cost: "", creditCat: "Starting Balance", type: "", credit: 0, debit: 0, method: "Previous Balance", paid: "YES" }]
                 };
             }
         });

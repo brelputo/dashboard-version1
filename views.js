@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-26-financial-audit-3';
 /* VIEWS: page navigation, Dashboard overview, Annual, Multi-Year and Month vs Last Month pages.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -23,7 +23,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         const ds = datasets[key];
         if (!ds || !Array.isArray(ds.data)) return { map, total };
         ds.data.forEach(t => {
-            if (isRolloverTx(t)) return;
+            if (!isReportableTx(t)) return;
             const d = parseFloat(t.debit) || 0;
             if (d <= 0) return;
             const day = parseInt(String(t.date).slice(0, 2), 10);
@@ -158,13 +158,12 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         const num = v => parseFloat(v) || 0;
         const state = t => String(t.paid || '').toLowerCase();
         const sum = (list, f) => list.reduce((a, t) => a + f(t), 0);
-        const prevBal = sum(txs.filter(isRolloverTx), t => num(t.credit));
-        const paidCredits = sum(txs.filter(t => !isRolloverTx(t) && state(t) === 'yes' && num(t.credit) > 0), t => num(t.credit));
-        const debitsPaid = sum(txs.filter(t => state(t) === 'yes' && num(t.debit) > 0), t => num(t.debit));
-        const currBal = prevBal + paidCredits - debitsPaid;
-        const creditsRecv = sum(txs.filter(t => !isRolloverTx(t) && state(t) === 'no' && num(t.credit) > 0), t => num(t.credit));
-        const debitsPay = sum(txs.filter(t => state(t) === 'no' && num(t.debit) > 0), t => num(t.debit));
-        const projBal = currBal + creditsRecv - debitsPay;
+        const monthFinance = getMonthFinancials(activeMonthKey);
+        const prevBal = monthFinance.opening;
+        const currBal = monthFinance.currentBalance;
+        const creditsRecv = monthFinance.pendingIncome;
+        const debitsPay = monthFinance.pendingExpense;
+        const projBal = monthFinance.projectedBalance;
         const cur = ovMonthTotals(activeMonthKey) || { income: 0, expenses: 0 };
         const prev = ovMonthTotals(ovShiftKey(activeMonthKey, -1));
         document.getElementById('ov-month').innerText = currentMonthLabel();
@@ -229,7 +228,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         let total = 0;
         txs.forEach(t => {
             const d = num(t.debit);
-            if (d > 0) { const k = t.cost || 'Uncategorised'; catMap[k] = (catMap[k] || 0) + d; total += d; }
+            if (d > 0 && isReportableTx(t)) { const k = t.cost || 'Uncategorised'; catMap[k] = (catMap[k] || 0) + d; total += d; }
         });
         const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
         const parts = sorted.slice(0, 5).map(([name, v]) => ({ name, v }));
@@ -297,12 +296,12 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         const s = periodSummaryFor(key);
         const pendCr = txs.filter(t => !isRolloverTx(t) && st(t) === 'no' && num(t.credit) > 0).reduce((a, t) => a + num(t.credit), 0);
         const pendDb = txs.filter(t => st(t) === 'no' && num(t.debit) > 0).reduce((a, t) => a + num(t.debit), 0);
-        const proj = s.currBal + pendCr - pendDb;
-        const income = txs.filter(t => !isRolloverTx(t)).reduce((a, t) => a + num(t.credit), 0);
-        const spend = txs.reduce((a, t) => a + num(t.debit), 0);
+        const proj = s.projectedBal;
+        const income = txs.filter(isReportableTx).reduce((a, t) => a + num(t.credit), 0);
+        const spend = txs.filter(isReportableTx).reduce((a, t) => a + num(t.debit), 0);
         const rate = income > 0 ? ((income - spend) / income * 100).toFixed(1) + '%' : '—';
         const catMap = {};
-        txs.forEach(t => { const d = num(t.debit); if (d > 0) { const c = t.cost || 'Uncategorised'; catMap[c] = (catMap[c] || 0) + d; } });
+        txs.forEach(t => { if (!isBudgetSpendTx(t, key)) return; const d = num(t.debit); if (d > 0) { const c = t.cost || 'Uncategorised'; catMap[c] = (catMap[c] || 0) + d; } });
         const catRows = Object.entries(catMap).sort((a, b) => b[1] - a[1]).map(([c, v]) => {
             const base = c === 'Uncategorised' ? 0 : getCategoryBudgetForMonth(c, key);
             const lim = base > 0 ? base + getCategoryRolloverCarryover(c, key) : 0;
@@ -359,7 +358,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
             const ds = datasets[k];
             const t = ovMonthTotals(k);
             if (t) { earned += t.income; spent += t.expenses; }
-            if (t && ds && Array.isArray(ds.data) && ds.data.some(x => !isRolloverTx(x))) {
+            if (t && ds && Array.isArray(ds.data) && ds.data.some(isReportableTx)) {
                 const p = ovParseKey(k);
                 entered.push({ name: OV_MONTHS[p.idx], net: t.income - t.expenses });
             }
@@ -428,8 +427,8 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         const num = v => parseFloat(v) || 0;
         const st = t => String(t.paid || '').toLowerCase();
         const sum = (list, f) => list.reduce((a, t) => a + f(t), 0);
-        const credits = txs.filter(t => !isRolloverTx(t) && num(t.credit) > 0);
-        const debits = txs.filter(t => num(t.debit) > 0);
+        const credits = txs.filter(t => isReportableTx(t) && num(t.credit) > 0);
+        const debits = txs.filter(t => isReportableTx(t) && num(t.debit) > 0);
         const earned = sum(credits, t => num(t.credit));
         const earnedPaid = sum(credits.filter(t => st(t) === 'yes'), t => num(t.credit));
         const spent = sum(debits, t => num(t.debit));
@@ -518,6 +517,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
     }
 
     function renderApp() {
+        scheduleSideAccounts();
         reconcileTransfers();   // keep the receiving side of linked transfers in step with the sending side
         updateAccountUi();
         updateSchedBadge();
@@ -554,7 +554,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         const ds = datasets[key];
         if (!ds || !Array.isArray(ds.data)) return arr;
         ds.data.forEach(t => {
-            if (isRolloverTx(t)) return;
+            if (!isReportableTx(t)) return;
             const v = parseFloat(t[kind]) || 0;
             if (v <= 0) return;
             const day = parseInt(String(t.date).slice(0, 2), 10);
@@ -796,8 +796,8 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
             monthKeys.forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
                     let txs = datasets[mKey].data;
-                    yIncome += txs.filter(t => !isRolloverTx(t) && (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-                    ySpend += txs.filter(t => (parseFloat(t.debit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+                    yIncome += txs.filter(t => isReportableTx(t) && (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+                    ySpend += txs.filter(t => isReportableTx(t) && (parseFloat(t.debit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
                 }
             });
             let ySavings = yIncome - ySpend;
@@ -852,11 +852,12 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         let annualCatMap = {};
         monthKeys.forEach((mKey, idx) => {
             let txs = datasets[mKey] ? datasets[mKey].data || [] : [];
-            let mIncome = txs.filter(t => !isRolloverTx(t) && (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-            let mSpend = txs.filter(t => (parseFloat(t.debit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+            let mIncome = txs.filter(t => isReportableTx(t) && (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+            let mSpend = txs.filter(t => isReportableTx(t) && (parseFloat(t.debit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
             totalIncomeAll += mIncome;
             totalSpendAll += mSpend;
             txs.forEach(t => {
+                if (!isReportableTx(t)) return;
                 let dVal = parseFloat(t.debit) || 0;
                 if (t.cost && dVal > 0) annualCatMap[t.cost] = (annualCatMap[t.cost] || 0) + dVal;
             });
@@ -931,24 +932,28 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
     }
 
     function calculateMetrics() {
-        let transactions = datasets[activeMonthKey].data;
-        let prevBal = transactions.filter(t => isRolloverTx(t)).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-        let paidCredits = transactions
-            .filter(t => !isRolloverTx(t) && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+        const f = getMonthFinancials(activeMonthKey);
+        let transactions = (datasets[activeMonthKey] && datasets[activeMonthKey].data) || [];
+        let prevBal = f.opening;
+        let paidCredits = f.paidIncome;
         let creditsRcvdTotal = prevBal + paidCredits;
-        let debitsPaid = transactions
-            .filter(t => t.paid.toLowerCase() === 'yes' && (parseFloat(t.debit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        let currBal = creditsRcvdTotal - debitsPaid;
-        let creditsRecv = transactions
-            .filter(t => !isRolloverTx(t) && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-        let debitsPay = transactions
-            .filter(t => t.paid.toUpperCase() === 'NO' && (parseFloat(t.debit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        let projBal = currBal + creditsRecv - debitsPay;
-        let totalCreditsAll = transactions.filter(t => (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+        let debitsPaid = f.paidExpense;
+        let currBal = f.currentBalance;
+        let creditsRecv = f.pendingIncome;
+        let debitsPay = f.pendingExpense;
+        let projBal = f.projectedBalance;
+        let totalCreditsAll = f.opening + f.reportIncome;
+        (function txHero() {
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const unc = creditsRecv - debitsPay;
+            set('tx-hero-kind', activeAcctType() === 'savings' ? 'Savings & Investing account' : 'Everyday account');
+            set('tx-hero-title', activeAccountName() || 'Account');
+            set('tx-hero-month', currentMonthLabel());
+            const bal = document.getElementById('tx-hero-bal');
+            if (bal) { bal.textContent = fmt(currBal); bal.classList.toggle('neg', currBal < 0); }
+            set('tx-hero-cleared', 'Cleared total: ' + fmt(currBal));
+            set('tx-hero-uncleared', 'Uncleared total: ' + (unc < 0 ? '−' : '') + fmt(Math.abs(unc)));
+        })();
         document.getElementById('lbl-credits-rcvd').innerText = `${fmt(creditsRcvdTotal)}`;
         document.getElementById('lbl-debits-paid').innerText = `${fmt(debitsPaid)}`;
         const psToPayEl = document.getElementById('lbl-ps-debits-topay');
@@ -964,9 +969,16 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         debitsPayEl.className = debitsPay > 0 ? 'text-danger' : '';
         document.getElementById('lbl-proj-bal').innerText = `${fmt(projBal)}`;
         document.getElementById('lbl-proj-bal').classList.toggle('text-danger', projBal < 0);
-        let fixedTotal = transactions.filter(t => t.type === 'Fixed').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        let varTotal = transactions.filter(t => t.type === 'Variable').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        let totalDebits = transactions.reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+        (function carriedRow() {
+            const row = document.getElementById('row-carried'), el = document.getElementById('lbl-carried');
+            if (!row || !el) return;
+            const c = f.carriedPending || 0;
+            row.style.display = c ? '' : 'none';
+            el.textContent = (c < 0 ? '−' : '+') + fmt(Math.abs(c));
+        })();
+        let fixedTotal = transactions.filter(t => isReportableTx(t) && t.type === 'Fixed').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+        let varTotal = transactions.filter(t => isReportableTx(t) && t.type === 'Variable').reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+        let totalDebits = f.reportExpense;
         document.getElementById('lbl-fixed').innerText = `${fmt(fixedTotal)}`;
         document.getElementById('lbl-fixed-pct').innerText = `(${totalDebits > 0 ? ((fixedTotal/totalDebits)*100).toFixed(1) : 0}%)`;
         document.getElementById('lbl-variable').innerText = `${fmt(varTotal)}`;
@@ -974,7 +986,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         document.getElementById('lbl-total-debits').innerText = `${fmt(totalDebits)}`;
         let catMap = {};
         transactions.forEach(t => {
-            if (t.cost && (parseFloat(t.debit) || 0) > 0) {
+            if (isBudgetSpendTx(t) && t.cost && (parseFloat(t.debit) || 0) > 0) {
                 catMap[t.cost] = (catMap[t.cost] || 0) + parseFloat(t.debit);
             }
         });
@@ -1031,7 +1043,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         let creditMap = {};
         transactions.forEach(t => {
             let cVal = parseFloat(t.credit) || 0;
-            if (cVal > 0) {
+            if (cVal > 0 && (isRolloverTx(t) || !isInternalTransferTx(t))) {
                 let cKey = t.creditCat ? t.creditCat : (t.method === 'Previous Balance' ? 'Starting Balance' : 'Other Credits');
                 creditMap[cKey] = (creditMap[cKey] || 0) + cVal;
             }
@@ -1064,7 +1076,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-25-
         `;
         let methodMap = {};
         transactions.forEach(t => {
-            if (t.method && t.method !== 'Previous Balance' && (parseFloat(t.debit) || 0) > 0) {
+            if (isReportableTx(t) && t.method && t.method !== 'Previous Balance' && (parseFloat(t.debit) || 0) > 0) {
                 methodMap[t.method] = (methodMap[t.method] || 0) + parseFloat(t.debit);
             }
         });
@@ -1095,13 +1107,14 @@ function renderYearReview() {
     const yr = parseInt(selectedYear, 10);
     document.getElementById('yr-title').textContent = `${yr} in Review`;
     const months = getMonthKeysOrderForYear(yr).map((k, i) => {
-        const ds = datasets[k], lines = ((ds && ds.data) || []).filter(t => !isRolloverTx(t));
-        let earned = 0, spent = 0, invested = 0;
+        const ds = datasets[k], lines = ((ds && ds.data) || []).filter(isReportableTx);
+        let earned = 0, spent = 0;
         lines.forEach(t => {
             const c = parseFloat(t.credit) || 0, d = parseFloat(t.debit) || 0;
             if (c > 0) earned += c;
-            if (d > 0) { spent += d; if (INVEST_RE.test(t.cost || '')) invested += d; }
+            if (d > 0) spent += d;
         });
+        const invested = investMonth(k).paidPutTotal;
         return { i, earned, spent, invested, net: earned - spent, has: lines.length > 0 };
     });
     const active = months.filter(m => m.has);
@@ -1115,7 +1128,7 @@ function renderYearReview() {
     // categories (investments left out) and the biggest single expense
     const cats = {}; let big = null;
     getMonthKeysOrderForYear(yr).forEach((k, i) => (((datasets[k] || {}).data) || []).forEach(t => {
-        if (isRolloverTx(t)) return;
+        if (!isReportableTx(t)) return;
         const d = parseFloat(t.debit) || 0;
         if (d <= 0 || INVEST_RE.test(t.cost || '')) return;
         const c = t.cost || 'Uncategorised';

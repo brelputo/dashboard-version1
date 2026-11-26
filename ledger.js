@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26-financial-audit-3';
 /* LEDGER: the Transactions page, the New Transaction window, recurring bills, due-soon alerts and row selection.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -66,6 +66,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
         document.getElementById('tm-amount').value = '';
         document.getElementById('tm-type').value = 'expense';
         document.getElementById('tm-paid').checked = false;
+        document.getElementById('tm-repeat').value = 'once';
         const dateEl = document.getElementById('tm-date');
         dateEl.min = allYears[0] + '-01-01';
         dateEl.max = allYears[allYears.length - 1] + '-12-31';
@@ -115,6 +116,8 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
         };
         datasets[key].data.push(tx);
         if (isTransfer) { tx.xfer = { to: destAcct.id, id: newLinkId() }; reconcileTransfers(); }
+        const repeat = document.getElementById('tm-repeat').value;
+        const schedMsg = repeat !== 'once' ? scheduleFromTransaction({ desc, amount, kind: isTransfer ? 'transfer' : (isExpense ? 'out' : 'in'), cat: isTransfer ? '' : cat, iso, cycle: repeat, toAccount: destAcct ? destAcct.id : '' }) : '';
         let matchedAcct = null;
         const askAfter = (isExpense && !isTransfer);
         const again = !!(document.getElementById('tm-again') || {}).checked;
@@ -141,6 +144,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
             row.classList.add('row-flash');
             setTimeout(() => row.classList.remove('row-flash'), 2600);
         });
+        if (schedMsg) setTimeout(() => showToast(schedMsg), 1700);
         if (again) {
             resetTxnModalForAnother();
             showToast(moved ? `Added to ${currentMonthLabel()} · ready for the next one` : 'Added · ready for the next one');
@@ -152,16 +156,8 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
     function closeAllModals() { try { cancelTransferLink(); } catch (_) { } closeRecurringModal(); closeTransactionModal(); closeBudgetModal(); closeSecurityModal(); closeScheduleModal(); }
 
     function periodSummaryFor(monthKey) {
-        const ds = datasets[monthKey];
-        const txs = ds && Array.isArray(ds.data) ? ds.data : [];
-        const num = v => parseFloat(v) || 0;
-        const state = t => String(t.paid || '').toLowerCase();
-        const prevBal = txs.filter(isRolloverTx).reduce((a, t) => a + num(t.credit), 0);
-        const paidCredits = txs.filter(t => !isRolloverTx(t) && state(t) === 'yes' && num(t.credit) > 0).reduce((a, t) => a + num(t.credit), 0);
-        const debitsPaid = txs.filter(t => state(t) === 'yes' && num(t.debit) > 0).reduce((a, t) => a + num(t.debit), 0);
-        const creditsRcvd = prevBal + paidCredits;
-        const debitsToPay = txs.filter(t => state(t) === 'no' && num(t.debit) > 0).reduce((a, t) => a + num(t.debit), 0);
-        return { creditsRcvd, debitsPaid, debitsToPay, currBal: creditsRcvd - debitsPaid };
+        const f = getMonthFinancials(monthKey);
+        return { creditsRcvd: f.opening + f.paidIncome, debitsPaid: f.paidExpense, debitsToPay: f.pendingExpense, currBal: f.currentBalance, creditsToReceive: f.pendingIncome, projectedBal: f.projectedBalance };
     }
 
     function renderTxSummary() {
@@ -392,6 +388,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
         document.getElementById('tm-amount').value = '';
         document.getElementById('tm-cat').value = '';
         document.getElementById('tm-paid').checked = false;
+        document.getElementById('tm-repeat').value = 'once';
         txmCatTouched = false;
         updateTxnModalSummary();
         setTimeout(() => document.getElementById('tm-desc').focus(), 30);
@@ -414,6 +411,12 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
                 items.push({ kind: 'ledger', tx: t, date: d, desc: t.desc || '(no description)', amount: net, late: d < today, days: daysBetween(today, d) });
             });
         }
+        schedules.forEach(sc => {
+            if (sc.active === false || sc.kind === 'in') return;
+            const d = parseIso(sc.nextDate);
+            if (!d || d > end) return;
+            items.push({ kind: 'sched', sched: sc, date: d, desc: sc.name, amount: -Math.abs(Number(sc.amount) || 0), late: d < today, days: daysBetween(today, d) });
+        });
         subscriptions.forEach(sub => {
             if (!sub.active) return;
             subOccurrencesBetween(sub, today, end).forEach(d => {
@@ -456,9 +459,9 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
             const rows = dueItems.slice(0, 5).map((it, n) => `
                 <div class="due-row ${it.late ? 'late' : (it.days <= 1 ? 'urgent' : '')}">
                     <span class="due-when">${esc(dueWhenLabel(it))}</span>
-                    <span class="due-desc" title="${esc(it.desc)}">${esc(it.desc)}${it.kind === 'sub' ? '<em>subscription</em>' : ''}</span>
+                    <span class="due-desc" title="${esc(it.desc)}">${esc(it.desc)}${it.kind === 'sub' ? '<em>subscription</em>' : it.kind === 'sched' ? '<em>schedule</em>' : ''}</span>
                     <span class="due-amt">${esc(fmt(Math.abs(it.amount)))}</span>
-                    ${it.kind === 'ledger' ? `<button type="button" class="due-paid" onclick="dueMarkPaid(${n})" title="Mark as paid">✓ Paid</button>` : '<span></span>'}
+                    ${it.kind === 'ledger' ? `<button type="button" class="due-paid" onclick="dueMarkPaid(${n})" title="Mark as paid">✓ Paid</button>` : it.kind === 'sched' ? `<button type="button" class="due-paid" onclick="duePostSchedule(${n})" title="Add it to Transactions as Paid and move the schedule on">Post</button>` : '<span></span>'}
                 </div>`).join('');
             html = `<div class="due-banner ${late ? 'has-late' : ''}" role="alert">
                 <div class="due-head">
@@ -483,6 +486,12 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
             b.classList.toggle('late', late > 0);
             b.title = count ? `${count} due soon${late ? ', ' + late + ' overdue' : ''}` : '';
         });
+    }
+
+    function duePostSchedule(n) {
+        const it = dueItems[n];
+        if (!it || it.kind !== 'sched') return;
+        postSchedule(it.sched.id, true);
     }
 
     function dueMarkPaid(n) {
@@ -626,59 +635,41 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
     }
 
     function syncRolloverBalances(yr = selectedYear, depth = 0) {
+        yr = String(yr);
+        if (depth > 6 || !allYears.includes(yr)) return false;
         let changed = false;
-        const prevYr = String(parseInt(yr, 10) - 1);
-        const prevDec = datasets['december' + prevYr];
-        const carryFromPrevYear = depth < 6 && allYears.includes(prevYr) && prevDec && Array.isArray(prevDec.data) && prevDec.data.some(t => !isRolloverTx(t));
-        if (carryFromPrevYear && syncRolloverBalances(prevYr, depth + 1)) changed = true;
         ensureYearDatasetsExist(yr);
-        const monthKeys = getMonthKeysOrderForYear(yr);
-        for (let i = carryFromPrevYear ? 0 : 1; i < monthKeys.length; i++) {
-            const prevKey = i === 0 ? 'december' + prevYr : monthKeys[i - 1];
-            const currKey = monthKeys[i];
-            const prevProj = parseFloat(calculateProjectedBalanceForMonth(prevKey).toFixed(2));
-            const currData = datasets[currKey].data;
-            const rolloverItem = currData.find(t => isRolloverTx(t));
-            if (rolloverItem) {
-                if (rolloverItem.manual) {
-                    // the person typed this opening balance themselves: keep it
-                } else if (rolloverItem.credit !== prevProj) {
-                    rolloverItem.credit = prevProj;
-                    changed = true;
-                }
-            } else {
-                currData.unshift({
-                    date: `01/${String(i + 1).padStart(2, '0')}/${yr}`,
-                    desc: "Previous Period Balance",
-                    cost: "", creditCat: "Starting Balance", type: "",
-                    credit: prevProj, debit: 0, method: "Previous Balance", paid: "YES"
-                });
-                changed = true;
-            }
+        const prevYr = String(Number(yr) - 1);
+        if (allYears.includes(prevYr) && depth < 6) {
+            const prevHasActivity = earlierYearsHaveActivity(yr);
+            if (prevHasActivity) changed = syncRolloverBalances(prevYr, depth + 1) || changed;
         }
-        if (depth === 0 && changed) saveToSupabase();
+        const keys = getMonthKeysOrderForYear(yr);
+        keys.forEach((key, i) => {
+            const rows = datasets[key].data;
+            const rollovers = rows.filter(isRolloverTx);
+            let rollover = rollovers.find(t => t.manual) || rollovers[0];
+            const prevKey = i > 0 ? keys[i - 1] : 'december' + prevYr;
+            const hasPriorYear = allYears.includes(prevYr) && earlierYearsHaveActivity(yr);
+            const opening = (i > 0 || hasPriorYear) ? getMonthFinancials(prevKey).currentBalance : 0;
+            if (!rollover) {
+                rollover = { date: `01/${String(i + 1).padStart(2, '0')}/${yr}`, desc: i === 0 ? 'Starting Balance' : 'Previous Period Balance', cost: '', creditCat: 'Starting Balance', type: '', credit: opening, debit: 0, method: 'Previous Balance', paid: 'YES' };
+                rows.unshift(rollover); changed = true;
+            } else if (!rollover.manual && moneyCents(rollover.credit) !== moneyCents(opening)) {
+                rollover.credit = opening; changed = true;
+            }
+            // Consolidate legacy duplicate opening rows without changing their combined value.
+            rollovers.filter(t => t !== rollover).forEach(t => {
+                if (t.manual) { rollover.manual = true; rollover.credit = centsMoney(moneyCents(rollover.credit) + moneyCents(t.credit)); }
+                rows.splice(rows.indexOf(t), 1); changed = true;
+            });
+        });
+        if (depth === 0 && changed && typeof saveToSupabase === 'function') saveToSupabase();
         return changed;
     }
 
     function calculateProjectedBalanceForMonth(monthKey) {
-        if (!datasets[monthKey] || !datasets[monthKey].data) return 0;
-        let transactions = datasets[monthKey].data;
-        let prevBal = transactions.filter(t => isRolloverTx(t)).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-        let paidCredits = transactions
-            .filter(t => !isRolloverTx(t) && t.paid.toLowerCase() === 'yes' && (parseFloat(t.credit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-        let creditsRcvdTotal = prevBal + paidCredits;
-        let debitsPaid = transactions
-            .filter(t => t.paid.toLowerCase() === 'yes' && (parseFloat(t.debit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        let currBal = creditsRcvdTotal - debitsPaid;
-        let creditsRecv = transactions
-            .filter(t => !isRolloverTx(t) && t.paid.toUpperCase() === 'NO' && (parseFloat(t.credit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-        let debitsPay = transactions
-            .filter(t => t.paid.toUpperCase() === 'NO' && (parseFloat(t.debit) || 0) > 0)
-            .reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
-        return currBal + creditsRecv - debitsPay;
+        return getMonthFinancials(monthKey).projectedBalance;
     }
 
     function sortTransactions() {
@@ -816,11 +807,11 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-25
                 return;
             }
             if (ledgerCat && String(tx.cost || '') !== ledgerCat) return;
-            if (currentFilter === 'cleared' && tx.paid.toLowerCase() !== 'yes') return;
-            if (currentFilter === 'pending' && tx.paid.toUpperCase() !== 'NO') return;
+            if (currentFilter === 'cleared' && String(tx.paid || 'NO').toLowerCase() !== 'yes') return;
+            if (currentFilter === 'pending' && String(tx.paid || 'NO').toUpperCase() !== 'NO') return;
             if (currentFilter === 'credits' && cVal <= 0) return;
             if (currentFilter === 'debits' && dVal <= 0) return;
-            let isYes = tx.paid.toLowerCase() === 'yes';
+            let isYes = String(tx.paid || 'NO').toLowerCase() === 'yes';
             let isoDate = toISOFormat(tx.date);
             if (!isRolloverTx(tx)) visibleSel.push(index);
             let tr = document.createElement('tr');

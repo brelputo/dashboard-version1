@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-build="2026-11-25-q">
+<html lang="en" data-build="2026-11-26-financial-audit-3">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -185,6 +185,19 @@
             <div class="form-field">
                 <label for="tm-date">Date</label>
                 <input type="date" id="tm-date" onchange="updateTxnModalSummary()" oninput="updateTxnModalSummary()" onkeydown="if(event.key==='Enter') saveTransactionFromModal()">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="tm-repeat">Repeat (adds to Schedules)</label>
+                <select id="tm-repeat">
+                    <option value="once" selected>Does not repeat</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="fortnightly">Fortnightly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
             </div>
         </div>
         <div class="tm-paid-row">
@@ -395,8 +408,9 @@
                 </div></div>
             </div>
         </nav>
+        <div class="side-accts" id="side-accts"></div>
         <div class="nav-footer">
-            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-25-q</div>
+            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-26-financial-audit-3</div>
             <button type="button" class="nav-item" onclick="lockVault()">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
                 <span>Lock vault</span>
@@ -438,11 +452,6 @@
                 <div class="sync-wrap">
                     <button class="icon-btn-tooltip" id="sync-btn" onclick="refreshFromCloud()" aria-label="Sync">🔄</button>
                     <span class="sync-status" id="sync-status"></span>
-                    <label class="fx-toggle" title="Glass effects: blur, moving glow and hover lift. Turn off for a lighter, faster page.">
-                        <input type="checkbox" id="fx-toggle" role="switch" aria-label="Glass effects" checked onchange="setFx(this.checked)">
-                        <span class="fx-track"><span class="fx-knob"></span></span>
-                        <span class="fx-text">Glass</span>
-                    </label>
                 </div>
                 <div class="sync-wrap">
                     <button class="icon-btn-tooltip" id="backup-btn" onclick="exportEncryptedBackup()" aria-label="Backup" title="Backup">💾</button>
@@ -452,7 +461,16 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
                 </button>
                 <button class="icon-btn-tooltip" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">☀</button>
+                <button class="icon-btn-tooltip" id="privacy-btn" onclick="togglePrivacy()" aria-label="Enable privacy mode" aria-pressed="false">
+                    <svg class="pv-eye" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg class="pv-eye-off" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.5 10.5 0 0 1 12 19c-6.4 0-10-7-10-7a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A9.8 9.8 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+                </button>
                 <button class="icon-btn-tooltip" onclick="lockVault()" aria-label="Lock">🔒</button>
+                <label class="fx-toggle" title="Glass effects: blur, moving glow and hover lift. Turn off for a lighter, faster page.">
+                    <input type="checkbox" id="fx-toggle" role="switch" aria-label="Glass effects" checked onchange="setFx(this.checked)">
+                    <span class="fx-track"><span class="fx-knob"></span></span>
+                    <span class="fx-text">Glass</span>
+                </label>
             </div>
         </div>
         <div class="header-actions">
@@ -1046,6 +1064,7 @@
                 <div class="metric-row"><span>Credits to Receive:</span> <span id="lbl-credits-recv">$0.00</span></div>
                 <div class="metric-row"><span>Debits to Pay:</span> <span id="lbl-debits-pay">$0.00</span></div>
                 <div class="highlight-box">
+                    <div class="metric-row" id="row-carried" style="display:none" title="Unpaid lines from earlier months. Mark them Paid (or delete them) once they are settled."><span>Includes unpaid from earlier months:</span><span id="lbl-carried">$0.00</span></div>
                     <div class="metric-row"><span>Projected Balance:</span><span id="lbl-proj-bal">$0.00</span></div>
                 </div>
             </div>
@@ -1084,6 +1103,20 @@
 
     <!-- TRANSACTIONS VIEW (with the Paid toggle switch) -->
     <div id="transactions-view" class="view-pane" style="display: none;">
+        <div class="tx-hero" id="tx-hero">
+            <div class="tx-hero-top">
+                <div>
+                    <div class="tx-hero-eyebrow" id="tx-hero-kind">Account</div>
+                    <h2 class="tx-hero-title" id="tx-hero-title">--</h2>
+                </div>
+                <span class="chip" id="tx-hero-month">--</span>
+            </div>
+            <div class="tx-hero-row">
+                <div class="tx-hero-bal" id="tx-hero-bal">$0.00</div>
+                <span class="tx-pill" id="tx-hero-cleared">Cleared total: $0.00</span>
+                <span class="tx-pill" id="tx-hero-uncleared">Uncleared total: $0.00</span>
+            </div>
+        </div>
         <div id="tx-due"></div>
         <div class="card ps-inline">
             <div class="card-header">
@@ -1241,7 +1274,7 @@ window.addEventListener('load', function () {
     var box = document.getElementById('login-overlay');
     var styled = box && getComputedStyle(box).position === 'fixed';
     if (!styled && missing.indexOf('style.css') < 0) missing.push('style.css');
-    var BUILD = '2026-11-25-q', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
+    var BUILD = '2026-11-26-financial-audit-3', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
     if (document.documentElement.getAttribute('data-build') !== BUILD) missing.push('index.html (old version)');
     JS.forEach(function (f) { if (missing.indexOf(f) < 0 && (window.__build || {})[f] !== BUILD) missing.push(f + ' (old version - replace it with the one from the latest zip)'); });
     var need = ['showView', 'renderApp', 'switchAccount', 'saveToSupabase', 'renderInvestments', 'renderNetWorth', 'renderYearReview', 'openCategoryInLedger'];

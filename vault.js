@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-q';
+window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-financial-audit-3';
 /* VAULT: sign-in, encryption, cloud sync (Supabase), lock/unlock, backups and import.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -484,10 +484,16 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
             ds.data = ds.data.filter(t => t && typeof t === 'object');
             ds.data.forEach(t => {
                 ['date', 'desc', 'cost', 'creditCat', 'type', 'method'].forEach(f => { t[f] = t[f] == null ? '' : String(t[f]); });
-                t.paid = (t.paid == null || t.paid === '') ? 'NO' : String(t.paid);
-                t.credit = parseFloat(t.credit) || 0;
-                t.debit = parseFloat(t.debit) || 0;
+                t.paid = String(t.paid == null || t.paid === '' ? 'NO' : t.paid).trim().toLowerCase() === 'yes' ? 'YES' : 'NO';
+                t.credit = centsMoney(moneyCents(t.credit));
+                t.debit = centsMoney(moneyCents(t.debit));
             });
+            // One-time compatibility migration: the original September 2026 seed balance
+            // predates the manual flag. Preserve it instead of recalculating it as a rollover.
+            if (k === 'september2026') {
+                const seededOpening = ds.data.find(t => isRolloverTx(t) && t.date === '30/08/2026' && /previous period balance/i.test(t.desc));
+                if (seededOpening && !seededOpening.manual) seededOpening.manual = true;
+            }
         });
         if (!Array.isArray(categories)) categories = [];
         if (!Array.isArray(creditCategories)) creditCategories = [];
@@ -569,6 +575,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-25-
     }
 
     function saveToSupabase() {
+        if (acctSwapDepth > 0) { saveAfterSwap = true; return; }   // another account is loaded for a moment: save once it is put back
         reconcileTransfers();   // every change keeps linked transfers in step straight away
         clearTimeout(saveTimer);
         saveTimer = setTimeout(saveNow, 700);
