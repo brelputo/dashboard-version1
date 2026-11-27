@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['accounts.js'] = '2026-11-27-financial-audit-2';
 /* ACCOUNTS: several separate accounts (e.g. Day by Day, Savings, Other bank), a switcher in the header,
    transfers between accounts, and the "All Accounts" overview page.
    How it works: the rest of the app always works on the ACTIVE account through the shared variables (datasets, categories, ...).
@@ -17,12 +17,12 @@ let activeAccountId = '';
 function acctNewId() { return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
 function getAcctState() {
-    return { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions, schedules, autoApplyRecurring, recurringApplied, investGoal };
+    return { categories, creditCategories, datasets, categoryBudgets, enableBudgetRollover, recurringTemplates, autoCategorizationMap, savingsGoals, subscriptions, schedules, autoApplyRecurring, autoPostSchedules, recurringApplied, investGoal };
 }
 function setAcctState(s) {
     categories = s.categories; creditCategories = s.creditCategories; datasets = s.datasets; categoryBudgets = s.categoryBudgets;
     enableBudgetRollover = s.enableBudgetRollover; recurringTemplates = s.recurringTemplates; autoCategorizationMap = s.autoCategorizationMap;
-    savingsGoals = s.savingsGoals; subscriptions = s.subscriptions; schedules = s.schedules; autoApplyRecurring = s.autoApplyRecurring; recurringApplied = s.recurringApplied; investGoal = s.investGoal;
+    savingsGoals = s.savingsGoals; subscriptions = s.subscriptions; schedules = s.schedules; autoApplyRecurring = s.autoApplyRecurring; autoPostSchedules = s.autoPostSchedules !== false; recurringApplied = s.recurringApplied; investGoal = s.investGoal;
 }
 // fills anything missing so an account always has every field the app expects
 function cleanAcctData(d) {
@@ -39,6 +39,7 @@ function cleanAcctData(d) {
         subscriptions: Array.isArray(d.subscriptions) ? d.subscriptions : [],
         schedules: Array.isArray(d.schedules) ? d.schedules : [],
         autoApplyRecurring: !!d.autoApplyRecurring,
+        autoPostSchedules: d.autoPostSchedules !== false,
         recurringApplied: (d.recurringApplied && typeof d.recurringApplied === 'object' && !Array.isArray(d.recurringApplied)) ? d.recurringApplied : {},
         investGoal: cleanInvestGoal(d.investGoal)
     };
@@ -119,7 +120,7 @@ function loadAccountsFromVault(p) {
                 categoryBudgets: p.categoryBudgets || {}, enableBudgetRollover: p.enableBudgetRollover || false,
                 recurringTemplates: p.recurringTemplates || recurringTemplates, autoCategorizationMap: p.autoCategorizationMap || autoCategorizationMap,
                 savingsGoals: p.savingsGoals, investGoal: p.investGoal, subscriptions: p.subscriptions, schedules: p.schedules,
-                autoApplyRecurring: p.autoApplyRecurring, recurringApplied: p.recurringApplied
+                autoApplyRecurring: p.autoApplyRecurring, autoPostSchedules: p.autoPostSchedules !== false, recurringApplied: p.recurringApplied
             };
         } else {
             legacy = { categories, creditCategories, datasets: p, categoryBudgets: {}, enableBudgetRollover: false, recurringTemplates, autoCategorizationMap };
@@ -175,12 +176,13 @@ function switchAccount(id) {
     ensureYearDatasetsExist(selectedYear);
     document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
     syncRolloverBalances();
+    const schedAdded = autoPostSchedulesDue();
     sortTransactions();
     saveToSupabase();
     let go = currentView === 'accounts' ? 'dashboard' : currentView;
     if (activeAcctType() === 'savings') go = 'investments';
     showView(go);
-    showToast('Now viewing: ' + activeAccountName());
+    showToast('Now viewing: ' + activeAccountName() + (schedAdded ? ' · ' + schedAdded + ' scheduled line' + (schedAdded === 1 ? '' : 's') + ' added as Pending' : ''));
 }
 
 function addAccount() {
@@ -352,7 +354,13 @@ function reconcileTransfers() {
         const byId = new Map(accounts.map(a => [a.id, a]));
         const eachDs = (a, fn) => { const d = a.data && a.data.datasets; if (d) Object.keys(d).forEach(k => { if (d[k] && Array.isArray(d[k].data)) fn(d[k]); }); };
         const mirrors = new Map();
-        accounts.forEach(a => eachDs(a, ds => ds.data.forEach(t => { if (t && t.xferFrom && t.xferFrom.id) mirrors.set(t.xferFrom.id, { ds, t }); })));
+        const extraMirrors = [];
+        accounts.forEach(a => eachDs(a, ds => ds.data.forEach(t => {
+            if (!t || !t.xferFrom || !t.xferFrom.id) return;
+            if (mirrors.has(t.xferFrom.id)) extraMirrors.push({ ds, t });   // a second copy of the same transfer would double the money
+            else mirrors.set(t.xferFrom.id, { ds, t });
+        })));
+        extraMirrors.forEach(x => { const i = x.ds.data.indexOf(x.t); if (i >= 0) { x.ds.data.splice(i, 1); changed = true; } });
         const seen = new Set();
         accounts.forEach(a => eachDs(a, ds => ds.data.slice().forEach(t => {
             if (!t || !t.xfer || !t.xfer.id) return;

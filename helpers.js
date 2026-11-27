@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-27-financial-audit-2';
 /* HELPERS: small tools used everywhere (money format, dates, toast messages, theme and glass switch).
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -112,7 +112,9 @@ window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-2
     function isReportableTx(t) { return !!t && !isRolloverTx(t) && !isInternalTransferTx(t); }
     function isRolloverTx(t) {
         const d = (t.desc || '').toLowerCase();
-        return d.includes('previous period') || d.includes('starting balance') || t.method === 'Previous Balance';
+        return d.includes('previous period') || d.includes('starting balance') ||
+            (d.trim() === 'opening balance' && String(t.method || '').trim().toLowerCase() === 'transfer') ||
+            String(t.method || '').trim() === 'Previous Balance';
     }
 
     function startOfToday() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
@@ -122,14 +124,16 @@ window.__build = window.__build || {}; window.__build['helpers.js'] = '2026-11-2
     function parseTxDate(str) {
         const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(str || '').trim());
         if (!m) return null;
-        const d = new Date(+m[3], +m[2] - 1, +m[1]);
-        return isNaN(d) ? null : d;
+        const day = +m[1], month = +m[2], year = +m[3];
+        const d = new Date(year, month - 1, day);
+        return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day ? d : null;
     }
     function parseIso(str) {
         const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(str || ''));
         if (!m) return null;
-        const d = new Date(+m[1], +m[2] - 1, +m[3]);
-        return isNaN(d) ? null : d;
+        const year = +m[1], month = +m[2], day = +m[3];
+        const d = new Date(year, month - 1, day);
+        return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day ? d : null;
     }
     function isoDate(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
     function fmtDay(d) { return d.getDate() + ' ' + SHORT_MONTHS[d.getMonth()]; }

@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-27-financial-audit-2';
 /* VIEWS: page navigation, Dashboard overview, Annual, Multi-Year and Month vs Last Month pages.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -511,6 +511,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-26-
         selectedMonthName = val;
         lastMonthName = val;
         ensureYearDatasetsExist(selectedYear);
+        syncRolloverBalances(selectedYear);
         activeMonthKey = selectedMonthName + selectedYear;
         sortTransactions();
         renderApp();
@@ -792,16 +793,18 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-26-
         let maxVal = 1000;
         allYears.forEach(yr => {
             let monthKeys = getMonthKeysOrderForYear(yr);
-            let yIncome = 0, ySpend = 0;
+            let yIncome = 0, ySpend = 0, yMonths = 0;
             monthKeys.forEach(mKey => {
                 if (datasets[mKey] && datasets[mKey].data) {
                     let txs = datasets[mKey].data;
-                    yIncome += txs.filter(t => isReportableTx(t) && (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
-                    ySpend += txs.filter(t => isReportableTx(t) && (parseFloat(t.debit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+                    const mi = txs.filter(t => isReportableTx(t) && (parseFloat(t.credit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.credit) || 0), 0);
+                    const ms = txs.filter(t => isReportableTx(t) && (parseFloat(t.debit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
+                    yIncome += mi; ySpend += ms;
+                    if (mi > 0 || ms > 0) yMonths++;   // only months that have entries count towards the monthly average
                 }
             });
             let ySavings = yIncome - ySpend;
-            multiYearData.push({ year: yr, income: yIncome, spend: ySpend, savings: ySavings, avgSpend: ySpend / 12 });
+            multiYearData.push({ year: yr, income: yIncome, spend: ySpend, savings: ySavings, avgSpend: yMonths ? ySpend / yMonths : 0 });
             maxVal = Math.max(maxVal, yIncome, ySpend, Math.abs(ySavings));
         });
         const chartEl = document.getElementById('multi-year-bar-chart');
@@ -847,7 +850,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-26-
     function renderAnnualSummary() {
         ensureYearDatasetsExist(selectedYear);
         let monthKeys = getMonthKeysOrderForYear(selectedYear);
-        let totalIncomeAll = 0, totalSpendAll = 0;
+        let totalIncomeAll = 0, totalSpendAll = 0, monthsWithEntries = 0;
         let monthlyDataList = [];
         let annualCatMap = {};
         monthKeys.forEach((mKey, idx) => {
@@ -856,6 +859,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-26-
             let mSpend = txs.filter(t => isReportableTx(t) && (parseFloat(t.debit) || 0) > 0).reduce((acc, t) => acc + (parseFloat(t.debit) || 0), 0);
             totalIncomeAll += mIncome;
             totalSpendAll += mSpend;
+            if (mIncome > 0 || mSpend > 0) monthsWithEntries++;
             txs.forEach(t => {
                 if (!isReportableTx(t)) return;
                 let dVal = parseFloat(t.debit) || 0;
@@ -865,7 +869,7 @@ window.__build = window.__build || {}; window.__build['views.js'] = '2026-11-26-
             monthlyDataList.push({ name: shortNames[idx], income: mIncome, spend: mSpend, diff: mIncome - mSpend });
         });
         let netSavings = totalIncomeAll - totalSpendAll;
-        let avgSpend = totalSpendAll / 12;
+        let avgSpend = monthsWithEntries ? totalSpendAll / monthsWithEntries : 0;   // same rule as the dashboard and Year in Review: empty months are skipped
         document.getElementById('annual-chart-title').innerText = `Monthly Income vs Spends Performance (${selectedYear})`;
         document.getElementById('ann-total-income').innerText = `${fmt(totalIncomeAll)}`;
         document.getElementById('ann-total-spends').innerText = `${fmt(totalSpendAll)}`;

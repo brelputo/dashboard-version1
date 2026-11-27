@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-27-financial-audit-2';
 /* LEDGER: the Transactions page, the New Transaction window, recurring bills, due-soon alerts and row selection.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -132,6 +132,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
         lastMonthName = monthName;
         document.getElementById('month-dropdown').value = monthName;
         activeMonthKey = key;
+        syncRolloverBalances(yr);
         sortTransactions();
         renderApp();
         saveToSupabase();
@@ -415,10 +416,11 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
             if (sc.active === false || sc.kind === 'in') return;
             const d = parseIso(sc.nextDate);
             if (!d || d > end) return;
+            if (ledgerHasScheduleOccurrence(sc, d)) return;   // the ledger already has this one
             items.push({ kind: 'sched', sched: sc, date: d, desc: sc.name, amount: -Math.abs(Number(sc.amount) || 0), late: d < today, days: daysBetween(today, d) });
         });
         subscriptions.forEach(sub => {
-            if (!sub.active) return;
+            if (!sub.active || scheduleCoversSub(sub)) return;
             subOccurrencesBetween(sub, today, end).forEach(d => {
                 if (ledgerHasSubOccurrence(sub, d)) return;
                 items.push({ kind: 'sub', date: d, desc: sub.name, amount: -Math.abs(Number(sub.amount) || 0), late: false, days: daysBetween(today, d) });
@@ -854,6 +856,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
                 <td class="col-action">
                     <div class="btn-action-row">
                         ${(!isRolloverTx(tx) && !tx.xferFrom && accounts.length > 1 && (parseFloat(tx.debit) || 0) > 0) ? `<button class="btn-xfer${tx.xfer ? ' linked' : ''}" onclick="openLinkPicker(${index})" title="${tx.xfer ? 'Linked to another account - click to unlink' : 'Make this a transfer: also record it in another account'}">🔗</button>` : ''}
+                        ${(isRolloverTx(tx) || tx.xferFrom || !(((parseFloat(tx.debit) || 0) > 0) || ((parseFloat(tx.credit) || 0) > 0))) ? '' : `<button class="btn-sched${findScheduleForTx(tx) ? ' linked' : ''}" onclick="openScheduleFromTx(${index})" title="${findScheduleForTx(tx) ? 'Already in Schedules - click to open it' : 'Repeat this line: add it to Schedules (weekly, monthly, yearly...)'}" aria-label="Add to Schedules">🔁</button>`}
                         ${isRolloverTx(tx) ? '' : `<button class="btn-transfer" onclick="transferToNextMonth(${index})" title="Move this line to the next month as Pending">➡️</button>`}
                         <button class="btn-copy" onclick="duplicateTransaction(${index})" title="Copy line">📋</button>
                         <button class="btn-danger" onclick="deleteTx(${index})" title="Delete">✕</button>
@@ -939,6 +942,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
         const ds = datasets[key];
         const txToMove = ds && ds.data[index];
         if (!txToMove) return;
+        if (blockMirrorEdit(txToMove)) return;   // the copy of a transfer follows its sending line; move that one instead
         if (isRolloverTx(txToMove)) {
             alert("System rollover balance lines cannot be transferred directly.");
             return;
@@ -961,6 +965,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
         ds.data.splice(index, 1);
         target.data.push(copy);
         target.data.sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+        syncRolloverBalances(String(p.year));
         renderApp();
         saveToSupabase();
         showToast(`Moved to ${monthLabelOfKey(nextKey)} as Pending`, false, {
@@ -969,6 +974,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
                 if (!datasets[nextKey] || !datasets[key]) return;
                 datasets[nextKey].data = datasets[nextKey].data.filter(x => x !== copy);
                 datasets[key].data.splice(Math.min(index, datasets[key].data.length), 0, txToMove);
+                syncRolloverBalances(String(p.year));
                 sortTransactions();
                 renderApp();
                 saveToSupabase();
@@ -979,6 +985,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
 
     function duplicateTransaction(index) {
         let txToCopy = datasets[activeMonthKey].data[index];
+        if (!txToCopy || blockMirrorEdit(txToCopy)) return;   // copying the receiving side of a transfer would double the money
         let newTx = JSON.parse(JSON.stringify(txToCopy));
         newTx.paid = "NO";
         datasets[activeMonthKey].data.splice(index + 1, 0, newTx);
@@ -991,6 +998,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
         if (blockMirrorEdit(datasets[activeMonthKey].data[index])) return;
         datasets[activeMonthKey].data[index]['paid'] = value;
         if (String(value).toLowerCase() === 'yes') offerTransferLink(datasets[activeMonthKey].data[index]); else askUnlinkOnPending(datasets[activeMonthKey].data[index]);
+        syncRolloverBalances();   // keep the next months' opening balances in step straight away
         calculateMetrics();
         renderTransactions();
         saveToSupabase();
@@ -1075,6 +1083,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
                 autoCategorizationMap[desc] = value;
             }
         }
+        if (field === 'debit' || field === 'credit') syncRolloverBalances();
         calculateMetrics();
         renderLedgerFooter();
         saveToSupabase();
@@ -1089,6 +1098,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
         if (!tx) return;
         ds.data.splice(index, 1);
         if (tx.xferFrom) unlinkTransferSource(tx.xferFrom.id);
+        syncRolloverBalances(selectedYear);
         renderApp();
         saveToSupabase();
         showToast(`Deleted "${tx.desc || 'line'}"`, false, {
@@ -1096,6 +1106,7 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
             fn: () => {
                 if (!datasets[key]) return;
                 datasets[key].data.splice(Math.min(index, datasets[key].data.length), 0, tx);
+                syncRolloverBalances(selectedYear);
                 renderApp();
                 saveToSupabase();
                 showToast('Restored');
@@ -1112,11 +1123,12 @@ window.__build = window.__build || {}; window.__build['ledger.js'] = '2026-11-26
             title: monthLabelOfKey(key),
             data: [{ date: `01/${monthNum}/${selectedYear}`, desc: selectedMonthName === 'january' ? 'Starting Balance' : 'Previous Period Balance', cost: '', creditCat: 'Starting Balance', type: '', credit: 0, debit: 0, method: 'Previous Balance', paid: 'YES' }]
         };
+        syncRolloverBalances(selectedYear);
         sortTransactions();
         renderApp();
         saveToSupabase();
         showToast('Month reset', false, {
             label: 'Undo',
-            fn: () => { datasets[key] = backup; renderApp(); saveToSupabase(); showToast('Month restored'); }
+            fn: () => { datasets[key] = backup; syncRolloverBalances(selectedYear); renderApp(); saveToSupabase(); showToast('Month restored'); }
         });
     }

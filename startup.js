@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['startup.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['startup.js'] = '2026-11-27-financial-audit-2';
 /* STARTUP: things that run once when the page opens (theme, login clock, listeners). Loaded last.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 

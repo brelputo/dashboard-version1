@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-27-financial-audit-2';
 /* PLANNING: savings goals, subscriptions, the cash-flow forecast and the Investments page.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -164,6 +164,33 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
         return (Number(sub.amount) || 0) * c.perYear / 12;
     }
 
+    // A bill that is in Schedules takes priority over the same-named bill in Subscriptions, so it is only counted once.
+    function scheduleCoversSub(sub) {
+        const nm = String(sub.name || '').toLowerCase().trim();
+        return !!nm && schedules.some(sc => sc.active !== false && sc.kind !== 'in' && String(sc.name || '').toLowerCase().trim() === nm);
+    }
+    // true when the ledger already holds this schedule's occurrence (same name and amount, near that date), paid or not
+    function ledgerHasScheduleOccurrence(sc, occ) {
+        const names = [String(sc.name || '').toLowerCase().trim(), String(sc.payee || '').toLowerCase().trim()].filter(Boolean);
+        if (!names.length || !occ) return false;
+        const tol = { weekly: 3, fortnightly: 6, monthly: 12, quarterly: 40, yearly: 150, once: 12 }[sc.cycle] || 12;
+        const out = sc.kind !== 'in';
+        for (let off = -1; off <= 1; off++) {
+            const md = new Date(occ.getFullYear(), occ.getMonth() + off, 1);
+            const ds = datasets[monthKeyOfDate(md)];
+            if (!ds || !Array.isArray(ds.data)) continue;
+            const hit = ds.data.some(t => {
+                if (isRolloverTx(t) || t.xferFrom) return false;
+                const td = String(t.desc || '').toLowerCase().trim();
+                if (!names.includes(td)) return false;
+                if (Math.abs((parseFloat(out ? t.debit : t.credit) || 0) - Math.abs(Number(sc.amount) || 0)) > 0.005) return false;
+                const dt = parseTxDate(t.date);
+                return dt ? Math.abs(daysBetween(dt, occ)) <= tol : false;
+            });
+            if (hit) return true;
+        }
+        return false;
+    }
     function ledgerHasSubOccurrence(sub, occ) {
         const nm = String(sub.name || '').toLowerCase().trim();
         if (!nm) return false;
@@ -214,7 +241,7 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
             });
         }
         subscriptions.forEach(sub => {
-            if (!sub.active) return;
+            if (!sub.active || scheduleCoversSub(sub)) return;
             subOccurrencesBetween(sub, today, end).forEach(d => {
                 if (ledgerHasSubOccurrence(sub, d)) return;
                 events.push({ date: d, desc: sub.name, amount: -Math.abs(Number(sub.amount) || 0), source: 'Subscription', overdue: false, cat: sub.category || '' });
@@ -228,7 +255,7 @@ window.__build = window.__build || {}; window.__build['planning.js'] = '2026-11-
                 const d = parseIso(cursor.nextDate);
                 if (!d || d > end) break;
                 const overdue = d < today;
-                events.push({ date: overdue ? today : d, desc: sc.name, amount: sign * Math.abs(Number(sc.amount)), source: 'Schedule', overdue, cat: sc.category || '' });
+                if (!ledgerHasScheduleOccurrence(sc, d)) events.push({ date: overdue ? today : d, desc: sc.name, amount: sign * Math.abs(Number(sc.amount)), source: 'Schedule', overdue, cat: sc.category || '' });
                 const nx = schedNextDate(cursor);
                 if (!nx) break;
                 cursor.nextDate = isoDate(nx);
@@ -1204,6 +1231,7 @@ function renderInterest() {
         const c = schedOpenCount();
         const chip = document.getElementById('sched-chip');
         if (chip) chip.textContent = schedules.length ? `${schedules.length} schedule${schedules.length === 1 ? '' : 's'}${c.n ? ' · ' + c.n + ' to post' : ''}` : 'None yet';
+        const apx = document.getElementById('sched-auto'); if (apx) apx.checked = autoPostSchedules;
         const pa = document.getElementById('sched-postall');
         if (pa) pa.style.display = c.n ? '' : 'none';
         updateSchedBadge();
@@ -1277,6 +1305,9 @@ function renderInterest() {
     function openScheduleModal(id) {
         const s = id ? schedules.find(x => x.id === id) : null;
         editingSchedId = s ? s.id : null;
+        schedFromTx = null;
+        const onceOpt = document.querySelector('#sm-cycle option[value="once"]'); if (onceOpt) onceOpt.disabled = false;
+        const fromNote = document.getElementById('sm-fromtx-note'); if (fromNote) fromNote.style.display = 'none';
         document.getElementById('sched-modal-title').textContent = s ? 'Edit Schedule' : 'New Schedule';
         document.getElementById('sm-save').textContent = s ? 'Save changes' : 'Save Schedule';
         document.getElementById('sm-name').value = s ? s.name : '';
@@ -1290,7 +1321,59 @@ function renderInterest() {
         document.getElementById('sched-modal').style.display = 'flex';
         setTimeout(() => document.getElementById('sm-name').focus(), 50);
     }
-    function closeScheduleModal() { const m = document.getElementById('sched-modal'); if (m) m.style.display = 'none'; editingSchedId = null; }
+    function closeScheduleModal() { const m = document.getElementById('sched-modal'); if (m) m.style.display = 'none'; editingSchedId = null; schedFromTx = null; }
+
+    // ---- "Repeat this line": turn a transaction that is already in the ledger into a schedule ----
+    let schedFromTx = null;   // { iso, dateTouched } while the Schedule window was opened from a ledger line
+    function schedKindOfTx(tx) {
+        if (tx.xfer && tx.xfer.to) return 'transfer';
+        return (parseFloat(tx.debit) || 0) > 0 ? 'out' : 'in';
+    }
+    function findScheduleForTx(tx) {
+        if (!tx) return null;
+        const name = String(tx.desc || '').trim().toLowerCase(), kind = schedKindOfTx(tx);
+        if (!name) return null;
+        return schedules.find(s => {
+            const names = [s.name, s.payee].map(v => String(v || '').trim().toLowerCase()).filter(Boolean);
+            return names.includes(name) && s.kind === kind;
+        }) || null;
+    }
+    // the first repeat AFTER this line's own date, so the line you already have is never added a second time
+    function schedFirstDateAfter(iso, cycle) {
+        const d = parseIso(iso);
+        if (!d) return iso;
+        const nx = schedNextDate({ nextDate: iso, cycle: cycle, anchor: d.getDate() });
+        return nx ? isoDate(nx) : iso;
+    }
+    function openScheduleFromTx(index) {
+        const tx = datasets[activeMonthKey] && datasets[activeMonthKey].data[index];
+        if (!tx || isRolloverTx(tx)) return;
+        const existing = findScheduleForTx(tx);
+        if (existing) { openScheduleModal(existing.id); showToast('This one is already in Schedules - opened it for you'); return; }
+        const kind = schedKindOfTx(tx);
+        if (kind === 'transfer' && !accounts.some(a => a.id === tx.xfer.to && a.id !== activeAccountId)) { showToast('The account this transfer goes to no longer exists', true); return; }
+        const d = parseTxDate(tx.date);
+        const iso = isoDate(d || startOfToday());
+        openScheduleModal();
+        schedFromTx = { iso, dateTouched: false };
+        const amt = kind === 'in' ? (parseFloat(tx.credit) || 0) : (parseFloat(tx.debit) || 0);
+        document.getElementById('sched-modal-title').textContent = 'Repeat this transaction';
+        document.getElementById('sm-save').textContent = 'Add to Schedules';
+        document.getElementById('sm-name').value = tx.desc || '';
+        document.getElementById('sm-amount').value = amt;
+        document.getElementById('sm-kind').value = kind;
+        fillSchedCategories(kind, kind === 'in' ? (tx.creditCat || '') : (tx.cost || ''));
+        if (kind === 'transfer') document.getElementById('sm-dest').value = tx.xfer.to;
+        document.getElementById('sm-cycle').value = 'monthly';
+        const once = document.querySelector('#sm-cycle option[value="once"]'); if (once) once.disabled = true;
+        document.getElementById('sm-date').value = schedFirstDateAfter(iso, 'monthly');
+        const note = document.getElementById('sm-fromtx-note');
+        if (note) { note.style.display = ''; note.textContent = 'This line stays in your ledger as it is. The schedule starts from the next one, so nothing is added twice.'; }
+    }
+    function onSchedCycleChange() {
+        if (!schedFromTx || schedFromTx.dateTouched) return;
+        document.getElementById('sm-date').value = schedFirstDateAfter(schedFromTx.iso, document.getElementById('sm-cycle').value);
+    }
     function saveSchedule() {
         const name = document.getElementById('sm-name').value.trim();
         const payee = document.getElementById('sm-payee').value.trim();
@@ -1344,15 +1427,26 @@ function renderInterest() {
             method: (out && !isTr) ? 'Debit' : 'Transfer', paid: paid ? 'Yes' : 'NO'
         };
         datasets[key].data.push(tx);
+        datasets[key].data.sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
         if (isTr) { tx.xfer = { to: dest.id, id: newLinkId() }; reconcileTransfers(); }
         return tx;
     }
     function postSchedule(id, paid) {
         const s = schedules.find(x => x.id === id);
         if (!s) return;
+        const occurrenceDate = s.nextDate;
+        const occurrence = parseIso(occurrenceDate);
+        if (occurrence && ledgerHasScheduleOccurrence(s, occurrence)) {
+            const r = schedMoveOn(s);
+            renderApp();
+            saveToSupabase();
+            showToast(`"${s.name}" is already in Transactions for ${toAUFormat(occurrenceDate)}; the schedule was moved on` + (r === 'done' ? '' : ` · next ${toAUFormat(s.nextDate)}`));
+            return;
+        }
         const tx = makeScheduleTx(s, paid);
         if (!tx) return;
         const r = schedMoveOn(s);
+        syncRolloverBalances(String(occurrence.getFullYear()));
         sortTransactions();
         renderApp();
         saveToSupabase();
@@ -1375,6 +1469,8 @@ function renderInterest() {
             for (let guard = 0; guard < 60 && schedules.includes(s); guard++) {
                 const k = schedStatus(s, today).key;
                 if (k !== 'missed' && k !== 'due') break;
+                const occurrence = parseIso(s.nextDate);
+                if (occurrence && ledgerHasScheduleOccurrence(s, occurrence)) { schedMoveOn(s); continue; }
                 if (!makeScheduleTx(s, false)) break;
                 posted++;
                 schedMoveOn(s);
@@ -1384,6 +1480,39 @@ function renderInterest() {
         renderApp();
         saveToSupabase();
         showToast(posted ? `${posted} line${posted === 1 ? '' : 's'} added to Transactions as Pending` : 'Nothing to post');
+    }
+    // true when the ledger month of this schedule's date already holds a line with the same name and amount
+    function ledgerAlreadyHasScheduleLine(s) {
+        const d = parseIso(s.nextDate);
+        if (!d) return false;
+        return ledgerHasScheduleOccurrence(s, d);
+    }
+    // Quietly add every schedule whose date has arrived to the ledger as Pending, then move it on. Returns how many lines were added.
+    function autoPostSchedulesDue() {
+        if (!autoPostSchedules || acctSwapDepth > 0 || !schedules.length) return 0;
+        const today = startOfToday();
+        let posted = 0;
+        schedules.slice().forEach(s => {
+            for (let guard = 0; guard < 60 && schedules.includes(s); guard++) {
+                const k = schedStatus(s, today).key;
+                if (k !== 'missed' && k !== 'due') break;
+                if (ledgerAlreadyHasScheduleLine(s)) { schedMoveOn(s); continue; }   // you already added this one yourself
+                if (!makeScheduleTx(s, false)) break;
+                posted++;
+                schedMoveOn(s);
+            }
+        });
+        if (posted) { sortTransactions(); saveToSupabase(); }
+        return posted;
+    }
+    function toggleAutoPostSchedules(checked) {
+        autoPostSchedules = !!checked;
+        saveToSupabase();
+        if (autoPostSchedules) {
+            const n = autoPostSchedulesDue();
+            if (n) { renderApp(); showToast(`Auto-add is on · ${n} due line${n === 1 ? '' : 's'} added as Pending`); return; }
+        }
+        showToast(autoPostSchedules ? 'Due schedules will be added automatically when you open the app' : 'Auto-add turned off. Use Post on the Schedules page.');
     }
     function toggleSchedule(id) {
         const s = schedules.find(x => x.id === id);

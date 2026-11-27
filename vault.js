@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-27-financial-audit-2';
 /* VAULT: sign-in, encryption, cloud sync (Supabase), lock/unlock, backups and import.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -405,6 +405,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-
             selectedYear = getCurrentYearString();
             document.getElementById('year-dropdown').value = selectedYear;
             ensureYearDatasetsExist(selectedYear);
+            syncRolloverBalances(selectedYear);
             selectedMonthName = rawMonthNames[new Date().getMonth()];
             lastMonthName = selectedMonthName;
             document.getElementById('month-dropdown').value = selectedMonthName;
@@ -412,6 +413,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-
             document.getElementById('budget-rollover-toggle').checked = enableBudgetRollover;
             populateRecurringCategoryDropdown();
             const autoAdded = autoApplyRecurringDue();
+            const schedAdded = autoPostSchedulesDue();
             showView('dashboard');
             resetIdleTimer();
             setSyncStatus('');
@@ -419,9 +421,9 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-
             if (dueNow.length) {
                 const lateN = dueNow.filter(x => x.late).length;
                 const dueTotal = dueNow.reduce((a, x) => a + Math.abs(x.amount), 0);
-                showToast(`⚠ ${dueNow.length} bill${dueNow.length === 1 ? '' : 's'} due soon (${fmt(dueTotal)})${lateN ? ` · ${lateN} overdue` : ''}`, false, { label: 'Review', fn: () => showView('dashboard') });
+                showToast(`⚠ ${dueNow.length} bill${dueNow.length === 1 ? '' : 's'} due soon (${fmt(dueTotal)})${lateN ? ` · ${lateN} overdue` : ''}${schedAdded ? ` · ${schedAdded} scheduled line${schedAdded === 1 ? '' : 's'} added` : ''}`, false, { label: 'Review', fn: () => showView('dashboard') });
             } else {
-                showToast(autoAdded ? `Vault unlocked · added ${autoAdded} recurring bill${autoAdded === 1 ? '' : 's'} due` : "Vault unlocked & synced");
+                showToast((autoAdded || schedAdded) ? `Vault unlocked · added ${autoAdded + schedAdded} bill${autoAdded + schedAdded === 1 ? '' : 's'} due as Pending` : "Vault unlocked & synced");
             }
             updateBackupUi();
             setTimeout(() => {
@@ -487,6 +489,10 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-
                 t.paid = String(t.paid == null || t.paid === '' ? 'NO' : t.paid).trim().toLowerCase() === 'yes' ? 'YES' : 'NO';
                 t.credit = centsMoney(moneyCents(t.credit));
                 t.debit = centsMoney(moneyCents(t.debit));
+                // Account creation stores the initial balance as an "Opening balance" credit.
+                // It is capital already held, not earned income, so preserve it as a manual opening row.
+                if (String(t.desc).trim().toLowerCase() === 'opening balance' &&
+                    String(t.method).trim().toLowerCase() === 'transfer') t.manual = true;
             });
             // One-time compatibility migration: the original September 2026 seed balance
             // predates the manual flag. Preserve it instead of recalculating it as a rollover.
@@ -497,6 +503,17 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-
         });
         if (!Array.isArray(categories)) categories = [];
         if (!Array.isArray(creditCategories)) creditCategories = [];
+        // Keep categories that are still used by existing transactions selectable in the ledger.
+        const knownCosts = new Set(categories.map(c => String(c).trim().toLowerCase()));
+        const knownCredits = new Set(creditCategories.map(c => String(c).trim().toLowerCase()));
+        Object.values(datasets).forEach(ds => (ds.data || []).forEach(t => {
+            if (!isRolloverTx(t) && t.cost && !knownCosts.has(String(t.cost).trim().toLowerCase())) {
+                categories.push(t.cost); knownCosts.add(String(t.cost).trim().toLowerCase());
+            }
+            if (!isRolloverTx(t) && t.creditCat && !knownCredits.has(String(t.creditCat).trim().toLowerCase())) {
+                creditCategories.push(t.creditCat); knownCredits.add(String(t.creditCat).trim().toLowerCase());
+            }
+        }));
         if (!Array.isArray(recurringTemplates)) recurringTemplates = [];
         recurringTemplates = recurringTemplates.filter(t => t && typeof t === 'object');
         if (!recurringApplied || typeof recurringApplied !== 'object' || Array.isArray(recurringApplied)) recurringApplied = {};
@@ -548,6 +565,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-
         activeAccountId = '';
         selectedTx.clear();
         autoApplyRecurring = false;
+        autoPostSchedules = true;
         recurringApplied = {};
         savingsGoals = [];
         investGoal = { target: 0, date: '' };
@@ -687,6 +705,7 @@ window.__build = window.__build || {}; window.__build['vault.js'] = '2026-11-26-
                     subscriptions = Array.isArray(imported.subscriptions) ? imported.subscriptions : subscriptions;
                     schedules = Array.isArray(imported.schedules) ? imported.schedules : schedules;
                     autoApplyRecurring = !!imported.autoApplyRecurring;
+                    autoPostSchedules = imported.autoPostSchedules !== false;
                     recurringApplied = (imported.recurringApplied && typeof imported.recurringApplied === 'object') ? imported.recurringApplied : {};
                 } else {
                     datasets = imported;

@@ -1,4 +1,4 @@
-window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-26-financial-audit-3';
+window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-27-financial-audit-2';
 /* STATE: settings, default data and the values the whole app shares. Loaded first.
    Part of the Financial Movement Dashboard. Plain script (not a module): functions here are shared with the other js files. */
 
@@ -166,6 +166,7 @@ window.__build = window.__build || {}; window.__build['state.js'] = '2026-11-26-
     };
 
     let autoApplyRecurring = false;
+    let autoPostSchedules = true;   // due Schedules are added as Pending when the app opens (can be switched off on the Schedules page)
     let recurringApplied = {};
     let globalHits = [];
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-build="2026-11-26-financial-audit-3">
+<html lang="en" data-build="2026-11-27-financial-audit-2">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -269,11 +269,11 @@
         <div class="form-row">
             <div class="form-field">
                 <label for="sm-date">Next date</label>
-                <input type="date" id="sm-date" onkeydown="if(event.key==='Enter') saveSchedule()">
+                <input type="date" id="sm-date" oninput="if (schedFromTx) schedFromTx.dateTouched = true" onkeydown="if(event.key==='Enter') saveSchedule()">
             </div>
             <div class="form-field">
                 <label for="sm-cycle">Repeats</label>
-                <select id="sm-cycle">
+                <select id="sm-cycle" onchange="onSchedCycleChange()">
                     <option value="once">Does not repeat</option>
                     <option value="weekly">Weekly</option>
                     <option value="fortnightly">Fortnightly</option>
@@ -283,6 +283,7 @@
                 </select>
             </div>
         </div>
+        <p id="sm-fromtx-note" class="hint" style="display:none;margin:4px 0 10px;font-size:0.82rem;color:var(--text-muted)"></p>
         <div class="modal-actions">
             <button type="button" class="btn-secondary" onclick="closeScheduleModal()">Cancel</button>
             <button type="button" class="btn" id="sm-save" onclick="saveSchedule()">Save Schedule</button>
@@ -410,7 +411,7 @@
         </nav>
         <div class="side-accts" id="side-accts"></div>
         <div class="nav-footer">
-            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-26-financial-audit-3</div>
+            <div class="build-tag" title="If something looks wrong, tell me this version">Version 2026-11-27-financial-audit-2</div>
             <button type="button" class="nav-item" onclick="lockVault()">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
                 <span>Lock vault</span>
@@ -733,6 +734,9 @@
                 <button type="button" class="btn" onclick="openScheduleModal()">+ Add Schedule</button>
             </div>
         </div>
+        <label class="rec-auto sched-auto-row"><input type="checkbox" id="sched-auto" onchange="toggleAutoPostSchedules(this.checked)">
+            <span><strong>Add due schedules automatically</strong><br>When you open the app (or switch to this account), every schedule whose date has arrived is added to your Transactions as Pending, and the schedule moves on to its next date. You still mark each one Paid yourself.</span>
+        </label>
         <div class="card sched-card">
             <div class="sched-filter-row">
                 <input type="search" id="sched-filter" class="sched-filter" placeholder="Filter schedules..." aria-label="Filter schedules" oninput="renderSchedules()">
@@ -799,7 +803,7 @@
                 <span id="ann-net-savings" class="stat-card-value">$0.00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-card-title">Monthly Average Spend</span>
+                <span class="stat-card-title" title="Total spends divided by the months that have entries (empty months are skipped)">Monthly Average Spend</span>
                 <span id="ann-avg-spend" class="stat-card-value" style="color: var(--accent);">$0.00</span>
             </div>
         </div>
@@ -1274,7 +1278,7 @@ window.addEventListener('load', function () {
     var box = document.getElementById('login-overlay');
     var styled = box && getComputedStyle(box).position === 'fixed';
     if (!styled && missing.indexOf('style.css') < 0) missing.push('style.css');
-    var BUILD = '2026-11-26-financial-audit-3', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
+    var BUILD = '2026-11-27-financial-audit-2', JS = ['state.js','helpers.js','accounts.js','vault.js','ledger.js','budgets.js','planning.js','views.js','startup.js'];
     if (document.documentElement.getAttribute('data-build') !== BUILD) missing.push('index.html (old version)');
     JS.forEach(function (f) { if (missing.indexOf(f) < 0 && (window.__build || {})[f] !== BUILD) missing.push(f + ' (old version - replace it with the one from the latest zip)'); });
     var need = ['showView', 'renderApp', 'switchAccount', 'saveToSupabase', 'renderInvestments', 'renderNetWorth', 'renderYearReview', 'openCategoryInLedger'];
